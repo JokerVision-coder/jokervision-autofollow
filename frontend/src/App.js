@@ -560,6 +560,7 @@ const LeadDetail = () => {
   const handleAIResponse = async () => {
     if (!newMessage.trim()) return;
 
+    setSending(true);
     try {
       const response = await axios.post(`${API}/ai/respond`, {
         lead_id: id,
@@ -573,6 +574,8 @@ const LeadDetail = () => {
     } catch (error) {
       console.error('Error generating AI response:', error);
       toast.error('Failed to generate AI response');
+    } finally {
+      setSending(false);
     }
   };
 
