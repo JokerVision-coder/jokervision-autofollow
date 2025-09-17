@@ -11,7 +11,7 @@ import { Badge } from './components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from './components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './components/ui/select';
-import { toast } from 'sonner';
+import { toast, Toaster } from 'sonner';
 import { Users, MessageSquare, Calendar, BarChart3, Plus, Send, Bot, Phone, Mail, DollarSign, Briefcase } from 'lucide-react';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
