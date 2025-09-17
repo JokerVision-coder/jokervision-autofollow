@@ -482,9 +482,7 @@ const BulkImportForm = ({ onSuccess }) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const response = await axios.post(`${API}/leads/bulk`, bulkText, {
-        headers: { 'Content-Type': 'text/plain' }
-      });
+      const response = await axios.post(`${API}/leads/bulk?leads_text=${encodeURIComponent(bulkText)}`);
       toast.success(`Successfully imported ${response.data.leads_created} leads!`);
       onSuccess();
     } catch (error) {
