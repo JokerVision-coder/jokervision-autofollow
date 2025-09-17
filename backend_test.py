@@ -187,13 +187,15 @@ Email: jane.doe@example.com
 Budget: 200$-400$
 Vehicle Type: sedan"""
         
+        # URL encode the bulk data as query parameter
+        import urllib.parse
+        encoded_data = urllib.parse.quote(bulk_data)
+        
         return self.run_test(
             "Bulk Import Leads",
             "POST",
-            "leads/bulk",
-            200,
-            data=bulk_data,
-            headers={'Content-Type': 'text/plain'}
+            f"leads/bulk?leads_text={encoded_data}",
+            200
         )
 
     def test_update_lead(self):
