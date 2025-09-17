@@ -526,7 +526,10 @@ const LeadDetail = () => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
-  const { id } = window.location.pathname.split('/').pop();
+  const [sending, setSending] = useState(false);
+  const params = new URLSearchParams(window.location.search);
+  const pathParts = window.location.pathname.split('/');
+  const id = pathParts[pathParts.length - 1];
 
   useEffect(() => {
     fetchLead();
