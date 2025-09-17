@@ -748,6 +748,7 @@ function App() {
           <Route path="/leads" element={<LeadsManagement />} />
           <Route path="/leads/:id" element={<LeadDetail />} />
         </Routes>
+        <Toaster position="top-right" />
       </div>
     </BrowserRouter>
   );
