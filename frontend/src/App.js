@@ -695,10 +695,11 @@ const LeadDetail = () => {
                     />
                     <Button
                       onClick={handleAIResponse}
+                      disabled={sending || !newMessage.trim()}
                       className="bg-gradient-to-r from-green-600 to-blue-600 text-white"
                     >
                       <Bot className="w-4 h-4 mr-2" />
-                      AI Respond
+                      {sending ? 'Generating...' : 'AI Respond'}
                     </Button>
                   </div>
                 </div>
