@@ -515,6 +515,15 @@ const LeadsManagement = () => {
                         <Button
                           variant="outline"
                           size="sm"
+                          onClick={() => handleVoiceCall(lead.id)}
+                          className="text-purple-600 border-purple-200 hover:bg-purple-50"
+                        >
+                          <PhoneCall className="w-4 h-4 mr-1" />
+                          AI Call
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
                           onClick={() => navigate(`/leads/${lead.id}`)}
                         >
                           View Details
