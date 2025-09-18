@@ -375,6 +375,30 @@ const LeadsManagement = () => {
               </DialogContent>
             </Dialog>
 
+            <Dialog open={showBulkFollowUpDialog} onOpenChange={setShowBulkFollowUpDialog}>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="bg-white">
+                  <Clock className="w-4 h-4 mr-2" />
+                  Follow-up System
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl">
+                <DialogHeader>
+                  <DialogTitle>Scheduled Follow-up Messages</DialogTitle>
+                  <DialogDescription>
+                    Send automated follow-up messages based on lead pipeline stage
+                  </DialogDescription>
+                </DialogHeader>
+                <FollowUpSystem 
+                  leads={leads} 
+                  onSuccess={() => { 
+                    setShowBulkFollowUpDialog(false); 
+                    fetchLeads(); 
+                  }} 
+                />
+              </DialogContent>
+            </Dialog>
+
             <Dialog open={showBulkDialog} onOpenChange={setShowBulkDialog}>
               <DialogTrigger asChild>
                 <Button variant="outline" className="bg-white">
