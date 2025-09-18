@@ -518,7 +518,196 @@ const LeadsManagement = () => {
   );
 };
 
-// SMS Configuration Form Component
+// Follow-up System Component
+const FollowUpSystem = ({ leads, onSuccess }) => {
+  const [selectedStage, setSelectedStage] = useState('second_follow');
+  const [selectedLanguage, setSelectedLanguage] = useState('english');
+  const [delayHours, setDelayHours] = useState(24);
+  const [selectedLeads, setSelectedLeads] = useState(new Set());
+  const [loading, setLoading] = useState(false);
+
+  const followUpStages = {
+    'initial': 'Initial Contact',
+    'second_follow': 'Second Follow-up',
+    'third_follow': 'Final Follow-up',
+    'appointment_reminder': 'Appointment Reminder',
+    'post_visit': 'Post-Visit Thank You'
+  };
+
+  const handleLeadSelection = (leadId, checked) => {
+    const newSelected = new Set(selectedLeads);
+    if (checked) {
+      newSelected.add(leadId);
+    } else {
+      newSelected.delete(leadId);
+    }
+    setSelectedLeads(newSelected);
+  };
+
+  const handleSelectAll = (checked) => {
+    if (checked) {
+      setSelectedLeads(new Set(leads.map(lead => lead.id)));
+    } else {
+      setSelectedLeads(new Set());
+    }
+  };
+
+  const handleBulkFollowUp = async () => {
+    if (selectedLeads.size === 0) {
+      toast.error('Please select at least one lead');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await axios.post(`${API}/sms/bulk-follow-up`, {
+        lead_ids: Array.from(selectedLeads),
+        stage: selectedStage,
+        delay_hours: delayHours,
+        language: selectedLanguage
+      });
+      
+      toast.success(`Scheduled ${response.data.scheduled_count} follow-up messages!`);
+      onSuccess();
+    } catch (error) {
+      console.error('Error scheduling follow-ups:', error);
+      toast.error('Failed to schedule follow-up messages');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSingleFollowUp = async (leadId) => {
+    try {
+      await axios.post(`${API}/sms/follow-up?lead_id=${leadId}&stage=${selectedStage}&language=${selectedLanguage}`);
+      toast.success('Follow-up message sent!');
+    } catch (error) {
+      console.error('Error sending follow-up:', error);
+      toast.error('Failed to send follow-up message');
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Follow-up Configuration */}
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <Label htmlFor="stage">Follow-up Stage</Label>
+          <Select value={selectedStage} onValueChange={setSelectedStage}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {Object.entries(followUpStages).map(([key, label]) => (
+                <SelectItem key={key} value={key}>{label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div>
+          <Label htmlFor="language">Language</Label>
+          <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="english">English</SelectItem>
+              <SelectItem value="spanish">Spanish</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div>
+          <Label htmlFor="delay">Delay (Hours)</Label>
+          <Input
+            id="delay"
+            type="number"
+            value={delayHours}
+            onChange={(e) => setDelayHours(parseInt(e.target.value))}
+            min="0"
+            max="168"
+          />
+        </div>
+
+        <div className="flex items-end">
+          <Button 
+            onClick={handleBulkFollowUp}
+            disabled={loading || selectedLeads.size === 0}
+            className="w-full bg-gradient-to-r from-orange-600 to-red-600 text-white"
+          >
+            {loading ? 'Scheduling...' : `Send to ${selectedLeads.size} Leads`}
+          </Button>
+        </div>
+      </div>
+
+      {/* Lead Selection */}
+      <div className="border rounded-lg">
+        <div className="p-4 bg-gray-50 border-b flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              checked={selectedLeads.size === leads.length && leads.length > 0}
+              onChange={(e) => handleSelectAll(e.target.checked)}
+              className="rounded"
+            />
+            <Label>Select All ({leads.length} leads)</Label>
+          </div>
+          <Badge variant="outline">{selectedLeads.size} selected</Badge>
+        </div>
+
+        <div className="max-h-60 overflow-y-auto">
+          {leads.map((lead) => (
+            <div key={lead.id} className="p-3 border-b flex items-center justify-between hover:bg-gray-50">
+              <div className="flex items-center space-x-3">
+                <input
+                  type="checkbox"
+                  checked={selectedLeads.has(lead.id)}
+                  onChange={(e) => handleLeadSelection(lead.id, e.target.checked)}
+                  className="rounded"
+                />
+                <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                  {lead.first_name[0]}{lead.last_name[0]}
+                </div>
+                <div>
+                  <div className="font-medium">{lead.first_name} {lead.last_name}</div>
+                  <div className="text-sm text-gray-600">{lead.primary_phone}</div>
+                </div>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Badge className={`text-xs ${lead.status === 'new' ? 'bg-blue-100 text-blue-800' : 
+                  lead.status === 'contacted' ? 'bg-yellow-100 text-yellow-800' : 
+                  lead.status === 'scheduled' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                  {lead.status}
+                </Badge>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleSingleFollowUp(lead.id)}
+                  className="text-xs"
+                >
+                  Send Now
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Preview Message */}
+      <div className="bg-blue-50 p-4 rounded-lg">
+        <Label className="font-medium mb-2 block">Message Preview ({followUpStages[selectedStage]})</Label>
+        <div className="text-sm text-gray-700 italic">
+          {selectedStage === 'initial' && 'Initial contact message focusing on scheduling a visit...'}
+          {selectedStage === 'second_follow' && 'Follow-up for leads who haven\'t responded to initial contact...'}
+          {selectedStage === 'third_follow' && 'Final gentle follow-up with opt-out option...'}
+          {selectedStage === 'appointment_reminder' && 'Reminder for scheduled appointments with visit details...'}
+          {selectedStage === 'post_visit' && 'Thank you message after dealership visit...'}
+        </div>
+      </div>
+    </div>
+  );
+};
 const SMSConfigForm = ({ config, onSuccess }) => {
   const [provider, setProvider] = useState(config.provider || 'mock');
   const [apiKey, setApiKey] = useState('');
