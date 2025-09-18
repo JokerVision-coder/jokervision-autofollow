@@ -309,18 +309,17 @@ const LeadsManagement = () => {
     }
   };
 
-  const handleSendSMS = async (leadId, language = 'english', provider = 'mock') => {
+  const handleVoiceCall = async (leadId) => {
     try {
-      const response = await axios.post(`${API}/sms/send?lead_id=${leadId}&language=${language}&provider=${provider}`);
-      if (response.data.status === 'sent') {
-        toast.success(`SMS sent successfully! ${response.data.provider === 'textbelt' ? '(Real SMS)' : '(Simulated)'}`);
-      } else {
-        toast.error(`SMS failed: ${response.data.message}`);
-      }
-      fetchLeads(); // Refresh to update status
+      const response = await axios.post(`${API}/voice/call`, {
+        lead_id: leadId,
+        phone_number: leads.find(l => l.id === leadId)?.primary_phone
+      });
+      toast.success('Voice call initiated! AI will call the lead.');
+      // In production, this would integrate with Twilio/OpenAI Realtime
     } catch (error) {
-      console.error('Error sending SMS:', error);
-      toast.error('Failed to send SMS');
+      console.error('Error initiating voice call:', error);
+      toast.error('Failed to initiate voice call');
     }
   };
 
