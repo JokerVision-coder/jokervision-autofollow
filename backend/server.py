@@ -1090,7 +1090,227 @@ async def update_sms_config(config: SMSConfig):
         "message": "SMS configuration updated (restart required for environment changes)"
     }
 
-# Voice Agent Routes
+# User Management Routes
+@api_router.post("/users", response_model=User)
+async def create_user(user_data: UserCreate):
+    """Create new collaborator (max 3 total users including admin)"""
+    # Check current user count
+    user_count = await db.users.count_documents({})
+    if user_count >= 4:  # 1 admin + 3 collaborators
+        raise HTTPException(status_code=400, detail="Maximum of 3 collaborators allowed")
+    
+    # Check if username/email already exists
+    existing = await db.users.find_one({"$or": [{"username": user_data.username}, {"email": user_data.email}]})
+    if existing:
+        raise HTTPException(status_code=400, detail="Username or email already exists")
+    
+    user_obj = User(**user_data.dict(exclude={"password"}))
+    user_doc = user_obj.dict()
+    user_doc['created_at'] = user_doc['created_at'].isoformat()
+    user_doc['password_hash'] = "placeholder_hash"  # In production, hash the password
+    
+    await db.users.insert_one(user_doc)
+    return user_obj
+
+@api_router.get("/users", response_model=List[User])
+async def get_users():
+    """Get all users"""
+    users = await db.users.find().to_list(1000)
+    result = []
+    for user in users:
+        if isinstance(user.get('created_at'), str):
+            user['created_at'] = datetime.fromisoformat(user['created_at'])
+        if isinstance(user.get('last_login'), str) and user.get('last_login'):
+            user['last_login'] = datetime.fromisoformat(user['last_login'])
+        result.append(User(**{k: v for k, v in user.items() if k != 'password_hash'}))
+    return result
+
+@api_router.delete("/users/{user_id}")
+async def delete_user(user_id: str):
+    """Delete user"""
+    result = await db.users.delete_one({"id": user_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="User not found")
+    return {"status": "deleted", "user_id": user_id}
+
+# Sales Tracking Routes  
+def calculate_commission_rate(units_sold: int) -> float:
+    """Calculate commission rate based on units sold"""
+    for tier in COMMISSION_TIERS:
+        if tier.max_units is None:  # Top tier (17+)
+            if units_sold >= tier.min_units:
+                return tier.rate
+        else:  # Lower tiers
+            if tier.min_units <= units_sold <= tier.max_units:
+                return tier.rate
+    return 0.12  # Default to lowest tier
+
+@api_router.post("/sales", response_model=SoldVehicle)
+async def create_sale(sale_data: SoldVehicleCreate):
+    """Record a vehicle sale"""
+    # Calculate total profit
+    total_profit = sale_data.front_profit + sale_data.back_profit
+    
+    # Get current month sales count for this salesperson to determine commission rate
+    start_of_month = datetime.now(timezone.utc).replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    monthly_sales = await db.sold_vehicles.count_documents({
+        "salesperson_id": sale_data.salesperson_id,
+        "sale_date": {"$gte": start_of_month.isoformat()}
+    })
+    
+    # Calculate commission rate for next sale (current count + 1)
+    commission_rate = calculate_commission_rate(monthly_sales + 1)
+    commission_earned = total_profit * commission_rate
+    
+    # Create sold vehicle record
+    sale_obj = SoldVehicle(
+        **sale_data.dict(),
+        total_profit=total_profit,
+        commission_rate=commission_rate,
+        commission_earned=commission_earned
+    )
+    
+    sale_doc = sale_obj.dict()
+    sale_doc['sale_date'] = sale_doc['sale_date'].isoformat()
+    sale_doc['created_at'] = sale_doc['created_at'].isoformat()
+    
+    await db.sold_vehicles.insert_one(sale_doc)
+    
+    # Update lead status to closed if lead_id provided
+    if sale_data.lead_id:
+        await db.leads.update_one(
+            {"id": sale_data.lead_id},
+            {"$set": {"status": "closed"}}
+        )
+    
+    return sale_obj
+
+@api_router.get("/sales", response_model=List[SoldVehicle])
+async def get_sales(salesperson_id: str = None, start_date: str = None, end_date: str = None):
+    """Get sold vehicles with optional filters"""
+    query = {}
+    
+    if salesperson_id:
+        query["salesperson_id"] = salesperson_id
+    
+    if start_date:
+        if not query.get("sale_date"):
+            query["sale_date"] = {}
+        query["sale_date"]["$gte"] = start_date
+    
+    if end_date:
+        if not query.get("sale_date"):
+            query["sale_date"] = {}
+        query["sale_date"]["$lte"] = end_date
+    
+    sales = await db.sold_vehicles.find(query).sort("sale_date", -1).to_list(1000)
+    result = []
+    for sale in sales:
+        if isinstance(sale.get('sale_date'), str):
+            sale['sale_date'] = datetime.fromisoformat(sale['sale_date'])
+        if isinstance(sale.get('created_at'), str):
+            sale['created_at'] = datetime.fromisoformat(sale['created_at'])
+        result.append(SoldVehicle(**sale))
+    return result
+
+@api_router.get("/sales/stats/{salesperson_id}")
+async def get_sales_stats(salesperson_id: str, month: int = None, year: int = None):
+    """Get sales statistics for a salesperson"""
+    # Default to current month/year if not provided
+    now = datetime.now(timezone.utc)
+    target_month = month or now.month
+    target_year = year or now.year
+    
+    # Calculate date range for the month
+    start_date = datetime(target_year, target_month, 1, tzinfo=timezone.utc)
+    if target_month == 12:
+        end_date = datetime(target_year + 1, 1, 1, tzinfo=timezone.utc)
+    else:
+        end_date = datetime(target_year, target_month + 1, 1, tzinfo=timezone.utc)
+    
+    # Get sales for the month
+    sales = await db.sold_vehicles.find({
+        "salesperson_id": salesperson_id,
+        "sale_date": {
+            "$gte": start_date.isoformat(),
+            "$lt": end_date.isoformat()
+        }
+    }).to_list(1000)
+    
+    # Calculate statistics
+    total_units = len(sales)
+    full_units = len([s for s in sales if s.get('sale_type') == 'full'])
+    half_units = len([s for s in sales if s.get('sale_type') == 'half'])
+    total_front_profit = sum(s.get('front_profit', 0) for s in sales)
+    total_back_profit = sum(s.get('back_profit', 0) for s in sales)
+    total_profit = total_front_profit + total_back_profit
+    total_commission = sum(s.get('commission_earned', 0) for s in sales)
+    
+    # Current commission rate for next sale
+    current_rate = calculate_commission_rate(total_units + 1)
+    
+    return {
+        "salesperson_id": salesperson_id,
+        "month": target_month,
+        "year": target_year,
+        "total_units": total_units,
+        "full_units": full_units,
+        "half_units": half_units,
+        "total_front_profit": total_front_profit,
+        "total_back_profit": total_back_profit,
+        "total_profit": total_profit,
+        "total_commission": total_commission,
+        "current_commission_rate": current_rate,
+        "next_tier_at": 15 if total_units < 15 else (17 if total_units < 17 else None)
+    }
+
+@api_router.get("/sales/dashboard")
+async def get_sales_dashboard():
+    """Get overall sales dashboard statistics"""
+    # Current month stats
+    now = datetime.now(timezone.utc)
+    start_of_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    
+    # Get all sales this month
+    monthly_sales = await db.sold_vehicles.find({
+        "sale_date": {"$gte": start_of_month.isoformat()}
+    }).to_list(1000)
+    
+    # Get all users for per-person stats
+    users = await db.users.find().to_list(1000)
+    
+    # Calculate overall stats
+    total_units_month = len(monthly_sales)
+    total_revenue_month = sum(s.get('sale_price', 0) for s in monthly_sales)
+    total_profit_month = sum(s.get('total_profit', 0) for s in monthly_sales)
+    total_commission_month = sum(s.get('commission_earned', 0) for s in monthly_sales)
+    
+    # Per-salesperson breakdown
+    salesperson_stats = {}
+    for user in users:
+        user_sales = [s for s in monthly_sales if s.get('salesperson_id') == user.get('id')]
+        salesperson_stats[user.get('id')] = {
+            "name": user.get('full_name', 'Unknown'),
+            "units": len(user_sales),
+            "revenue": sum(s.get('sale_price', 0) for s in user_sales),
+            "profit": sum(s.get('total_profit', 0) for s in user_sales),
+            "commission": sum(s.get('commission_earned', 0) for s in user_sales)
+        }
+    
+    return {
+        "month": now.month,
+        "year": now.year,
+        "total_units": total_units_month,
+        "total_revenue": total_revenue_month,
+        "total_profit": total_profit_month,
+        "total_commission": total_commission_month,
+        "salesperson_breakdown": salesperson_stats,
+        "commission_tiers": [
+            {"range": "1-14 units", "rate": "12%"},
+            {"range": "15-16 units", "rate": "15%"},
+            {"range": "17+ units", "rate": "20%"}
+        ]
+    }
 @api_router.post("/voice/call", response_model=VoiceCall)
 async def initiate_voice_call(call_data: VoiceCallCreate):
     """Initiate AI voice call to lead"""
