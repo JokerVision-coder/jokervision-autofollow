@@ -532,6 +532,188 @@ Vehicle Type: sedan"""
         print(f"   📊 AI Scenarios: {passed_scenarios}/{len(test_scenarios)} passed")
         return passed_scenarios >= len(test_scenarios) * 0.75  # 75% pass rate for AI
 
+    def test_enhanced_ai_dealership_knowledge(self):
+        """Test AI responses with enhanced dealership knowledge"""
+        if not self.created_lead_id:
+            print("❌ No lead ID available for testing")
+            return False
+        
+        dealership_scenarios = [
+            {
+                "message": "Do you have RAV4s in stock?",
+                "description": "Inventory question - RAV4",
+                "expected_keywords": ["31", "RAV4", "stock"]
+            },
+            {
+                "message": "What promotions are available?",
+                "description": "Promotions inquiry",
+                "expected_keywords": ["APR", "lease", "special"]
+            },
+            {
+                "message": "Where are you located?",
+                "description": "Location question",
+                "expected_keywords": ["18019", "US-281", "San Antonio"]
+            },
+            {
+                "message": "Do you have used Honda Accords?",
+                "description": "Preowned inquiry",
+                "expected_keywords": ["367", "preowned", "all makes"]
+            },
+            {
+                "message": "I want to see a Camry",
+                "description": "Appointment request",
+                "expected_keywords": ["23", "Camry", "appointment", "visit"]
+            }
+        ]
+        
+        passed_scenarios = 0
+        print(f"\n🔍 Testing Enhanced AI Dealership Knowledge...")
+        
+        for scenario in dealership_scenarios:
+            try:
+                ai_request = {
+                    "lead_id": self.created_lead_id,
+                    "incoming_message": scenario["message"],
+                    "phone_number": "830-734-0597"
+                }
+                
+                success, response = self.run_test(
+                    f"Dealership AI - {scenario['description']}",
+                    "POST",
+                    "ai/respond",
+                    200,
+                    data=ai_request
+                )
+                
+                if success:
+                    ai_response = response.get('response', '').lower()
+                    
+                    # Check for expected keywords
+                    keywords_found = sum(1 for keyword in scenario['expected_keywords'] 
+                                       if keyword.lower() in ai_response)
+                    
+                    if keywords_found >= len(scenario['expected_keywords']) * 0.5:  # At least 50% of keywords
+                        passed_scenarios += 1
+                        print(f"   ✅ {scenario['description']} - Dealership knowledge present")
+                        print(f"      Keywords found: {keywords_found}/{len(scenario['expected_keywords'])}")
+                    else:
+                        print(f"   ❌ {scenario['description']} - Missing dealership knowledge")
+                        print(f"      Keywords found: {keywords_found}/{len(scenario['expected_keywords'])}")
+                        print(f"      Response preview: {response.get('response', '')[:150]}...")
+                else:
+                    print(f"   ❌ {scenario['description']} - API call failed")
+                    
+                # Add delay to avoid rate limiting
+                import time
+                time.sleep(3)
+                    
+            except Exception as e:
+                print(f"   ❌ {scenario['description']} - ERROR: {str(e)}")
+        
+        print(f"   📊 Dealership Knowledge: {passed_scenarios}/{len(dealership_scenarios)} passed")
+        return passed_scenarios >= len(dealership_scenarios) * 0.6  # 60% pass rate for dealership knowledge
+
+    def test_voice_call_initiation(self):
+        """Test voice call initiation"""
+        if not self.created_lead_id:
+            print("❌ No lead ID available for testing")
+            return False
+            
+        voice_call_data = {
+            "lead_id": self.created_lead_id,
+            "phone_number": "830-734-0597"
+        }
+        
+        success, response = self.run_test(
+            "Voice Call Initiation",
+            "POST",
+            "voice/call",
+            200,
+            data=voice_call_data
+        )
+        
+        if success and 'id' in response:
+            self.created_voice_call_id = response['id']
+            print(f"   Created voice call ID: {self.created_voice_call_id}")
+            return True
+        return False
+
+    def test_voice_call_history(self):
+        """Test getting voice call history for a lead"""
+        if not self.created_lead_id:
+            print("❌ No lead ID available for testing")
+            return False
+            
+        return self.run_test(
+            "Voice Call History",
+            "GET",
+            f"voice/calls/{self.created_lead_id}",
+            200
+        )
+
+    def test_voice_call_update(self):
+        """Test updating voice call status"""
+        if not hasattr(self, 'created_voice_call_id') or not self.created_voice_call_id:
+            print("❌ No voice call ID available for testing")
+            return False
+            
+        return self.run_test(
+            "Voice Call Status Update",
+            "PUT",
+            f"voice/call/{self.created_voice_call_id}?status=completed&call_outcome=appointment_scheduled&call_duration=180",
+            200
+        )
+
+    def test_facebook_webhook_verification(self):
+        """Test Facebook webhook verification"""
+        return self.run_test(
+            "Facebook Webhook Verification",
+            "GET",
+            "facebook/webhook?hub.mode=subscribe&hub.challenge=12345&hub.verify_token=shottenkirk_verify_2024",
+            200
+        )
+
+    def test_facebook_webhook_handler(self):
+        """Test Facebook webhook message handling"""
+        fb_webhook_data = {
+            "object": "page",
+            "entry": [
+                {
+                    "messaging": [
+                        {
+                            "sender": {"id": "test_sender_123"},
+                            "recipient": {"id": "test_page_456"},
+                            "message": {
+                                "mid": "test_message_789",
+                                "text": "I'm interested in a Toyota Camry"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+        
+        return self.run_test(
+            "Facebook Webhook Message Handler",
+            "POST",
+            "facebook/webhook",
+            200,
+            data=fb_webhook_data
+        )
+
+    def test_facebook_messages_history(self):
+        """Test getting Facebook messages for a lead"""
+        if not self.created_lead_id:
+            print("❌ No lead ID available for testing")
+            return False
+            
+        return self.run_test(
+            "Facebook Messages History",
+            "GET",
+            f"facebook/messages/{self.created_lead_id}",
+            200
+        )
+
 def main():
     print("🚗 AutoFollow Pro API Testing Suite")
     print("=" * 50)
