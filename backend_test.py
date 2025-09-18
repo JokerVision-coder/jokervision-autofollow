@@ -915,6 +915,19 @@ Vehicle Type: sedan"""
         
         print("   ℹ️  Sales data will remain for dashboard testing")
 
+    def test_facebook_messages_history(self):
+        """Test getting Facebook messages for a lead"""
+        if not self.created_lead_id:
+            print("❌ No lead ID available for testing")
+            return False
+            
+        return self.run_test(
+            "Facebook Messages History",
+            "GET",
+            f"facebook/messages/{self.created_lead_id}",
+            200
+        )
+
 def main():
     print("🃏 JokerVision AutoFollow API Testing Suite")
     print("=" * 50)
