@@ -924,6 +924,9 @@ def main():
     # Test sequence
     test_sequence = [
         ("Enhanced Dashboard Stats", tester.test_enhanced_dashboard_stats),
+        ("JokerVision User Management", tester.test_user_management_system),
+        ("JokerVision Sales Tracking", tester.test_sales_tracking_system),
+        ("Commission Tier System", tester.test_commission_tier_progression),
         ("Create Lead", tester.test_create_lead),
         ("Get All Leads", tester.test_get_leads),
         ("Get Specific Lead", tester.test_get_specific_lead),
@@ -960,12 +963,18 @@ def main():
         except Exception as e:
             print(f"❌ {test_name} failed with exception: {str(e)}")
     
+    # Cleanup JokerVision test data
+    try:
+        tester.cleanup_jokervision_data()
+    except Exception as e:
+        print(f"⚠️  Cleanup failed: {str(e)}")
+    
     # Print final results
     print("\n" + "=" * 50)
     print(f"📊 Test Results: {tester.tests_passed}/{tester.tests_run} tests passed")
     
     if tester.tests_passed == tester.tests_run:
-        print("🎉 All tests passed!")
+        print("🎉 All JokerVision AutoFollow tests passed!")
         return 0
     else:
         print(f"⚠️  {tester.tests_run - tester.tests_passed} tests failed")
