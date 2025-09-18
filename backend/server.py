@@ -139,7 +139,72 @@ class BulkFollowUpRequest(BaseModel):
     delay_hours: int = 24
     language: str = "english"
 
-# Enhanced Car Sales Follow-up Templates
+# Shottenkirk Toyota San Antonio Dealership Information
+DEALERSHIP_INFO = {
+    "name": "Shottenkirk Toyota San Antonio",
+    "phone": "210-526-2851",
+    "address": "18019 US-281, San Antonio TX 78232",
+    "hours": {
+        "sales": "Monday-Friday: 7 AM - 7 PM, Saturday: 7 AM - 5 PM, Sunday: Closed",
+        "service": "Monday-Friday: 7 AM - 7 PM, Saturday: 7 AM - 5 PM, Sunday: Closed"
+    },
+    "inventory": {
+        "new_toyota": {
+            "total": 214,
+            "popular_models": {
+                "Tacoma": {"count": 44, "incentives": "APR and Lease specials"},
+                "RAV4": {"count": 31, "incentives": "APR and Lease specials"},
+                "Tundra": {"count": 29, "incentives": "APR specials"},
+                "Camry": {"count": 23, "incentives": "APR and Lease specials"},
+                "4Runner": {"count": 21, "incentives": "Available"},
+                "Corolla": {"count": 18, "incentives": "APR and Lease specials"},
+                "Sienna": {"count": 14, "incentives": "Available"},
+                "Highlander": {"count": 7, "incentives": "Available"},
+                "Corolla Cross": {"count": 6, "incentives": "Available"},
+                "GR86": {"count": 5, "incentives": "Available"},
+                "Grand Highlander": {"count": 4, "incentives": "Available"},
+                "Crown": {"count": 3, "incentives": "Available"},
+                "Land Cruiser": {"count": 2, "incentives": "Limited availability"},
+                "Prius Plug-in Hybrid": {"count": 2, "incentives": "Available"},
+                "GR Supra": {"count": 1, "incentives": "Available"},
+                "Prius": {"count": 1, "incentives": "Available"},
+                "RAV4 Plug-in Hybrid": {"count": 1, "incentives": "Limited availability"},
+                "Sequoia": {"count": 1, "incentives": "Available"}
+            }
+        },
+        "preowned": {
+            "total": 367,
+            "certified": "Toyota Certified Gold & Silver programs available"
+        }
+    },
+    "services": [
+        "New Toyota Sales",
+        "Preowned Vehicle Sales (All Makes & Models)",
+        "Toyota Certified Pre-Owned",
+        "Service & Maintenance",
+        "Genuine Toyota Parts",
+        "Toyota Rent A Car",
+        "Financing & Leasing",
+        "Trade-in Evaluations"
+    ],
+    "current_promotions": {
+        "Corolla": "APR and Lease specials available",
+        "Camry": "APR and Lease specials available", 
+        "RAV4": "APR and Lease specials available",
+        "Tacoma": "APR and Lease specials available",
+        "Tundra": "APR specials available"
+    },
+    "unique_selling_points": [
+        "214 New Toyotas in stock",
+        "367 Preowned vehicles (all makes & models)",
+        "Toyota Certified Pre-Owned programs",
+        "Award-winning Service & Parts department",
+        "Toyota Rent A Car on-site",
+        "Shuttle service available",
+        "Comfortable customer lounge with WiFi",
+        "Same-day service when possible"
+    ]
+}
 FOLLOW_UP_TEMPLATES = {
     "english": {
         "initial": """Hi {first_name}! 👋 Alfonso here from Shottenkirk Toyota San Antonio. 
