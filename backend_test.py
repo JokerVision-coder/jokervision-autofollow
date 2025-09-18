@@ -393,14 +393,20 @@ def main():
     
     # Test sequence
     test_sequence = [
-        ("Dashboard Stats", tester.test_dashboard_stats),
+        ("Enhanced Dashboard Stats", tester.test_enhanced_dashboard_stats),
         ("Create Lead", tester.test_create_lead),
         ("Get All Leads", tester.test_get_leads),
         ("Get Specific Lead", tester.test_get_specific_lead),
-        ("Send SMS (English)", tester.test_send_sms_english),
-        ("Send SMS (Spanish)", tester.test_send_sms_spanish),
+        ("SMS Config - Get", tester.test_sms_config_get),
+        ("SMS Config - Update", tester.test_sms_config_update),
+        ("Send SMS with Provider", tester.test_send_sms_with_provider),
         ("Get SMS Messages", tester.test_get_sms_messages),
+        ("Create Appointment", tester.test_create_appointment),
+        ("Get Lead Appointments", tester.test_get_lead_appointments),
+        ("Get All Appointments", tester.test_get_all_appointments),
+        ("Update Appointment", tester.test_update_appointment),
         ("AI Response", tester.test_ai_response),
+        ("Enhanced AI Response with Scheduling", tester.test_enhanced_ai_response_with_scheduling),
         ("Update Lead", tester.test_update_lead),
         ("Bulk Import", tester.test_bulk_import),
     ]
