@@ -217,6 +217,173 @@ Vehicle Type: sedan"""
             data=update_data
         )
 
+    def test_sms_config_get(self):
+        """Test getting SMS configuration"""
+        return self.run_test(
+            "Get SMS Configuration",
+            "GET",
+            "config/sms",
+            200
+        )
+
+    def test_sms_config_update(self):
+        """Test updating SMS configuration"""
+        config_data = {
+            "provider": "textbelt",
+            "textbelt_api_key": ""
+        }
+        
+        return self.run_test(
+            "Update SMS Configuration",
+            "POST",
+            "config/sms",
+            200,
+            data=config_data
+        )
+
+    def test_send_sms_with_provider(self):
+        """Test sending SMS with provider parameter"""
+        if not self.created_lead_id:
+            print("❌ No lead ID available for testing")
+            return False
+            
+        # Test with mock provider
+        success1, _ = self.run_test(
+            "Send SMS with Mock Provider",
+            "POST",
+            f"sms/send?lead_id={self.created_lead_id}&language=english&provider=mock",
+            200
+        )
+        
+        # Test with textbelt provider
+        success2, _ = self.run_test(
+            "Send SMS with TextBelt Provider",
+            "POST",
+            f"sms/send?lead_id={self.created_lead_id}&language=english&provider=textbelt",
+            200
+        )
+        
+        return success1 and success2
+
+    def test_create_appointment(self):
+        """Test creating an appointment"""
+        if not self.created_lead_id:
+            print("❌ No lead ID available for testing")
+            return False
+            
+        # Create appointment for tomorrow at 2 PM
+        from datetime import datetime, timedelta
+        tomorrow = datetime.now() + timedelta(days=1)
+        appointment_time = tomorrow.replace(hour=14, minute=0, second=0, microsecond=0)
+        
+        appointment_data = {
+            "lead_id": self.created_lead_id,
+            "appointment_datetime": appointment_time.isoformat(),
+            "duration_minutes": 60,
+            "title": "Vehicle Consultation",
+            "description": "Test drive and vehicle discussion"
+        }
+        
+        success, response = self.run_test(
+            "Create Appointment",
+            "POST",
+            "appointments",
+            200,
+            data=appointment_data
+        )
+        
+        if success and 'id' in response:
+            self.created_appointment_id = response['id']
+            print(f"   Created appointment ID: {self.created_appointment_id}")
+            return True
+        return False
+
+    def test_get_lead_appointments(self):
+        """Test getting appointments for a specific lead"""
+        if not self.created_lead_id:
+            print("❌ No lead ID available for testing")
+            return False
+            
+        return self.run_test(
+            "Get Lead Appointments",
+            "GET",
+            f"appointments/{self.created_lead_id}",
+            200
+        )
+
+    def test_get_all_appointments(self):
+        """Test getting all appointments"""
+        return self.run_test(
+            "Get All Appointments",
+            "GET",
+            "appointments",
+            200
+        )
+
+    def test_update_appointment(self):
+        """Test updating appointment status"""
+        if not hasattr(self, 'created_appointment_id') or not self.created_appointment_id:
+            print("❌ No appointment ID available for testing")
+            return False
+            
+        return self.run_test(
+            "Update Appointment Status",
+            "PUT",
+            f"appointments/{self.created_appointment_id}?status=completed",
+            200
+        )
+
+    def test_enhanced_ai_response_with_scheduling(self):
+        """Test AI response with scheduling keywords"""
+        if not self.created_lead_id:
+            print("❌ No lead ID available for testing")
+            return False
+            
+        ai_request = {
+            "lead_id": self.created_lead_id,
+            "incoming_message": "I want to schedule a visit to see the Toyota Camry tomorrow",
+            "phone_number": "830-734-0597"
+        }
+        
+        success, response = self.run_test(
+            "AI Response with Scheduling Keywords",
+            "POST",
+            "ai/respond",
+            200,
+            data=ai_request
+        )
+        
+        if success:
+            # Check if AI detected scheduling intent
+            suggests_scheduling = response.get('suggests_scheduling', False)
+            print(f"   AI Scheduling Detection: {'✅ Detected' if suggests_scheduling else '❌ Not Detected'}")
+            
+        return success
+
+    def test_enhanced_dashboard_stats(self):
+        """Test enhanced dashboard stats with 6 metrics"""
+        success, response = self.run_test(
+            "Enhanced Dashboard Stats (6 metrics)",
+            "GET",
+            "dashboard/stats",
+            200
+        )
+        
+        if success:
+            expected_fields = [
+                'total_leads', 'new_leads', 'contacted_leads', 
+                'scheduled_leads', 'upcoming_appointments', 'recent_leads'
+            ]
+            
+            missing_fields = [field for field in expected_fields if field not in response]
+            if missing_fields:
+                print(f"   ❌ Missing fields: {missing_fields}")
+                return False
+            else:
+                print(f"   ✅ All 6 metrics present: {list(response.keys())}")
+                
+        return success
+
 def main():
     print("🚗 AutoFollow Pro API Testing Suite")
     print("=" * 50)
