@@ -309,6 +309,21 @@ const LeadsManagement = () => {
     }
   };
 
+  const handleSendSMS = async (leadId, language = 'english', provider = 'mock') => {
+    try {
+      const response = await axios.post(`${API}/sms/send?lead_id=${leadId}&language=${language}&provider=${provider}`);
+      if (response.data.status === 'sent') {
+        toast.success(`SMS sent successfully! ${response.data.provider === 'textbelt' ? '(Real SMS)' : '(Simulated)'}`);
+      } else {
+        toast.error(`SMS failed: ${response.data.message}`);
+      }
+      fetchLeads(); // Refresh to update status
+    } catch (error) {
+      console.error('Error sending SMS:', error);
+      toast.error('Failed to send SMS');
+    }
+  };
+
   const handleVoiceCall = async (leadId) => {
     try {
       const response = await axios.post(`${API}/voice/call`, {
