@@ -385,6 +385,153 @@ Vehicle Type: sedan"""
                 
         return success
 
+    def test_follow_up_sms_stages(self):
+        """Test all follow-up SMS stages"""
+        if not self.created_lead_id:
+            print("❌ No lead ID available for testing")
+            return False
+        
+        stages = ["initial", "second_follow", "third_follow", "appointment_reminder", "post_visit"]
+        passed_stages = 0
+        
+        print(f"\n🔍 Testing Follow-up SMS Stages...")
+        
+        for stage in stages:
+            try:
+                params = f"lead_id={self.created_lead_id}&stage={stage}&language=english&provider=mock"
+                
+                # Add appointment_time for appointment_reminder stage
+                if stage == "appointment_reminder":
+                    params += "&appointment_time=tomorrow at 2:00 PM"
+                
+                success, response = self.run_test(
+                    f"Follow-up SMS - {stage}",
+                    "POST",
+                    f"sms/follow-up?{params}",
+                    200
+                )
+                
+                if success:
+                    passed_stages += 1
+                    print(f"   ✅ {stage} stage - PASSED")
+                else:
+                    print(f"   ❌ {stage} stage - FAILED")
+                    
+            except Exception as e:
+                print(f"   ❌ {stage} stage - ERROR: {str(e)}")
+        
+        print(f"   📊 Follow-up Stages: {passed_stages}/{len(stages)} passed")
+        return passed_stages >= len(stages) * 0.8  # 80% pass rate
+
+    def test_bulk_follow_up(self):
+        """Test bulk follow-up messaging"""
+        if not self.created_lead_id:
+            print("❌ No lead ID available for testing")
+            return False
+        
+        bulk_data = {
+            "lead_ids": [self.created_lead_id],
+            "stage": "second_follow",
+            "delay_hours": 1,
+            "language": "english"
+        }
+        
+        success, response = self.run_test(
+            "Bulk Follow-up Messaging",
+            "POST",
+            "sms/bulk-follow-up",
+            200,
+            data=bulk_data
+        )
+        
+        if success:
+            total_leads = response.get('total_leads', 0)
+            print(f"   ✅ Scheduled for {total_leads} leads")
+            
+        return success
+
+    def test_pending_follow_ups(self):
+        """Test getting pending follow-up messages"""
+        return self.run_test(
+            "Get Pending Follow-ups",
+            "GET",
+            "follow-up/pending",
+            200
+        )
+
+    def test_appointment_focused_ai_responses(self):
+        """Test AI responses for appointment-setting scenarios"""
+        if not self.created_lead_id:
+            print("❌ No lead ID available for testing")
+            return False
+        
+        test_scenarios = [
+            {
+                "message": "I'm interested in a Toyota Camry",
+                "description": "Interest in specific vehicle"
+            },
+            {
+                "message": "What's the price of the RAV4?",
+                "description": "Price inquiry"
+            },
+            {
+                "message": "I need to think about it",
+                "description": "Hesitation objection"
+            },
+            {
+                "message": "Can you tell me about Toyota reliability?",
+                "description": "Information request"
+            }
+        ]
+        
+        passed_scenarios = 0
+        print(f"\n🔍 Testing Appointment-Focused AI Responses...")
+        
+        for scenario in test_scenarios:
+            try:
+                ai_request = {
+                    "lead_id": self.created_lead_id,
+                    "incoming_message": scenario["message"],
+                    "phone_number": "830-734-0597"
+                }
+                
+                success, response = self.run_test(
+                    f"AI Response - {scenario['description']}",
+                    "POST",
+                    "ai/respond",
+                    200,
+                    data=ai_request
+                )
+                
+                if success:
+                    ai_response = response.get('response', '')
+                    
+                    # Check for appointment-focused keywords
+                    appointment_keywords = ['appointment', 'visit', 'come in', 'schedule', 'show you', 'in person']
+                    has_appointment_focus = any(keyword in ai_response.lower() for keyword in appointment_keywords)
+                    
+                    # Check for phone number
+                    has_phone = '210-632-8712' in ai_response
+                    
+                    if has_appointment_focus and has_phone:
+                        passed_scenarios += 1
+                        print(f"   ✅ {scenario['description']} - Appointment-focused response")
+                    else:
+                        print(f"   ❌ {scenario['description']} - Not appointment-focused")
+                        print(f"      Response preview: {ai_response[:100]}...")
+                else:
+                    print(f"   ❌ {scenario['description']} - API call failed")
+                    
+                # Add delay to avoid rate limiting
+                import time
+                time.sleep(2)
+                    
+            except Exception as e:
+                print(f"   ❌ {scenario['description']} - ERROR: {str(e)}")
+        
+        print(f"   📊 AI Scenarios: {passed_scenarios}/{len(test_scenarios)} passed")
+        return passed_scenarios >= len(test_scenarios) * 0.75  # 75% pass rate for AI
+
 def main():
     print("🚗 AutoFollow Pro API Testing Suite")
     print("=" * 50)
