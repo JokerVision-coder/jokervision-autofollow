@@ -427,6 +427,175 @@ async def get_sms_messages(lead_id: str):
         result.append(SMSMessage(**msg))
     return result
 
+# Follow-up SMS Routes
+@api_router.post("/sms/follow-up")
+async def send_follow_up_sms(lead_id: str, stage: str, language: str = "english", provider: str = "mock", appointment_time: str = None):
+    """Send a follow-up SMS with a specific stage template"""
+    # Get lead details
+    lead = await db.leads.find_one({"id": lead_id})
+    if not lead:
+        raise HTTPException(status_code=404, detail="Lead not found")
+    
+    # Validate stage
+    valid_stages = ["initial", "second_follow", "third_follow", "appointment_reminder", "post_visit"]
+    if stage not in valid_stages:
+        raise HTTPException(status_code=400, detail=f"Invalid stage. Must be one of: {valid_stages}")
+    
+    # Generate SMS message from template
+    templates = FOLLOW_UP_TEMPLATES.get(language, FOLLOW_UP_TEMPLATES["english"])
+    template = templates.get(stage)
+    
+    if not template:
+        raise HTTPException(status_code=400, detail=f"Template not found for stage: {stage}")
+    
+    # Format the message with lead data
+    format_data = {
+        "first_name": lead["first_name"],
+        "budget": lead.get("budget", "your budget")
+    }
+    
+    # Add appointment time if provided (for appointment_reminder stage)
+    if appointment_time:
+        format_data["appointment_time"] = appointment_time
+    
+    try:
+        message = template.format(**format_data)
+    except KeyError as e:
+        raise HTTPException(status_code=400, detail=f"Missing required field for template: {str(e)}")
+    
+    # Create SMS message record
+    sms_data = SMSMessageCreate(
+        lead_id=lead_id,
+        phone_number=lead["primary_phone"],
+        message=message,
+        language=language
+    )
+    
+    sms_obj = SMSMessage(**sms_data.dict())
+    sms_doc = sms_obj.dict()
+    sms_doc['created_at'] = sms_doc['created_at'].isoformat()
+    
+    await db.sms_messages.insert_one(sms_doc)
+    
+    # Update lead status based on stage
+    status_mapping = {
+        "initial": "contacted",
+        "second_follow": "contacted", 
+        "third_follow": "contacted",
+        "appointment_reminder": "scheduled",
+        "post_visit": "contacted"
+    }
+    
+    await db.leads.update_one(
+        {"id": lead_id}, 
+        {
+            "$set": {
+                "status": status_mapping.get(stage, "contacted"),
+                "last_contacted": datetime.now(timezone.utc).isoformat()
+            }
+        }
+    )
+    
+    # Send SMS based on provider
+    sms_result = {"status": "sent", "provider": provider, "stage": stage}
+    
+    if provider == "textbelt":
+        textbelt_key = os.environ.get('TEXTBELT_API_KEY')
+        result = await asyncio.get_event_loop().run_in_executor(
+            None, send_textbelt_sms, lead["primary_phone"], message, textbelt_key
+        )
+        
+        if result.get("success"):
+            sms_result.update({
+                "message": "Follow-up SMS sent successfully via TextBelt",
+                "textbelt_id": result.get("textId"),
+                "quota_remaining": result.get("quotaRemaining")
+            })
+        else:
+            # Update SMS status to failed
+            await db.sms_messages.update_one(
+                {"id": sms_obj.id}, 
+                {"$set": {"status": "failed"}}
+            )
+            sms_result.update({
+                "status": "failed",
+                "message": f"Follow-up SMS failed: {result.get('error', 'Unknown error')}"
+            })
+    else:
+        # Mock/simulation mode
+        sms_result.update({
+            "message": f"Follow-up SMS ({stage}) sent successfully (simulated)",
+        })
+    
+    sms_result.update({
+        "sms_content": message,
+        "phone": lead["primary_phone"]
+    })
+    
+    return sms_result
+
+@api_router.post("/sms/bulk-follow-up")
+async def send_bulk_follow_up(request: BulkFollowUpRequest):
+    """Send follow-up messages to multiple leads"""
+    results = []
+    
+    for lead_id in request.lead_ids:
+        try:
+            # Schedule follow-up message
+            scheduled_time = datetime.now(timezone.utc) + timedelta(hours=request.delay_hours)
+            
+            follow_up = FollowUpMessage(
+                lead_id=lead_id,
+                stage=request.stage,
+                message_template=request.stage,
+                scheduled_datetime=scheduled_time,
+                language=request.language
+            )
+            
+            follow_up_doc = follow_up.dict()
+            follow_up_doc['scheduled_datetime'] = follow_up_doc['scheduled_datetime'].isoformat()
+            follow_up_doc['created_at'] = follow_up_doc['created_at'].isoformat()
+            
+            await db.follow_up_messages.insert_one(follow_up_doc)
+            
+            results.append({
+                "lead_id": lead_id,
+                "status": "scheduled",
+                "scheduled_time": scheduled_time.isoformat()
+            })
+            
+        except Exception as e:
+            results.append({
+                "lead_id": lead_id,
+                "status": "failed",
+                "error": str(e)
+            })
+    
+    return {
+        "status": "completed",
+        "total_leads": len(request.lead_ids),
+        "results": results
+    }
+
+@api_router.get("/follow-up/pending")
+async def get_pending_follow_ups():
+    """Get all pending follow-up messages"""
+    now = datetime.now(timezone.utc)
+    pending_messages = await db.follow_up_messages.find({
+        "status": "pending",
+        "scheduled_datetime": {"$lte": now.isoformat()}
+    }).to_list(1000)
+    
+    result = []
+    for msg in pending_messages:
+        if isinstance(msg.get('scheduled_datetime'), str):
+            msg['scheduled_datetime'] = datetime.fromisoformat(msg['scheduled_datetime'])
+        if isinstance(msg.get('created_at'), str):
+            msg['created_at'] = datetime.fromisoformat(msg['created_at'])
+        result.append(FollowUpMessage(**msg))
+    
+    return result
+
 # Calendar/Appointment Routes
 @api_router.post("/appointments", response_model=CalendarAppointment)
 async def create_appointment(appointment_data: CalendarAppointmentCreate):
