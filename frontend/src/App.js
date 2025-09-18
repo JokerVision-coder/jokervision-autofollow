@@ -460,7 +460,7 @@ const LeadsManagement = () => {
                         >
                           <Send className="w-4 h-4 mr-1" />
                           SMS (EN)
-                          {smsConfig.provider === 'textbelt' && <Zap className="w-3 h-3 ml-1" />}
+                          {smsConfig.provider === 'textbelt' && <Zap className="w-3 h-3 ml-1 text-yellow-500" />}
                         </Button>
                         <Button
                           variant="outline"
@@ -470,7 +470,7 @@ const LeadsManagement = () => {
                         >
                           <Send className="w-4 h-4 mr-1" />
                           SMS (ES)
-                          {smsConfig.provider === 'textbelt' && <Zap className="w-3 h-3 ml-1" />}
+                          {smsConfig.provider === 'textbelt' && <Zap className="w-3 h-3 ml-1 text-yellow-500" />}
                         </Button>
                         <Button
                           variant="outline"
