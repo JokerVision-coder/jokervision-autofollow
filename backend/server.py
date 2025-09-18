@@ -139,6 +139,72 @@ class BulkFollowUpRequest(BaseModel):
     delay_hours: int = 24
     language: str = "english"
 
+class User(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    username: str
+    email: str
+    full_name: str
+    role: str = "collaborator"  # "admin", "collaborator"
+    is_active: bool = True
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    last_login: Optional[datetime] = None
+
+class UserCreate(BaseModel):
+    username: str
+    email: str
+    full_name: str
+    password: str
+    role: str = "collaborator"
+
+class SoldVehicle(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    lead_id: Optional[str] = None
+    salesperson_id: str  # User ID who made the sale
+    stock_number: str
+    vehicle_make: str
+    vehicle_model: str
+    vehicle_year: int
+    sale_type: str  # "full", "half"
+    sale_date: datetime
+    sale_price: float
+    cost_price: float
+    front_profit: float  # Gross profit on vehicle
+    back_profit: float   # Finance, warranty, accessories profit
+    total_profit: float
+    commission_rate: float  # Calculated based on units sold
+    commission_earned: float
+    customer_name: str
+    financing_type: Optional[str] = None  # "cash", "finance", "lease"
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class SoldVehicleCreate(BaseModel):
+    lead_id: Optional[str] = None
+    salesperson_id: str
+    stock_number: str
+    vehicle_make: str
+    vehicle_model: str
+    vehicle_year: int
+    sale_type: str = "full"
+    sale_date: datetime
+    sale_price: float
+    cost_price: float
+    front_profit: float
+    back_profit: float
+    customer_name: str
+    financing_type: Optional[str] = None
+
+class CommissionTier(BaseModel):
+    min_units: int
+    max_units: Optional[int]
+    rate: float
+
+# Commission structure
+COMMISSION_TIERS = [
+    CommissionTier(min_units=1, max_units=14, rate=0.12),   # 12% for 1-14 units
+    CommissionTier(min_units=15, max_units=16, rate=0.15),  # 15% for 15-16 units  
+    CommissionTier(min_units=17, max_units=None, rate=0.20) # 20% for 17+ units
+]
+
 class VoiceCall(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     lead_id: str
