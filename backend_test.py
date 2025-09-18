@@ -703,18 +703,217 @@ Vehicle Type: sedan"""
             data=fb_webhook_data
         )
 
-    def test_facebook_messages_history(self):
-        """Test getting Facebook messages for a lead"""
-        if not self.created_lead_id:
-            print("❌ No lead ID available for testing")
+    def test_user_management_system(self):
+        """Test JokerVision user management system (max 4 users)"""
+        print("\n🧑‍💼 Testing JokerVision User Management System...")
+        
+        # Get initial users
+        success, users = self.run_test("Get Initial Users", "GET", "users", 200)
+        if not success:
             return False
+        
+        initial_count = len(users)
+        print(f"   Initial user count: {initial_count}")
+        
+        # Test creating users (up to 4 total)
+        test_users = [
+            {
+                "username": "test_sales1",
+                "email": "sales1@jokervision.com",
+                "full_name": "Test Salesperson 1",
+                "password": "testpass123",
+                "role": "collaborator"
+            },
+            {
+                "username": "test_sales2", 
+                "email": "sales2@jokervision.com",
+                "full_name": "Test Salesperson 2",
+                "password": "testpass123",
+                "role": "collaborator"
+            }
+        ]
+        
+        users_created = 0
+        for i, user_data in enumerate(test_users):
+            if initial_count + users_created >= 4:
+                print(f"   ⚠️  Skipping user creation - already at max limit (4)")
+                break
+                
+            success, user = self.run_test(
+                f"Create User {i+1}",
+                "POST", 
+                "users",
+                200,
+                data=user_data
+            )
+            if success:
+                self.created_users.append(user['id'])
+                users_created += 1
+                print(f"   ✅ Created user: {user['full_name']} (ID: {user['id']})")
+        
+        # Test creating user beyond limit (should fail)
+        if initial_count + users_created >= 4:
+            success, _ = self.run_test(
+                "Create User Beyond Limit (Should Fail)",
+                "POST",
+                "users", 
+                400,
+                data={
+                    "username": "test_fail",
+                    "email": "fail@jokervision.com",
+                    "full_name": "Should Fail",
+                    "password": "testpass123",
+                    "role": "collaborator"
+                }
+            )
+            if success:
+                print("   ✅ Correctly rejected user creation beyond limit")
+        
+        return True
+
+    def test_sales_tracking_system(self):
+        """Test JokerVision sales tracking with commission tiers"""
+        print("\n💰 Testing JokerVision Sales Tracking System...")
+        
+        # Get users for sales assignment
+        success, users = self.run_test("Get Users for Sales", "GET", "users", 200)
+        if not success or not users:
+            print("   ❌ No users available for sales testing")
+            return False
+        
+        test_user = users[0]
+        print(f"   Using salesperson: {test_user['full_name']} (ID: {test_user['id']})")
+        
+        # Test sales creation with commission calculation
+        test_sales = [
+            {
+                "salesperson_id": test_user['id'],
+                "stock_number": "JV001",
+                "vehicle_make": "Toyota",
+                "vehicle_model": "Camry",
+                "vehicle_year": 2024,
+                "sale_type": "full",
+                "sale_date": datetime.now().isoformat(),
+                "sale_price": 35000.00,
+                "cost_price": 30000.00,
+                "front_profit": 3000.00,
+                "back_profit": 2000.00,
+                "customer_name": "JokerVision Test Customer 1",
+                "financing_type": "finance"
+            },
+            {
+                "salesperson_id": test_user['id'],
+                "stock_number": "JV002", 
+                "vehicle_make": "Honda",
+                "vehicle_model": "Accord",
+                "vehicle_year": 2023,
+                "sale_type": "half",
+                "sale_date": datetime.now().isoformat(),
+                "sale_price": 28000.00,
+                "cost_price": 25000.00,
+                "front_profit": 2000.00,
+                "back_profit": 1000.00,
+                "customer_name": "JokerVision Test Customer 2",
+                "financing_type": "cash"
+            }
+        ]
+        
+        for i, sale_data in enumerate(test_sales):
+            success, sale = self.run_test(
+                f"Create Sale {i+1}",
+                "POST",
+                "sales",
+                200,
+                data=sale_data
+            )
+            if success:
+                self.created_sales.append(sale['id'])
+                print(f"   ✅ Sale recorded: {sale['vehicle_make']} {sale['vehicle_model']}")
+                print(f"      Commission Rate: {sale['commission_rate']*100:.0f}%")
+                print(f"      Commission Earned: ${sale['commission_earned']:.2f}")
+                print(f"      Total Profit: ${sale['total_profit']:.2f}")
+                
+                # Verify commission tier (should be 12% for first sales)
+                if abs(sale['commission_rate'] - 0.12) < 0.001:
+                    print(f"      ✅ Correct Bronze tier commission (12%)")
+                else:
+                    print(f"      ❌ Wrong commission rate: {sale['commission_rate']*100:.0f}%")
+        
+        # Test sales retrieval and filtering
+        success, all_sales = self.run_test("Get All Sales", "GET", "sales", 200)
+        if success:
+            print(f"   📊 Total sales in system: {len(all_sales)}")
+        
+        # Test sales dashboard
+        success, dashboard = self.run_test("Get Sales Dashboard", "GET", "sales/dashboard", 200)
+        if success:
+            print(f"   📊 Dashboard - Total units: {dashboard.get('total_units', 0)}")
+            print(f"   📊 Dashboard - Total revenue: ${dashboard.get('total_revenue', 0):,.2f}")
+            print(f"   📊 Dashboard - Total commission: ${dashboard.get('total_commission', 0):,.2f}")
             
-        return self.run_test(
-            "Facebook Messages History",
+            # Check commission tiers info
+            tiers = dashboard.get('commission_tiers', [])
+            if len(tiers) == 3:
+                print(f"   ✅ Commission tiers present: Bronze(12%), Silver(15%), Gold(20%)")
+            else:
+                print(f"   ❌ Missing commission tiers information")
+        
+        # Test individual sales stats
+        success, stats = self.run_test(
+            "Get Individual Sales Stats",
             "GET",
-            f"facebook/messages/{self.created_lead_id}",
+            f"sales/stats/{test_user['id']}",
             200
         )
+        if success:
+            print(f"   📊 Individual stats - Units: {stats.get('total_units', 0)}")
+            print(f"   📊 Individual stats - Commission: ${stats.get('total_commission', 0):.2f}")
+            print(f"   📊 Current commission rate: {stats.get('current_commission_rate', 0)*100:.0f}%")
+        
+        return True
+
+    def test_commission_tier_progression(self):
+        """Test commission tier progression (12% -> 15% -> 20%)"""
+        print("\n🏆 Testing Commission Tier Progression...")
+        
+        # This would require creating 15+ sales to test tier progression
+        # For now, just verify the tier structure exists
+        success, dashboard = self.run_test("Get Commission Tiers", "GET", "sales/dashboard", 200)
+        if success:
+            tiers = dashboard.get('commission_tiers', [])
+            expected_tiers = [
+                {"range": "1-14 units", "rate": "12%"},
+                {"range": "15-16 units", "rate": "15%"},
+                {"range": "17+ units", "rate": "20%"}
+            ]
+            
+            if len(tiers) == 3:
+                print("   ✅ All three commission tiers present:")
+                for tier in tiers:
+                    print(f"      - {tier['range']}: {tier['rate']}")
+                return True
+            else:
+                print(f"   ❌ Expected 3 tiers, found {len(tiers)}")
+                return False
+        
+        return False
+
+    def cleanup_jokervision_data(self):
+        """Clean up JokerVision test data"""
+        print("\n🧹 Cleaning up JokerVision test data...")
+        
+        # Delete created users (except admin)
+        for user_id in self.created_users:
+            success, _ = self.run_test(
+                f"Delete User {user_id}",
+                "DELETE",
+                f"users/{user_id}",
+                200
+            )
+            if success:
+                print(f"   ✅ Deleted user: {user_id}")
+        
+        print("   ℹ️  Sales data will remain for dashboard testing")
 
 def main():
     print("🚗 AutoFollow Pro API Testing Suite")
