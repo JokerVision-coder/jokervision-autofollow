@@ -916,7 +916,7 @@ Vehicle Type: sedan"""
         print("   ℹ️  Sales data will remain for dashboard testing")
 
 def main():
-    print("🚗 AutoFollow Pro API Testing Suite")
+    print("🃏 JokerVision AutoFollow API Testing Suite")
     print("=" * 50)
     
     tester = AutoFollowProAPITester()
