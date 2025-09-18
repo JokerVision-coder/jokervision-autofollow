@@ -91,6 +91,27 @@ class SMSMessageCreate(BaseModel):
     direction: str = "outbound"
     language: str = "english"
 
+class SMSConfig(BaseModel):
+    provider: str = "textbelt"  # "textbelt" or "mock"
+    textbelt_api_key: Optional[str] = None
+
+class CalendarAppointment(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    lead_id: str
+    appointment_datetime: datetime
+    duration_minutes: int = 60
+    title: str
+    description: Optional[str] = None
+    status: str = "scheduled"  # scheduled, completed, cancelled
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class CalendarAppointmentCreate(BaseModel):
+    lead_id: str
+    appointment_datetime: datetime
+    duration_minutes: int = 60
+    title: str
+    description: Optional[str] = None
+
 class AIResponseRequest(BaseModel):
     lead_id: str
     incoming_message: str
