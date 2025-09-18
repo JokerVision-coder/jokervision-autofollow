@@ -276,6 +276,7 @@ const LeadsManagement = () => {
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAddDialog, setShowAddDialog] = useState(false);
+  const [showBulkDialog, setShowBulkDialog] = useState(false);
   const [showBulkFollowUpDialog, setShowBulkFollowUpDialog] = useState(false);
   const [selectedLeads, setSelectedLeads] = useState(new Set());
   const [showSmsConfigDialog, setShowSmsConfigDialog] = useState(false);
