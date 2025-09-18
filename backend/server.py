@@ -188,9 +188,35 @@ async def update_lead(lead_id: str, update_data: LeadUpdate):
     
     return Lead(**updated_lead)
 
+async def send_textbelt_sms(phone: str, message: str, api_key: str = None) -> dict:
+    """Send SMS via TextBelt API"""
+    try:
+        if api_key:
+            # Use paid TextBelt API
+            url = "https://textbelt.com/text"
+            payload = {
+                'phone': phone,
+                'message': message,
+                'key': api_key
+            }
+        else:
+            # Use free TextBelt API (1 per day)
+            url = "https://textbelt.com/text"
+            payload = {
+                'phone': phone,
+                'message': message,
+                'key': 'textbelt'
+            }
+        
+        response = requests.post(url, data=payload, timeout=10)
+        return response.json()
+    except Exception as e:
+        logging.error(f"TextBelt SMS error: {str(e)}")
+        return {"success": False, "error": str(e)}
+
 # SMS Routes
 @api_router.post("/sms/send")
-async def send_sms(lead_id: str, language: str = "english"):
+async def send_sms(lead_id: str, language: str = "english", provider: str = "mock", background_tasks: BackgroundTasks = None):
     # Get lead details
     lead = await db.leads.find_one({"id": lead_id})
     if not lead:
@@ -225,14 +251,43 @@ async def send_sms(lead_id: str, language: str = "english"):
         }
     )
     
-    # In production, this would send via TextBelt or Twilio
-    # For now, we'll simulate the SMS sending
-    return {
-        "status": "sent",
-        "message": "SMS sent successfully (simulated)",
+    # Send SMS based on provider
+    sms_result = {"status": "sent", "provider": provider}
+    
+    if provider == "textbelt":
+        textbelt_key = os.environ.get('TEXTBELT_API_KEY')
+        result = await asyncio.get_event_loop().run_in_executor(
+            None, send_textbelt_sms, lead["primary_phone"], message, textbelt_key
+        )
+        
+        if result.get("success"):
+            sms_result.update({
+                "message": "SMS sent successfully via TextBelt",
+                "textbelt_id": result.get("textId"),
+                "quota_remaining": result.get("quotaRemaining")
+            })
+        else:
+            # Update SMS status to failed
+            await db.sms_messages.update_one(
+                {"id": sms_obj.id}, 
+                {"$set": {"status": "failed"}}
+            )
+            sms_result.update({
+                "status": "failed",
+                "message": f"SMS failed: {result.get('error', 'Unknown error')}"
+            })
+    else:
+        # Mock/simulation mode
+        sms_result.update({
+            "message": "SMS sent successfully (simulated)",
+        })
+    
+    sms_result.update({
         "sms_content": message,
         "phone": lead["primary_phone"]
-    }
+    })
+    
+    return sms_result
 
 @api_router.get("/sms/messages/{lead_id}")
 async def get_sms_messages(lead_id: str):
