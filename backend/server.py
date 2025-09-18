@@ -1024,7 +1024,257 @@ async def update_sms_config(config: SMSConfig):
         "message": "SMS configuration updated (restart required for environment changes)"
     }
 
-# Dashboard Stats (Enhanced)
+# Voice Agent Routes
+@api_router.post("/voice/call", response_model=VoiceCall)
+async def initiate_voice_call(call_data: VoiceCallCreate):
+    """Initiate AI voice call to lead"""
+    # Verify lead exists
+    lead = await db.leads.find_one({"id": call_data.lead_id})
+    if not lead:
+        raise HTTPException(status_code=404, detail="Lead not found")
+    
+    # Create voice call record
+    voice_call = VoiceCall(**call_data.dict())
+    call_doc = voice_call.dict()
+    call_doc['created_at'] = call_doc['created_at'].isoformat()
+    
+    await db.voice_calls.insert_one(call_doc)
+    
+    # TODO: Integrate with Twilio Voice API and OpenAI Realtime API
+    # For now, return the call record
+    return voice_call
+
+@api_router.get("/voice/calls/{lead_id}")
+async def get_voice_calls(lead_id: str):
+    """Get voice call history for a lead"""
+    calls = await db.voice_calls.find({"lead_id": lead_id}).sort("created_at", -1).to_list(1000)
+    result = []
+    for call in calls:
+        if isinstance(call.get('created_at'), str):
+            call['created_at'] = datetime.fromisoformat(call['created_at'])
+        if isinstance(call.get('completed_at'), str) and call.get('completed_at'):
+            call['completed_at'] = datetime.fromisoformat(call['completed_at'])
+        if isinstance(call.get('scheduled_callback'), str) and call.get('scheduled_callback'):
+            call['scheduled_callback'] = datetime.fromisoformat(call['scheduled_callback'])
+        result.append(VoiceCall(**call))
+    return result
+
+@api_router.put("/voice/call/{call_id}")
+async def update_voice_call(call_id: str, status: str, transcript: str = None, call_outcome: str = None, call_duration: int = None):
+    """Update voice call status and details"""
+    update_data = {"status": status}
+    
+    if transcript:
+        update_data["transcript"] = transcript
+    if call_outcome:
+        update_data["call_outcome"] = call_outcome
+    if call_duration:
+        update_data["call_duration"] = call_duration
+    if status == "completed":
+        update_data["completed_at"] = datetime.now(timezone.utc).isoformat()
+    
+    await db.voice_calls.update_one({"id": call_id}, {"$set": update_data})
+    return {"status": "updated", "call_id": call_id}
+
+# Facebook Messenger Integration Routes
+@api_router.get("/facebook/webhook")
+async def facebook_webhook_verify(hub_mode: str = None, hub_challenge: str = None, hub_verify_token: str = None):
+    """Facebook webhook verification"""
+    VERIFY_TOKEN = os.environ.get('FB_VERIFY_TOKEN', 'your_verify_token')
+    
+    if hub_mode == "subscribe" and hub_verify_token == VERIFY_TOKEN:
+        return int(hub_challenge)
+    else:
+        raise HTTPException(status_code=403, detail="Forbidden")
+
+@api_router.post("/facebook/webhook")
+async def facebook_webhook_handler(request: dict):
+    """Handle incoming Facebook messages"""
+    try:
+        if request.get('object') == 'page':
+            for entry in request.get('entry', []):
+                for messaging in entry.get('messaging', []):
+                    sender_id = messaging['sender']['id']
+                    page_id = messaging['recipient']['id']
+                    
+                    if 'message' in messaging:
+                        message_text = messaging['message'].get('text', '')
+                        message_id = messaging['message']['mid']
+                        
+                        # Save incoming message
+                        fb_message = FacebookMessage(
+                            fb_sender_id=sender_id,
+                            fb_page_id=page_id,
+                            message_text=message_text,
+                            direction="inbound",
+                            fb_message_id=message_id
+                        )
+                        
+                        message_doc = fb_message.dict()
+                        message_doc['created_at'] = message_doc['created_at'].isoformat()
+                        await db.facebook_messages.insert_one(message_doc)
+                        
+                        # Check if lead exists or create new one
+                        lead = await db.leads.find_one({"fb_sender_id": sender_id})
+                        
+                        if not lead:
+                            # Create new lead from Facebook profile
+                            # Note: In production, you'd get profile info from Facebook API
+                            lead_data = LeadCreate(
+                                first_name="Facebook",
+                                last_name="Lead",
+                                primary_phone="",
+                                email=f"fb_{sender_id}@facebook.com",
+                                marketplace_inquiry=message_text[:100]
+                            )
+                            
+                            lead_obj = Lead(**lead_data.dict())
+                            lead_obj.fb_sender_id = sender_id
+                            lead_doc = lead_obj.dict()
+                            lead_doc['created_at'] = lead_doc['created_at'].isoformat()
+                            
+                            await db.leads.insert_one(lead_doc)
+                            lead_id = lead_obj.id
+                        else:
+                            lead_id = lead['id']
+                        
+                        # Update message with lead_id
+                        await db.facebook_messages.update_one(
+                            {"id": fb_message.id}, 
+                            {"$set": {"lead_id": lead_id}}
+                        )
+                        
+                        # Generate AI response
+                        try:
+                            ai_response = await generate_facebook_ai_response(lead_id, message_text, sender_id)
+                            
+                            # Send response back to Facebook
+                            await send_facebook_message(sender_id, ai_response)
+                            
+                            # Save outbound message
+                            response_message = FacebookMessage(
+                                lead_id=lead_id,
+                                fb_sender_id=sender_id,
+                                fb_page_id=page_id,
+                                message_text=ai_response,
+                                direction="outbound",
+                                fb_message_id=f"out_{datetime.now().timestamp()}"
+                            )
+                            
+                            response_doc = response_message.dict()
+                            response_doc['created_at'] = response_doc['created_at'].isoformat()
+                            await db.facebook_messages.insert_one(response_doc)
+                            
+                        except Exception as e:
+                            logging.error(f"Error generating Facebook AI response: {str(e)}")
+        
+        return {"status": "ok"}
+        
+    except Exception as e:
+        logging.error(f"Facebook webhook error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Webhook processing error")
+
+async def generate_facebook_ai_response(lead_id: str, message_text: str, sender_id: str) -> str:
+    """Generate AI response for Facebook message"""
+    try:
+        # Get lead details
+        lead = await db.leads.find_one({"id": lead_id})
+        if not lead:
+            return "Hi! Thanks for your message. Let me connect you with Alfonso at 210-632-8712 for immediate assistance."
+        
+        # Get Facebook conversation history
+        fb_messages = await db.facebook_messages.find({"lead_id": lead_id}).sort("created_at", 1).to_list(10)
+        
+        # Build context
+        lead_context = f"""
+        Lead Information:
+        - Name: {lead['first_name']} {lead['last_name']}
+        - Platform: Facebook Marketplace
+        - Initial Inquiry: {lead.get('marketplace_inquiry', 'Not specified')}
+        """
+        
+        conversation_history = ""
+        for msg in fb_messages[-5:]:
+            direction = "Customer" if msg.get('direction') == 'inbound' else "Alfonso"
+            conversation_history += f"{direction}: {msg.get('message_text', '')}\n"
+        
+        system_message = f"""You are Alfonso Martinez from Shottenkirk Toyota San Antonio responding to Facebook Marketplace inquiries.
+
+        DEALERSHIP INFO: 18019 US-281, San Antonio TX 78232 | 210-526-2851
+        INVENTORY: 214 New Toyotas + 367 Preowned (all makes/models)
+        
+        {lead_context}
+        
+        Previous conversation:
+        {conversation_history}
+        
+        FACEBOOK MARKETPLACE RULES:
+        1. Keep responses SHORT (1-2 sentences for Facebook)
+        2. IMMEDIATELY focus on phone contact or visit
+        3. Don't try to sell via Facebook chat
+        4. Use: "Call me directly at 210-632-8712" or "Come see it at 18019 US-281"
+        5. Create urgency: "I have several people interested"
+        6. For vehicle inquiries: "Still available! When can you come see it?"
+        
+        Current time: {datetime.now(timezone.utc).strftime('%B %d, %Y at %I:%M %p')}
+        """
+        
+        # Initialize AI chat
+        emergent_key = os.environ.get('EMERGENT_LLM_KEY')
+        if not emergent_key:
+            return "Hi! Thanks for your message. Please call me at 210-632-8712 for immediate assistance with your vehicle inquiry."
+        
+        chat = LlmChat(
+            api_key=emergent_key,
+            session_id=f"fb_{sender_id}",
+            system_message=system_message
+        ).with_model("openai", "gpt-4o-mini")
+        
+        user_message = UserMessage(text=message_text)
+        response = await chat.send_message(user_message)
+        
+        return response
+        
+    except Exception as e:
+        logging.error(f"Facebook AI response error: {str(e)}")
+        return "Hi! Thanks for your message. Please call me at 210-632-8712 for immediate assistance."
+
+async def send_facebook_message(recipient_id: str, message_text: str):
+    """Send message to Facebook user"""
+    page_access_token = os.environ.get('FB_PAGE_ACCESS_TOKEN')
+    if not page_access_token:
+        logging.error("Facebook Page Access Token not configured")
+        return
+    
+    url = f"https://graph.facebook.com/v18.0/me/messages"
+    
+    payload = {
+        "recipient": {"id": recipient_id},
+        "message": {"text": message_text}
+    }
+    
+    headers = {
+        "Authorization": f"Bearer {page_access_token}",
+        "Content-Type": "application/json"
+    }
+    
+    try:
+        response = requests.post(url, json=payload, headers=headers)
+        if response.status_code != 200:
+            logging.error(f"Facebook send message error: {response.text}")
+    except Exception as e:
+        logging.error(f"Facebook send message exception: {str(e)}")
+
+@api_router.get("/facebook/messages/{lead_id}")
+async def get_facebook_messages(lead_id: str):
+    """Get Facebook messages for a lead"""
+    messages = await db.facebook_messages.find({"lead_id": lead_id}).sort("created_at", 1).to_list(1000)
+    result = []
+    for msg in messages:
+        if isinstance(msg.get('created_at'), str):
+            msg['created_at'] = datetime.fromisoformat(msg['created_at'])
+        result.append(FacebookMessage(**msg))
+    return result
 @api_router.get("/dashboard/stats")
 async def get_dashboard_stats():
     total_leads = await db.leads.count_documents({})
