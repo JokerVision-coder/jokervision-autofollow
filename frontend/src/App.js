@@ -11,21 +11,26 @@ import { Badge } from './components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from './components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './components/ui/select';
+import { Switch } from './components/ui/switch';
 import { toast, Toaster } from 'sonner';
-import { Users, MessageSquare, Calendar, BarChart3, Plus, Send, Bot, Phone, Mail, DollarSign, Briefcase } from 'lucide-react';
+import { Users, MessageSquare, Calendar, BarChart3, Plus, Send, Bot, Phone, Mail, DollarSign, Briefcase, Clock, Settings, Zap, TrendingUp } from 'lucide-react';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
-// Dashboard Component
+// Dashboard Component (Enhanced)
 const Dashboard = () => {
   const [stats, setStats] = useState({});
   const [leads, setLeads] = useState([]);
+  const [appointments, setAppointments] = useState([]);
+  const [smsConfig, setSmsConfig] = useState({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchStats();
     fetchLeads();
+    fetchAppointments();
+    fetchSmsConfig();
   }, []);
 
   const fetchStats = async () => {
@@ -50,6 +55,24 @@ const Dashboard = () => {
     }
   };
 
+  const fetchAppointments = async () => {
+    try {
+      const response = await axios.get(`${API}/appointments`);
+      setAppointments(response.data);
+    } catch (error) {
+      console.error('Error fetching appointments:', error);
+    }
+  };
+
+  const fetchSmsConfig = async () => {
+    try {
+      const response = await axios.get(`${API}/config/sms`);
+      setSmsConfig(response.data);
+    } catch (error) {
+      console.error('Error fetching SMS config:', error);
+    }
+  };
+
   const getStatusColor = (status) => {
     const colors = {
       new: 'bg-blue-100 text-blue-800',
@@ -68,16 +91,33 @@ const Dashboard = () => {
     );
   }
 
+  const todayAppointments = appointments.filter(apt => {
+    const aptDate = new Date(apt.appointment_datetime);
+    const today = new Date();
+    return aptDate.toDateString() === today.toDateString() && apt.status === 'scheduled';
+  });
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       <div className="container mx-auto px-6 py-8">
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">AutoFollow Pro</h1>
           <p className="text-gray-600">Intelligent lead management for car sales professionals</p>
+          
+          {/* SMS Status Indicator */}
+          <div className="mt-4 flex items-center space-x-3">
+            <div className="flex items-center space-x-2">
+              <div className={`w-2 h-2 rounded-full ${smsConfig.provider === 'textbelt' ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
+              <span className="text-sm text-gray-600">
+                SMS: {smsConfig.provider === 'textbelt' ? 'TextBelt Active' : 'Mock Mode'}
+                {smsConfig.free_mode && ' (Free)'}
+              </span>
+            </div>
+          </div>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        {/* Enhanced Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-6 mb-8">
           <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-gray-600">Total Leads</CardTitle>
@@ -91,7 +131,7 @@ const Dashboard = () => {
           <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-gray-600">New Leads</CardTitle>
-              <BarChart3 className="h-4 w-4 text-green-600" />
+              <TrendingUp className="h-4 w-4 text-green-600" />
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-gray-900">{stats.new_leads || 0}</div>
@@ -117,70 +157,133 @@ const Dashboard = () => {
               <div className="text-3xl font-bold text-gray-900">{stats.scheduled_leads || 0}</div>
             </CardContent>
           </Card>
+
+          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-gray-600">Today's Appointments</CardTitle>
+              <Clock className="h-4 w-4 text-indigo-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-gray-900">{todayAppointments.length}</div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-gray-600">This Week</CardTitle>
+              <BarChart3 className="h-4 w-4 text-orange-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-gray-900">{stats.recent_leads || 0}</div>
+            </CardContent>
+          </Card>
         </div>
 
-        {/* Recent Leads */}
-        <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-          <CardHeader>
-            <CardTitle className="text-xl text-gray-900">Recent Leads</CardTitle>
-            <CardDescription>Your latest customer inquiries</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {leads.slice(0, 5).map((lead) => (
-                <div key={lead.id} className="flex items-center justify-between p-4 bg-white rounded-lg shadow-sm border border-gray-100">
-                  <div className="flex items-center space-x-4">
-                    <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
-                      {lead.first_name[0]}{lead.last_name[0]}
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-900">{lead.first_name} {lead.last_name}</h3>
-                      <div className="flex items-center space-x-3 text-sm text-gray-600">
-                        <span className="flex items-center">
-                          <Phone className="h-3 w-3 mr-1" />
-                          {lead.primary_phone}
-                        </span>
-                        <span className="flex items-center">
-                          <Mail className="h-3 w-3 mr-1" />
-                          {lead.email}
-                        </span>
-                        {lead.budget && (
+        {/* Two Column Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Recent Leads */}
+          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+            <CardHeader>
+              <CardTitle className="text-xl text-gray-900">Recent Leads</CardTitle>
+              <CardDescription>Your latest customer inquiries</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {leads.slice(0, 5).map((lead) => (
+                  <div key={lead.id} className="flex items-center justify-between p-4 bg-white rounded-lg shadow-sm border border-gray-100">
+                    <div className="flex items-center space-x-4">
+                      <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
+                        {lead.first_name[0]}{lead.last_name[0]}
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-gray-900">{lead.first_name} {lead.last_name}</h3>
+                        <div className="flex items-center space-x-3 text-sm text-gray-600">
                           <span className="flex items-center">
-                            <DollarSign className="h-3 w-3 mr-1" />
-                            {lead.budget}
+                            <Phone className="h-3 w-3 mr-1" />
+                            {lead.primary_phone}
                           </span>
-                        )}
+                          {lead.budget && (
+                            <span className="flex items-center">
+                              <DollarSign className="h-3 w-3 mr-1" />
+                              {lead.budget}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
+                    <div className="flex items-center space-x-3">
+                      <Badge className={getStatusColor(lead.status)}>
+                        {lead.status}
+                      </Badge>
+                      <Link to={`/leads/${lead.id}`}>
+                        <Button variant="outline" size="sm">View</Button>
+                      </Link>
+                    </div>
                   </div>
-                  <div className="flex items-center space-x-3">
-                    <Badge className={getStatusColor(lead.status)}>
-                      {lead.status}
-                    </Badge>
-                    <Link to={`/leads/${lead.id}`}>
-                      <Button variant="outline" size="sm">View</Button>
-                    </Link>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Today's Appointments */}
+          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+            <CardHeader>
+              <CardTitle className="text-xl text-gray-900">Today's Appointments</CardTitle>
+              <CardDescription>Scheduled meetings for today</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {todayAppointments.length > 0 ? (
+                  todayAppointments.map((appointment) => {
+                    const lead = leads.find(l => l.id === appointment.lead_id);
+                    const aptTime = new Date(appointment.appointment_datetime);
+                    return (
+                      <div key={appointment.id} className="flex items-center justify-between p-4 bg-white rounded-lg shadow-sm border border-gray-100">
+                        <div className="flex items-center space-x-4">
+                          <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
+                            <Calendar className="h-5 w-5" />
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-gray-900">{appointment.title}</h3>
+                            <div className="text-sm text-gray-600">
+                              {lead && `${lead.first_name} ${lead.last_name}`} • {aptTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                            </div>
+                          </div>
+                        </div>
+                        <Badge className="bg-green-100 text-green-800">
+                          {appointment.status}
+                        </Badge>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>No appointments scheduled for today</p>
                   </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );
 };
 
-// Leads Management Component
+// Enhanced Leads Management Component
 const LeadsManagement = () => {
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showBulkDialog, setShowBulkDialog] = useState(false);
+  const [showSmsConfigDialog, setShowSmsConfigDialog] = useState(false);
+  const [smsConfig, setSmsConfig] = useState({});
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchLeads();
+    fetchSmsConfig();
   }, []);
 
   const fetchLeads = async () => {
@@ -195,10 +298,23 @@ const LeadsManagement = () => {
     }
   };
 
-  const handleSendSMS = async (leadId, language = 'english') => {
+  const fetchSmsConfig = async () => {
     try {
-      const response = await axios.post(`${API}/sms/send?lead_id=${leadId}&language=${language}`);
-      toast.success('SMS sent successfully!');
+      const response = await axios.get(`${API}/config/sms`);
+      setSmsConfig(response.data);
+    } catch (error) {
+      console.error('Error fetching SMS config:', error);
+    }
+  };
+
+  const handleSendSMS = async (leadId, language = 'english', provider = 'mock') => {
+    try {
+      const response = await axios.post(`${API}/sms/send?lead_id=${leadId}&language=${language}&provider=${provider}`);
+      if (response.data.status === 'sent') {
+        toast.success(`SMS sent successfully! ${response.data.provider === 'textbelt' ? '(Real SMS)' : '(Simulated)'}`);
+      } else {
+        toast.error(`SMS failed: ${response.data.message}`);
+      }
       fetchLeads(); // Refresh to update status
     } catch (error) {
       console.error('Error sending SMS:', error);
@@ -233,6 +349,30 @@ const LeadsManagement = () => {
             <p className="text-gray-600">Manage and follow up with your sales leads</p>
           </div>
           <div className="flex space-x-3">
+            <Dialog open={showSmsConfigDialog} onOpenChange={setShowSmsConfigDialog}>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="bg-white">
+                  <Settings className="w-4 h-4 mr-2" />
+                  SMS Config
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>SMS Configuration</DialogTitle>
+                  <DialogDescription>
+                    Configure your SMS sending preferences
+                  </DialogDescription>
+                </DialogHeader>
+                <SMSConfigForm 
+                  config={smsConfig} 
+                  onSuccess={() => { 
+                    setShowSmsConfigDialog(false); 
+                    fetchSmsConfig(); 
+                  }} 
+                />
+              </DialogContent>
+            </Dialog>
+
             <Dialog open={showBulkDialog} onOpenChange={setShowBulkDialog}>
               <DialogTrigger asChild>
                 <Button variant="outline" className="bg-white">
@@ -315,20 +455,22 @@ const LeadsManagement = () => {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleSendSMS(lead.id, 'english')}
+                          onClick={() => handleSendSMS(lead.id, 'english', smsConfig.provider)}
                           className="text-blue-600 border-blue-200 hover:bg-blue-50"
                         >
                           <Send className="w-4 h-4 mr-1" />
                           SMS (EN)
+                          {smsConfig.provider === 'textbelt' && <Zap className="w-3 h-3 ml-1" />}
                         </Button>
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleSendSMS(lead.id, 'spanish')}
+                          onClick={() => handleSendSMS(lead.id, 'spanish', smsConfig.provider)}
                           className="text-green-600 border-green-200 hover:bg-green-50"
                         >
                           <Send className="w-4 h-4 mr-1" />
                           SMS (ES)
+                          {smsConfig.provider === 'textbelt' && <Zap className="w-3 h-3 ml-1" />}
                         </Button>
                         <Button
                           variant="outline"
@@ -347,6 +489,73 @@ const LeadsManagement = () => {
         </Card>
       </div>
     </div>
+  );
+};
+
+// SMS Configuration Form Component
+const SMSConfigForm = ({ config, onSuccess }) => {
+  const [provider, setProvider] = useState(config.provider || 'mock');
+  const [apiKey, setApiKey] = useState('');
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.post(`${API}/config/sms`, {
+        provider,
+        textbelt_api_key: apiKey
+      });
+      toast.success('SMS configuration updated!');
+      onSuccess();
+    } catch (error) {
+      console.error('Error updating SMS config:', error);
+      toast.error('Failed to update SMS configuration');
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <Label htmlFor="provider">SMS Provider</Label>
+        <Select value={provider} onValueChange={setProvider}>
+          <SelectTrigger>
+            <SelectValue placeholder="Select SMS provider" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="mock">Mock (Simulation)</SelectItem>
+            <SelectItem value="textbelt">TextBelt (Real SMS)</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {provider === 'textbelt' && (
+        <div>
+          <Label htmlFor="api_key">TextBelt API Key (Optional - uses free tier if empty)</Label>
+          <Input
+            id="api_key"
+            type="password"
+            value={apiKey}
+            onChange={(e) => setApiKey(e.target.value)}
+            placeholder="Enter your TextBelt API key"
+          />
+          <p className="text-xs text-gray-500 mt-1">
+            Leave empty to use free tier (1 SMS per day). Get paid API key at textbelt.com
+          </p>
+        </div>
+      )}
+
+      <div className="bg-blue-50 p-4 rounded-lg">
+        <h4 className="font-semibold mb-2">Current Status:</h4>
+        <p className="text-sm">
+          Provider: <strong>{config.provider || 'mock'}</strong><br />
+          Mode: <strong>{config.free_mode ? 'Free Tier' : 'Paid API'}</strong><br />
+          Status: <strong>{config.has_api_key ? 'API Key Configured' : 'Using Free/Mock'}</strong>
+        </p>
+      </div>
+
+      <Button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+        Update Configuration
+      </Button>
+    </form>
   );
 };
 
@@ -518,20 +727,22 @@ Budget: $300-500
   );
 };
 
-// Lead Detail Component
+// Enhanced Lead Detail Component with Appointment Scheduling
 const LeadDetail = () => {
   const [lead, setLead] = useState(null);
   const [messages, setMessages] = useState([]);
+  const [appointments, setAppointments] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
-  const params = new URLSearchParams(window.location.search);
+  const [showScheduleDialog, setShowScheduleDialog] = useState(false);
   const pathParts = window.location.pathname.split('/');
   const id = pathParts[pathParts.length - 1];
 
   useEffect(() => {
     fetchLead();
     fetchMessages();
+    fetchAppointments();
   }, [id]);
 
   const fetchLead = async () => {
@@ -555,6 +766,15 @@ const LeadDetail = () => {
     }
   };
 
+  const fetchAppointments = async () => {
+    try {
+      const response = await axios.get(`${API}/appointments/${id}`);
+      setAppointments(response.data);
+    } catch (error) {
+      console.error('Error fetching appointments:', error);
+    }
+  };
+
   const handleAIResponse = async () => {
     if (!newMessage.trim()) return;
 
@@ -569,6 +789,14 @@ const LeadDetail = () => {
       toast.success('AI response generated and sent!');
       setNewMessage('');
       fetchMessages();
+      
+      // Show scheduling dialog if AI suggests scheduling
+      if (response.data.suggests_scheduling) {
+        setTimeout(() => {
+          toast.info('Customer seems interested in scheduling. Consider creating an appointment!');
+          setShowScheduleDialog(true);
+        }, 2000);
+      }
     } catch (error) {
       console.error('Error generating AI response:', error);
       toast.error('Failed to generate AI response');
@@ -611,8 +839,8 @@ const LeadDetail = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Lead Information */}
-          <div className="lg:col-span-1">
+          {/* Lead Information & Appointments */}
+          <div className="lg:col-span-1 space-y-6">
             <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
               <CardHeader>
                 <CardTitle>Lead Information</CardTitle>
@@ -643,6 +871,58 @@ const LeadDetail = () => {
                     <p className="text-sm mt-1">{lead.address}</p>
                   </div>
                 )}
+              </CardContent>
+            </Card>
+
+            {/* Appointments */}
+            <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle>Appointments</CardTitle>
+                <Dialog open={showScheduleDialog} onOpenChange={setShowScheduleDialog}>
+                  <DialogTrigger asChild>
+                    <Button size="sm" className="bg-gradient-to-r from-green-600 to-blue-600 text-white">
+                      <Plus className="w-4 h-4 mr-1" />
+                      Schedule
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Schedule Appointment</DialogTitle>
+                      <DialogDescription>
+                        Schedule a meeting with {lead.first_name} {lead.last_name}
+                      </DialogDescription>
+                    </DialogHeader>
+                    <AppointmentForm 
+                      leadId={id} 
+                      onSuccess={() => { 
+                        setShowScheduleDialog(false); 
+                        fetchAppointments(); 
+                      }} 
+                    />
+                  </DialogContent>
+                </Dialog>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {appointments.length > 0 ? (
+                    appointments.map((appointment) => {
+                      const aptTime = new Date(appointment.appointment_datetime);
+                      return (
+                        <div key={appointment.id} className="p-3 bg-gray-50 rounded-lg">
+                          <div className="font-medium text-sm">{appointment.title}</div>
+                          <div className="text-xs text-gray-600">
+                            {aptTime.toLocaleDateString()} at {aptTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                          </div>
+                          <Badge className="text-xs mt-1 bg-green-100 text-green-800">
+                            {appointment.status}
+                          </Badge>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <p className="text-sm text-gray-500">No appointments scheduled</p>
+                  )}
+                </div>
               </CardContent>
             </Card>
           </div>
@@ -707,6 +987,93 @@ const LeadDetail = () => {
         </div>
       </div>
     </div>
+  );
+};
+
+// Appointment Form Component
+const AppointmentForm = ({ leadId, onSuccess }) => {
+  const [formData, setFormData] = useState({
+    title: 'Vehicle Consultation',
+    appointment_datetime: '',
+    duration_minutes: 60,
+    description: ''
+  });
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.post(`${API}/appointments`, {
+        lead_id: leadId,
+        ...formData,
+        appointment_datetime: new Date(formData.appointment_datetime).toISOString()
+      });
+      toast.success('Appointment scheduled successfully!');
+      onSuccess();
+    } catch (error) {
+      console.error('Error scheduling appointment:', error);
+      toast.error('Failed to schedule appointment');
+    }
+  };
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <Label htmlFor="title">Appointment Title</Label>
+        <Input
+          id="title"
+          name="title"
+          value={formData.title}
+          onChange={handleChange}
+          required
+        />
+      </div>
+
+      <div>
+        <Label htmlFor="appointment_datetime">Date & Time</Label>
+        <Input
+          id="appointment_datetime"
+          name="appointment_datetime"  
+          type="datetime-local"
+          value={formData.appointment_datetime}
+          onChange={handleChange}
+          required
+        />
+      </div>
+
+      <div>
+        <Label htmlFor="duration_minutes">Duration (minutes)</Label>
+        <Select value={formData.duration_minutes.toString()} onValueChange={(value) => setFormData({...formData, duration_minutes: parseInt(value)})}>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="30">30 minutes</SelectItem>
+            <SelectItem value="60">1 hour</SelectItem>
+            <SelectItem value="90">1.5 hours</SelectItem>
+            <SelectItem value="120">2 hours</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div>
+        <Label htmlFor="description">Description (Optional)</Label>
+        <Textarea
+          id="description"
+          name="description"
+          value={formData.description}
+          onChange={handleChange}
+          placeholder="Any special notes about this appointment..."
+        />
+      </div>
+
+      <Button type="submit" className="w-full bg-gradient-to-r from-green-600 to-blue-600 text-white">
+        Schedule Appointment
+      </Button>
+    </form>
   );
 };
 
