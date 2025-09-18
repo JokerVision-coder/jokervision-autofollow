@@ -188,7 +188,7 @@ async def update_lead(lead_id: str, update_data: LeadUpdate):
     
     return Lead(**updated_lead)
 
-async def send_textbelt_sms(phone: str, message: str, api_key: str = None) -> dict:
+def send_textbelt_sms(phone: str, message: str, api_key: str = None) -> dict:
     """Send SMS via TextBelt API"""
     try:
         if api_key:
