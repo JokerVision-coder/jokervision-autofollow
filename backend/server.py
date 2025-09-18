@@ -117,6 +117,28 @@ class AIResponseRequest(BaseModel):
     incoming_message: str
     phone_number: str
 
+class FollowUpMessage(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    lead_id: str
+    stage: str  # "initial", "second_follow", "third_follow", "appointment_reminder", "post_visit"
+    message_template: str
+    scheduled_datetime: datetime
+    status: str = "pending"  # "pending", "sent", "failed"
+    language: str = "english"
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class FollowUpMessageCreate(BaseModel):
+    lead_id: str
+    stage: str
+    scheduled_datetime: datetime
+    language: str = "english"
+
+class BulkFollowUpRequest(BaseModel):
+    lead_ids: List[str]
+    stage: str
+    delay_hours: int = 24
+    language: str = "english"
+
 # SMS Templates
 SMS_TEMPLATES = {
     "english": """Hi {first_name} 👋, this is Alfonso Martinez from Shottenkirk Toyota San Antonio 🚗. Thanks for reaching out through our ad 🙌. I'd love to help you find the perfect vehicle — can you tell me what you're looking for? (model, year, features, budget) 📝
