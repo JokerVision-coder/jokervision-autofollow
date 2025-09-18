@@ -139,19 +139,121 @@ class BulkFollowUpRequest(BaseModel):
     delay_hours: int = 24
     language: str = "english"
 
-# SMS Templates
-SMS_TEMPLATES = {
-    "english": """Hi {first_name} 👋, this is Alfonso Martinez from Shottenkirk Toyota San Antonio 🚗. Thanks for reaching out through our ad 🙌. I'd love to help you find the perfect vehicle — can you tell me what you're looking for? (model, year, features, budget) 📝
+# Enhanced Car Sales Follow-up Templates
+FOLLOW_UP_TEMPLATES = {
+    "english": {
+        "initial": """Hi {first_name}! 👋 Alfonso here from Shottenkirk Toyota San Antonio. 
 
-I can have options ready for you when you visit. Do you prefer to come in today or tomorrow? 📅
+I see you're interested in finding the perfect vehicle. I'd love to help you get behind the wheel of something amazing! 🚗
+
+Rather than going back and forth with messages, how about we schedule a quick 15-minute call or visit? I can show you exactly what we have that fits your budget of {budget} and answer all your questions.
+
+What works better - today after 3pm or tomorrow morning? 
 
 📱 Call/Text: 210-632-8712""",
-    
-    "spanish": """Hola {first_name} 👋, soy Alfonso Martínez de Shottenkirk Toyota San Antonio 🚗. Gracias por contactarnos por nuestro anuncio 🙌. Me encantaría ayudarte a encontrar el vehículo ideal — ¿puedes decirme qué buscas? (modelo, año, características, presupuesto) 📝
 
-Puedo tener opciones listas para cuando vengas. ¿Prefieres venir hoy o mañana? 📅
+        "second_follow": """Hi {first_name}, Alfonso from Shottenkirk Toyota again! 
+
+I wanted to follow up on your vehicle inquiry. I know car shopping can feel overwhelming, but I promise I'll make it simple and stress-free for you! 😊
+
+I have some great options in your {budget} range that just came in. Instead of describing them over text, how about a quick 10-minute visit? No pressure - just want to show you what's available.
+
+Are you free this evening or would tomorrow work better?
+
+📱 Call/Text: 210-632-8712""",
+
+        "third_follow": """Hi {first_name}, this is Alfonso from Shottenkirk Toyota 🚗
+
+I don't want to keep bothering you, but I genuinely want to help you find the right vehicle. Sometimes timing just isn't right, and that's totally okay!
+
+If you're still looking, I'm here to help. If not, just let me know and I'll stop reaching out. 
+
+But if you ARE still interested, I have 15 minutes available today to show you some options - no commitment required.
+
+What do you say?
+
+📱 Call/Text: 210-632-8712""",
+
+        "appointment_reminder": """Hi {first_name}! 👋 
+
+Just a friendly reminder about our appointment tomorrow at {appointment_time}. I'm excited to show you some great vehicles that match what you're looking for!
+
+Please bring:
+• Driver's license
+• Proof of insurance (if you plan to test drive)
+
+If anything comes up and you need to reschedule, just let me know!
+
+See you soon! 
+📱 Call/Text: 210-632-8712""",
+
+        "post_visit": """Hi {first_name}! 
+
+Thank you for taking the time to visit us today. I hope you felt comfortable and got all your questions answered! 
+
+If you need any more information or want to move forward, I'm just a text away. If you decide to think it over, that's perfectly fine too - no pressure from me.
+
+Either way, it was great meeting you!
+
+📱 Call/Text: 210-632-8712"""
+    },
+    
+    "spanish": {
+        "initial": """¡Hola {first_name}! 👋 Soy Alfonso de Shottenkirk Toyota San Antonio.
+
+Veo que estás interesado en encontrar el vehículo perfecto. ¡Me encantaría ayudarte a encontrar algo increíble! 🚗
+
+En lugar de intercambiar mensajes, ¿qué tal si programamos una llamada rápida de 15 minutos o una visita? Puedo mostrarte exactamente lo que tenemos que se ajuste a tu presupuesto de {budget} y responder todas tus preguntas.
+
+¿Qué te funciona mejor - hoy después de las 3pm o mañana por la mañana?
+
+📱 Llamar/Mensaje: 210-632-8712""",
+
+        "second_follow": """¡Hola {first_name}, Alfonso de Shottenkirk Toyota otra vez!
+
+Quería hacer seguimiento sobre tu consulta de vehículo. Sé que comprar un auto puede sentirse abrumador, ¡pero te prometo que lo haré simple y sin estrés! 😊
+
+Tengo algunas opciones excelentes en tu rango de {budget} que acaban de llegar. En lugar de describirlas por mensaje, ¿qué tal una visita rápida de 10 minutos? Sin presión - solo quiero mostrarte qué está disponible.
+
+¿Estás libre esta tarde o te funcionaría mejor mañana?
+
+📱 Llamar/Mensaje: 210-632-8712""",
+
+        "third_follow": """Hola {first_name}, soy Alfonso de Shottenkirk Toyota 🚗
+
+No quiero seguir molestándote, pero genuinamente quiero ayudarte a encontrar el vehículo correcto. A veces el momento no es el indicado, ¡y eso está totalmente bien!
+
+Si todavía estás buscando, estoy aquí para ayudar. Si no, solo avísame y dejaré de contactarte.
+
+Pero si AÚN estás interesado, tengo 15 minutos disponibles hoy para mostrarte algunas opciones - sin compromiso requerido.
+
+¿Qué dices?
+
+📱 Llamar/Mensaje: 210-632-8712""",
+
+        "appointment_reminder": """¡Hola {first_name}! 👋
+
+Solo un recordatorio amigable sobre nuestra cita mañana a las {appointment_time}. ¡Estoy emocionado de mostrarte algunos vehículos geniales que coinciden con lo que buscas!
+
+Por favor trae:
+• Licencia de conducir
+• Prueba de seguro (si planeas hacer una prueba de manejo)
+
+Si surge algo y necesitas reprogramar, ¡solo avísame!
+
+¡Nos vemos pronto!
+📱 Llamar/Mensaje: 210-632-8712""",
+
+        "post_visit": """¡Hola {first_name}!
+
+Gracias por tomarte el tiempo de visitarnos hoy. ¡Espero que te hayas sentido cómodo y hayas obtenido respuestas a todas tus preguntas!
+
+Si necesitas más información o quieres seguir adelante, estoy a solo un mensaje de distancia. Si decides pensarlo, eso también está perfectamente bien - no hay presión de mi parte.
+
+¡De cualquier manera, fue genial conocerte!
 
 📱 Llamar/Mensaje: 210-632-8712"""
+    }
 }
 
 # Lead Management Routes
@@ -245,8 +347,12 @@ async def send_sms(lead_id: str, language: str = "english", provider: str = "moc
         raise HTTPException(status_code=404, detail="Lead not found")
     
     # Generate SMS message from template
-    template = SMS_TEMPLATES.get(language, SMS_TEMPLATES["english"])
-    message = template.format(first_name=lead["first_name"])
+    templates = FOLLOW_UP_TEMPLATES.get(language, FOLLOW_UP_TEMPLATES["english"])
+    template = templates.get("initial", templates["initial"])
+    message = template.format(
+        first_name=lead["first_name"],
+        budget=lead.get("budget", "your budget")
+    )
     
     # Create SMS message record
     sms_data = SMSMessageCreate(
