@@ -973,7 +973,8 @@ const LeadDetail = () => {
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
-  const [showScheduleDialog, setShowScheduleDialog] = useState(false);
+  const [fbMessages, setFbMessages] = useState([]);
+  const [voiceCalls, setVoiceCalls] = useState([]);
   const pathParts = window.location.pathname.split('/');
   const id = pathParts[pathParts.length - 1];
 
