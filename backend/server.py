@@ -139,6 +139,47 @@ class BulkFollowUpRequest(BaseModel):
     delay_hours: int = 24
     language: str = "english"
 
+class VoiceCall(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    lead_id: str
+    phone_number: str
+    call_duration: Optional[int] = None  # in seconds
+    status: str = "initiated"  # initiated, in_progress, completed, failed, no_answer
+    transcript: Optional[str] = None
+    recording_url: Optional[str] = None
+    call_outcome: Optional[str] = None  # appointment_scheduled, callback_requested, not_interested, no_answer
+    scheduled_callback: Optional[datetime] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    completed_at: Optional[datetime] = None
+
+class VoiceCallCreate(BaseModel):
+    lead_id: str
+    phone_number: str
+
+class FacebookMessage(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    lead_id: Optional[str] = None  # Will be created if new lead
+    fb_sender_id: str
+    fb_page_id: str
+    message_text: str
+    message_type: str = "text"  # text, image, attachment
+    direction: str  # inbound, outbound
+    fb_message_id: str
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class FacebookLeadCreate(BaseModel):
+    fb_sender_id: str
+    first_name: str
+    last_name: str
+    phone_number: Optional[str] = None
+    marketplace_inquiry: Optional[str] = None  # What vehicle they inquired about
+    fb_profile_url: Optional[str] = None
+
+class WebhookVerification(BaseModel):
+    hub_mode: str = Field(alias="hub.mode")
+    hub_challenge: str = Field(alias="hub.challenge") 
+    hub_verify_token: str = Field(alias="hub.verify_token")
+
 # Shottenkirk Toyota San Antonio Dealership Information
 DEALERSHIP_INFO = {
     "name": "Shottenkirk Toyota San Antonio",
