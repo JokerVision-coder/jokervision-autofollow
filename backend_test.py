@@ -11,6 +11,8 @@ class AutoFollowProAPITester:
         self.tests_passed = 0
         self.created_lead_id = None
         self.created_appointment_id = None
+        self.created_users = []
+        self.created_sales = []
 
     def run_test(self, name, method, endpoint, expected_status, data=None, headers=None):
         """Run a single API test"""
