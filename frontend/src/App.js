@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './components/ui/select';
 import { Switch } from './components/ui/switch';
 import { toast, Toaster } from 'sonner';
-import { Users, MessageSquare, Calendar, BarChart3, Plus, Send, Bot, Phone, Mail, DollarSign, Briefcase, Clock, Settings, Zap, TrendingUp } from 'lucide-react';
+import { Users, MessageSquare, Calendar, BarChart3, Plus, Send, Bot, Phone, Mail, DollarSign, Briefcase, Clock, Settings, Zap, TrendingUp, PhoneCall, MessageCircle } from 'lucide-react';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
