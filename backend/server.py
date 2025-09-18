@@ -299,7 +299,62 @@ async def get_sms_messages(lead_id: str):
         result.append(SMSMessage(**msg))
     return result
 
-# AI Response Route
+# Calendar/Appointment Routes
+@api_router.post("/appointments", response_model=CalendarAppointment)
+async def create_appointment(appointment_data: CalendarAppointmentCreate):
+    # Verify lead exists
+    lead = await db.leads.find_one({"id": appointment_data.lead_id})
+    if not lead:
+        raise HTTPException(status_code=404, detail="Lead not found")
+    
+    appointment_obj = CalendarAppointment(**appointment_data.dict())
+    appointment_doc = appointment_obj.dict()
+    appointment_doc['appointment_datetime'] = appointment_doc['appointment_datetime'].isoformat()
+    appointment_doc['created_at'] = appointment_doc['created_at'].isoformat()
+    
+    await db.appointments.insert_one(appointment_doc)
+    
+    # Update lead status to scheduled
+    await db.leads.update_one(
+        {"id": appointment_data.lead_id}, 
+        {"$set": {"status": "scheduled"}}
+    )
+    
+    return appointment_obj
+
+@api_router.get("/appointments/{lead_id}")
+async def get_lead_appointments(lead_id: str):
+    appointments = await db.appointments.find({"lead_id": lead_id}).sort("appointment_datetime", 1).to_list(1000)
+    result = []
+    for apt in appointments:
+        if isinstance(apt.get('appointment_datetime'), str):
+            apt['appointment_datetime'] = datetime.fromisoformat(apt['appointment_datetime'])
+        if isinstance(apt.get('created_at'), str):
+            apt['created_at'] = datetime.fromisoformat(apt['created_at'])
+        result.append(CalendarAppointment(**apt))
+    return result
+
+@api_router.get("/appointments")
+async def get_all_appointments():
+    appointments = await db.appointments.find().sort("appointment_datetime", 1).to_list(1000)
+    result = []
+    for apt in appointments:
+        if isinstance(apt.get('appointment_datetime'), str):
+            apt['appointment_datetime'] = datetime.fromisoformat(apt['appointment_datetime'])
+        if isinstance(apt.get('created_at'), str):
+            apt['created_at'] = datetime.fromisoformat(apt['created_at'])
+        result.append(CalendarAppointment(**apt))
+    return result
+
+@api_router.put("/appointments/{appointment_id}")
+async def update_appointment(appointment_id: str, status: str):
+    await db.appointments.update_one(
+        {"id": appointment_id}, 
+        {"$set": {"status": status}}
+    )
+    return {"status": "updated", "appointment_id": appointment_id}
+
+# Enhanced AI Response Route with Appointment Scheduling
 @api_router.post("/ai/respond")
 async def generate_ai_response(request: AIResponseRequest):
     try:
@@ -310,6 +365,9 @@ async def generate_ai_response(request: AIResponseRequest):
         
         # Get conversation history
         messages = await db.sms_messages.find({"lead_id": request.lead_id}).sort("created_at", 1).to_list(1000)
+        
+        # Get upcoming appointments for context
+        appointments = await db.appointments.find({"lead_id": request.lead_id}).to_list(1000)
         
         # Build context for AI
         lead_context = f"""
@@ -327,6 +385,15 @@ async def generate_ai_response(request: AIResponseRequest):
             direction = "Customer" if msg.get('direction') == 'inbound' else "Alfonso"
             conversation_history += f"{direction}: {msg.get('message', '')}\n"
         
+        appointment_context = ""
+        if appointments:
+            appointment_context = "\nUpcoming Appointments:\n"
+            for apt in appointments:
+                apt_datetime = apt.get('appointment_datetime')
+                if isinstance(apt_datetime, str):
+                    apt_datetime = datetime.fromisoformat(apt_datetime)
+                appointment_context += f"- {apt.get('title', 'Appointment')} on {apt_datetime.strftime('%B %d, %Y at %I:%M %p')}\n"
+        
         # Initialize AI chat
         emergent_key = os.environ.get('EMERGENT_LLM_KEY')
         if not emergent_key:
@@ -340,13 +407,19 @@ async def generate_ai_response(request: AIResponseRequest):
         Previous conversation:
         {conversation_history}
         
+        {appointment_context}
+        
         Guidelines:
         - Be professional but friendly
         - Focus on understanding their needs
-        - Suggest scheduling a visit to the dealership
+        - Suggest scheduling a visit to the dealership if they seem interested
+        - If they want to schedule, ask for their preferred date/time
+        - Provide helpful information about Toyota vehicles
         - Use appropriate emojis sparingly
         - Keep responses concise but helpful
         - Always end with your contact info: 📱 Call/Text: 210-632-8712
+        
+        Current date/time: {datetime.now(timezone.utc).strftime('%B %d, %Y at %I:%M %p')}
         """
         
         chat = LlmChat(
@@ -380,9 +453,15 @@ async def generate_ai_response(request: AIResponseRequest):
         response_doc['created_at'] = response_doc['created_at'].isoformat()
         await db.sms_messages.insert_one(response_doc)
         
+        # Analyze if customer wants to schedule an appointment
+        schedule_keywords = ["schedule", "appointment", "visit", "come in", "see", "tomorrow", "today", "when can"]
+        customer_message_lower = request.incoming_message.lower()
+        suggests_scheduling = any(keyword in customer_message_lower for keyword in schedule_keywords)
+        
         return {
             "response": response,
-            "status": "success"
+            "status": "success",
+            "suggests_scheduling": suggests_scheduling
         }
         
     except Exception as e:
