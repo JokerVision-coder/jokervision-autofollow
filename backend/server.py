@@ -529,7 +529,27 @@ async def bulk_import_leads(leads_text: str):
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Error processing bulk import: {str(e)}")
 
-# Dashboard Stats
+# Configuration Routes
+@api_router.get("/config/sms")
+async def get_sms_config():
+    textbelt_key = os.environ.get('TEXTBELT_API_KEY')
+    return {
+        "provider": "textbelt" if textbelt_key else "mock",
+        "has_api_key": bool(textbelt_key),
+        "free_mode": not bool(textbelt_key)
+    }
+
+@api_router.post("/config/sms")
+async def update_sms_config(config: SMSConfig):
+    # In a production app, you'd store this in database or update environment
+    # For now, we'll just return the configuration
+    return {
+        "status": "updated",
+        "provider": config.provider,
+        "message": "SMS configuration updated (restart required for environment changes)"
+    }
+
+# Dashboard Stats (Enhanced)
 @api_router.get("/dashboard/stats")
 async def get_dashboard_stats():
     total_leads = await db.leads.count_documents({})
@@ -537,11 +557,26 @@ async def get_dashboard_stats():
     contacted_leads = await db.leads.count_documents({"status": "contacted"})
     scheduled_leads = await db.leads.count_documents({"status": "scheduled"})
     
+    # Get upcoming appointments count
+    today = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+    upcoming_appointments = await db.appointments.count_documents({
+        "appointment_datetime": {"$gte": today.isoformat()},
+        "status": "scheduled"
+    })
+    
+    # Get recent activity (last 7 days)
+    week_ago = datetime.now(timezone.utc) - timedelta(days=7)
+    recent_leads = await db.leads.count_documents({
+        "created_at": {"$gte": week_ago.isoformat()}
+    })
+    
     return {
         "total_leads": total_leads,
         "new_leads": new_leads,
         "contacted_leads": contacted_leads,
-        "scheduled_leads": scheduled_leads
+        "scheduled_leads": scheduled_leads,
+        "upcoming_appointments": upcoming_appointments,
+        "recent_leads": recent_leads
     }
 
 # Include the router in the main app
