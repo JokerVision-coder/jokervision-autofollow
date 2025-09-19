@@ -1345,7 +1345,305 @@ async def update_sms_config(config: SMSConfig):
         "message": "SMS configuration updated (restart required for environment changes)"
     }
 
-# SaaS Platform Management Routes
+# Social Media Advertising Routes
+@api_router.post("/campaigns", response_model=AdCampaign)
+async def create_ad_campaign(campaign_data: AdCampaignCreate):
+    """Create new advertising campaign"""
+    campaign_obj = AdCampaign(**campaign_data.dict())
+    campaign_doc = campaign_obj.dict()
+    campaign_doc['start_date'] = campaign_doc['start_date'].isoformat()
+    if campaign_doc.get('end_date'):
+        campaign_doc['end_date'] = campaign_doc['end_date'].isoformat()
+    campaign_doc['created_at'] = campaign_doc['created_at'].isoformat()
+    
+    await db.ad_campaigns.insert_one(campaign_doc)
+    
+    # Create initial metrics record
+    initial_metrics = AdMetrics(
+        tenant_id=campaign_data.tenant_id,
+        campaign_id=campaign_obj.id,
+        date=datetime.now(timezone.utc)
+    )
+    metrics_doc = initial_metrics.dict()
+    metrics_doc['date'] = metrics_doc['date'].isoformat()
+    metrics_doc['created_at'] = metrics_doc['created_at'].isoformat()
+    await db.ad_metrics.insert_one(metrics_doc)
+    
+    return campaign_obj
+
+@api_router.get("/campaigns", response_model=List[AdCampaign])
+async def get_ad_campaigns(tenant_id: str = None, platform: str = None):
+    """Get advertising campaigns with optional filters"""
+    query = {}
+    if tenant_id:
+        query["tenant_id"] = tenant_id
+    if platform:
+        query["platform"] = platform
+    
+    campaigns = await db.ad_campaigns.find(query).sort("created_at", -1).to_list(1000)
+    result = []
+    for campaign in campaigns:
+        if isinstance(campaign.get('start_date'), str):
+            campaign['start_date'] = datetime.fromisoformat(campaign['start_date'])
+        if isinstance(campaign.get('end_date'), str) and campaign.get('end_date'):
+            campaign['end_date'] = datetime.fromisoformat(campaign['end_date'])
+        if isinstance(campaign.get('created_at'), str):
+            campaign['created_at'] = datetime.fromisoformat(campaign['created_at'])
+        result.append(AdCampaign(**campaign))
+    return result
+
+@api_router.get("/campaigns/{campaign_id}/metrics")
+async def get_campaign_metrics(campaign_id: str, days: int = 30):
+    """Get campaign performance metrics"""
+    start_date = datetime.now(timezone.utc) - timedelta(days=days)
+    
+    metrics = await db.ad_metrics.find({
+        "campaign_id": campaign_id,
+        "date": {"$gte": start_date.isoformat()}
+    }).sort("date", 1).to_list(1000)
+    
+    result = []
+    for metric in metrics:
+        if isinstance(metric.get('date'), str):
+            metric['date'] = datetime.fromisoformat(metric['date'])
+        if isinstance(metric.get('created_at'), str):
+            metric['created_at'] = datetime.fromisoformat(metric['created_at'])
+        
+        # Calculate derived metrics
+        calculated_metrics = OptimizationEngine.calculate_roi_metrics(AdMetrics(**metric))
+        metric.update(calculated_metrics)
+        
+        result.append(AdMetrics(**metric))
+    
+    return result
+
+@api_router.post("/campaigns/{campaign_id}/metrics")
+async def update_campaign_metrics(campaign_id: str, metrics_data: AdMetricsCreate):
+    """Update campaign metrics (called by platform integrations)"""
+    # Calculate derived metrics
+    metrics_obj = AdMetrics(**metrics_data.dict())
+    calculated = OptimizationEngine.calculate_roi_metrics(metrics_obj)
+    
+    # Update metrics with calculations
+    for key, value in calculated.items():
+        setattr(metrics_obj, key, value)
+    
+    # Upsert metrics for the date
+    filter_query = {
+        "campaign_id": campaign_id,
+        "date": metrics_data.date.replace(hour=0, minute=0, second=0, microsecond=0).isoformat()
+    }
+    
+    metrics_doc = metrics_obj.dict()
+    metrics_doc['date'] = metrics_doc['date'].isoformat()
+    metrics_doc['created_at'] = metrics_doc['created_at'].isoformat()
+    
+    await db.ad_metrics.update_one(
+        filter_query,
+        {"$set": metrics_doc},
+        upsert=True
+    )
+    
+    return {"status": "updated", "campaign_id": campaign_id}
+
+@api_router.get("/campaigns/{campaign_id}/optimization")
+async def get_optimization_recommendations(campaign_id: str):
+    """Get AI-powered optimization recommendations"""
+    # Get recent metrics (last 30 days)
+    start_date = datetime.now(timezone.utc) - timedelta(days=30)
+    
+    metrics = await db.ad_metrics.find({
+        "campaign_id": campaign_id,
+        "date": {"$gte": start_date.isoformat()}
+    }).to_list(1000)
+    
+    # Convert to AdMetrics objects
+    metrics_objects = []
+    for metric in metrics:
+        if isinstance(metric.get('date'), str):
+            metric['date'] = datetime.fromisoformat(metric['date'])
+        metrics_objects.append(AdMetrics(**metric))
+    
+    # Generate recommendations
+    recommendations = OptimizationEngine.generate_optimization_recommendations(metrics_objects)
+    
+    # Save recommendations to database
+    for rec in recommendations:
+        opt_obj = ROIOptimization(
+            tenant_id=metrics_objects[0].tenant_id if metrics_objects else "",
+            campaign_id=campaign_id,
+            optimization_type=rec["type"],
+            recommendation=rec["message"],
+            impact_prediction={"impact": rec["impact"]},
+            confidence_score=rec["confidence"]
+        )
+        
+        opt_doc = opt_obj.dict()
+        opt_doc['created_at'] = opt_doc['created_at'].isoformat()
+        await db.roi_optimizations.insert_one(opt_doc)
+    
+    return {
+        "campaign_id": campaign_id,
+        "recommendations": recommendations,
+        "generated_at": datetime.now(timezone.utc).isoformat()
+    }
+
+@api_router.get("/social-accounts", response_model=List[SocialMediaAccount])
+async def get_social_media_accounts(tenant_id: str):
+    """Get connected social media accounts"""
+    accounts = await db.social_accounts.find({"tenant_id": tenant_id}).to_list(1000)
+    result = []
+    for account in accounts:
+        if isinstance(account.get('connected_at'), str):
+            account['connected_at'] = datetime.fromisoformat(account['connected_at'])
+        if isinstance(account.get('token_expires_at'), str) and account.get('token_expires_at'):
+            account['token_expires_at'] = datetime.fromisoformat(account['token_expires_at'])
+        # Don't return sensitive tokens in API response
+        account['access_token'] = "***hidden***"
+        account['refresh_token'] = "***hidden***" if account.get('refresh_token') else None
+        result.append(SocialMediaAccount(**account))
+    return result
+
+@api_router.post("/social-accounts/connect")
+async def connect_social_account(
+    tenant_id: str,
+    platform: str,
+    account_id: str,
+    account_name: str,
+    access_token: str,
+    permissions: List[str]
+):
+    """Connect social media account"""
+    account_obj = SocialMediaAccount(
+        tenant_id=tenant_id,
+        platform=platform,
+        account_id=account_id,
+        account_name=account_name,
+        access_token=access_token,  # In production, encrypt this
+        permissions=permissions
+    )
+    
+    account_doc = account_obj.dict()
+    account_doc['connected_at'] = account_doc['connected_at'].isoformat()
+    
+    # Upsert account (update if exists, insert if new)
+    await db.social_accounts.update_one(
+        {"tenant_id": tenant_id, "platform": platform, "account_id": account_id},
+        {"$set": account_doc},
+        upsert=True
+    )
+    
+    return {"status": "connected", "platform": platform, "account_name": account_name}
+
+@api_router.get("/roi-analytics")
+async def get_roi_analytics(tenant_id: str, days: int = 30):
+    """Get comprehensive ROI analytics across all platforms"""
+    start_date = datetime.now(timezone.utc) - timedelta(days=days)
+    
+    # Get all campaigns for tenant
+    campaigns = await db.ad_campaigns.find({"tenant_id": tenant_id}).to_list(1000)
+    campaign_ids = [c["id"] for c in campaigns]
+    
+    # Get metrics for all campaigns
+    all_metrics = await db.ad_metrics.find({
+        "campaign_id": {"$in": campaign_ids},
+        "date": {"$gte": start_date.isoformat()}
+    }).to_list(10000)
+    
+    # Aggregate metrics by platform
+    platform_performance = {}
+    total_spend = 0
+    total_revenue = 0
+    total_leads = 0
+    
+    for metric in all_metrics:
+        campaign = next((c for c in campaigns if c["id"] == metric["campaign_id"]), None)
+        if not campaign:
+            continue
+            
+        platform = campaign["platform"]
+        if platform not in platform_performance:
+            platform_performance[platform] = {
+                "spend": 0,
+                "revenue": 0,
+                "leads": 0,
+                "appointments": 0,
+                "sales": 0,
+                "impressions": 0,
+                "clicks": 0
+            }
+        
+        platform_performance[platform]["spend"] += metric.get("spend", 0)
+        platform_performance[platform]["revenue"] += metric.get("revenue_generated", 0)
+        platform_performance[platform]["leads"] += metric.get("leads_generated", 0)
+        platform_performance[platform]["appointments"] += metric.get("appointments_scheduled", 0)
+        platform_performance[platform]["sales"] += metric.get("sales_closed", 0)
+        platform_performance[platform]["impressions"] += metric.get("impressions", 0)
+        platform_performance[platform]["clicks"] += metric.get("clicks", 0)
+        
+        total_spend += metric.get("spend", 0)
+        total_revenue += metric.get("revenue_generated", 0)
+        total_leads += metric.get("leads_generated", 0)
+    
+    # Calculate platform ROI
+    for platform in platform_performance:
+        data = platform_performance[platform]
+        data["roas"] = (data["revenue"] / data["spend"]) if data["spend"] > 0 else 0
+        data["cpl"] = (data["spend"] / data["leads"]) if data["leads"] > 0 else 0
+        data["conversion_rate"] = (data["leads"] / data["clicks"] * 100) if data["clicks"] > 0 else 0
+    
+    return {
+        "tenant_id": tenant_id,
+        "date_range": f"Last {days} days",
+        "summary": {
+            "total_spend": total_spend,
+            "total_revenue": total_revenue,
+            "total_leads": total_leads,
+            "overall_roas": (total_revenue / total_spend) if total_spend > 0 else 0,
+            "profit": total_revenue - total_spend
+        },
+        "platform_performance": platform_performance,
+        "top_performing_platform": max(platform_performance.keys(), 
+                                     key=lambda x: platform_performance[x]["roas"]) if platform_performance else None
+    }
+
+@api_router.post("/campaigns/bulk-optimize")
+async def bulk_optimize_campaigns(tenant_id: str, optimization_type: str = "auto"):
+    """Apply AI optimization to all campaigns"""
+    campaigns = await db.ad_campaigns.find({
+        "tenant_id": tenant_id,
+        "status": "active"
+    }).to_list(1000)
+    
+    optimized_campaigns = []
+    
+    for campaign in campaigns:
+        # Get recent metrics
+        metrics = await db.ad_metrics.find({
+            "campaign_id": campaign["id"]
+        }).sort("date", -1).limit(30).to_list(30)
+        
+        if not metrics:
+            continue
+        
+        # Generate recommendations
+        metrics_objects = [AdMetrics(**m) for m in metrics]
+        recommendations = OptimizationEngine.generate_optimization_recommendations(metrics_objects)
+        
+        if recommendations:
+            optimized_campaigns.append({
+                "campaign_id": campaign["id"],
+                "campaign_name": campaign["campaign_name"],
+                "platform": campaign["platform"],
+                "recommendations": recommendations
+            })
+    
+    return {
+        "tenant_id": tenant_id,
+        "optimization_type": optimization_type,
+        "campaigns_optimized": len(optimized_campaigns),
+        "results": optimized_campaigns
+    }
 @api_router.post("/tenants", response_model=Tenant)
 async def create_tenant(tenant_data: TenantCreate):
     """Create new tenant/dealership"""
