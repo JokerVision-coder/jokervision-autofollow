@@ -928,6 +928,342 @@ Vehicle Type: sedan"""
             200
         )
 
+    # Chrome Extension API Tests
+    def test_chrome_extension_health_check(self):
+        """Test Chrome extension health check endpoint"""
+        success, response = self.run_test(
+            "Chrome Extension Health Check",
+            "GET",
+            "health",
+            200
+        )
+        
+        if success:
+            # Verify response structure
+            if 'status' in response and response['status'] == 'healthy':
+                print("   ✅ Health check returned healthy status")
+                return True
+            else:
+                print("   ❌ Health check missing status or not healthy")
+                return False
+        return False
+
+    def test_chrome_extension_auth(self):
+        """Test Chrome extension authentication"""
+        auth_data = {
+            "email": "test@jokervision.com",
+            "password": "testpass123"
+        }
+        
+        success, response = self.run_test(
+            "Chrome Extension Authentication",
+            "POST",
+            "auth/extension-login",
+            200,
+            data=auth_data
+        )
+        
+        if success:
+            # Verify response structure
+            required_fields = ['success', 'user', 'tenant_id', 'token']
+            missing_fields = [field for field in required_fields if field not in response]
+            
+            if not missing_fields and response.get('success'):
+                print("   ✅ Authentication successful with all required fields")
+                self.extension_tenant_id = response.get('tenant_id')
+                return True
+            else:
+                print(f"   ❌ Authentication missing fields: {missing_fields}")
+                return False
+        return False
+
+    def test_inventory_sync(self):
+        """Test inventory synchronization"""
+        if not hasattr(self, 'extension_tenant_id'):
+            self.extension_tenant_id = "demo_tenant_123"
+        
+        sync_data = {
+            "tenant_id": self.extension_tenant_id,
+            "source": "facebook_marketplace"
+        }
+        
+        success, response = self.run_test(
+            "Inventory Sync",
+            "POST",
+            "inventory/sync",
+            200,
+            data=sync_data
+        )
+        
+        if success:
+            # Verify sync response
+            if response.get('status') == 'success' and 'vehicles_processed' in response:
+                vehicles_count = response.get('vehicles_processed', 0)
+                print(f"   ✅ Sync successful - {vehicles_count} vehicles processed")
+                return True
+            else:
+                print("   ❌ Sync failed or missing required fields")
+                return False
+        return False
+
+    def test_inventory_summary(self):
+        """Test inventory summary retrieval"""
+        if not hasattr(self, 'extension_tenant_id'):
+            self.extension_tenant_id = "demo_tenant_123"
+        
+        success, response = self.run_test(
+            "Inventory Summary",
+            "GET",
+            f"inventory/summary?tenant_id={self.extension_tenant_id}",
+            200
+        )
+        
+        if success:
+            # Verify summary structure
+            required_fields = ['total_vehicles', 'recent_vehicles']
+            missing_fields = [field for field in required_fields if field not in response]
+            
+            if not missing_fields:
+                total_vehicles = response.get('total_vehicles', 0)
+                recent_count = len(response.get('recent_vehicles', []))
+                print(f"   ✅ Summary retrieved - {total_vehicles} total, {recent_count} recent")
+                return True
+            else:
+                print(f"   ❌ Summary missing fields: {missing_fields}")
+                return False
+        return False
+
+    def test_seo_description_generation(self):
+        """Test AI-powered SEO description generation"""
+        if not hasattr(self, 'extension_tenant_id'):
+            self.extension_tenant_id = "demo_tenant_123"
+        
+        seo_request = {
+            "tenant_id": self.extension_tenant_id,
+            "vehicle_data": {
+                "year": 2023,
+                "make": "Toyota",
+                "model": "Camry",
+                "price": 28999.99,
+                "mileage": 15000,
+                "features": ["Bluetooth", "Backup Camera", "Heated Seats"],
+                "description": "Great condition Toyota Camry"
+            },
+            "current_description": "2023 Toyota Camry for sale"
+        }
+        
+        success, response = self.run_test(
+            "SEO Description Generation",
+            "POST",
+            "ai/generate-seo-description",
+            200,
+            data=seo_request
+        )
+        
+        if success:
+            # Verify AI response
+            if response.get('success') and 'optimized_description' in response:
+                description = response.get('optimized_description', '')
+                char_count = response.get('character_count', 0)
+                print(f"   ✅ SEO description generated - {char_count} characters")
+                print(f"      Preview: {description[:100]}...")
+                return True
+            else:
+                print("   ❌ SEO generation failed or missing optimized description")
+                return False
+        return False
+
+    def test_price_optimization(self):
+        """Test AI-powered price optimization"""
+        if not hasattr(self, 'extension_tenant_id'):
+            self.extension_tenant_id = "demo_tenant_123"
+        
+        price_request = {
+            "tenant_id": self.extension_tenant_id,
+            "vehicle_data": {
+                "year": 2022,
+                "make": "Honda",
+                "model": "Accord",
+                "price": 31500.00,
+                "mileage": 25000,
+                "features": ["Navigation", "Sunroof", "Leather Seats"]
+            },
+            "current_price": 31500.00
+        }
+        
+        success, response = self.run_test(
+            "Price Optimization",
+            "POST",
+            "ai/optimize-price",
+            200,
+            data=price_request
+        )
+        
+        if success:
+            # Verify price optimization response
+            required_fields = ['success', 'current_price', 'recommended_price', 'market_average', 'confidence_level']
+            missing_fields = [field for field in required_fields if field not in response]
+            
+            if not missing_fields and response.get('success'):
+                current = response.get('current_price', 0)
+                recommended = response.get('recommended_price', 0)
+                confidence = response.get('confidence_level', 0)
+                print(f"   ✅ Price optimization complete - Current: ${current:,.2f}, Recommended: ${recommended:,.2f}")
+                print(f"      Confidence: {confidence}%")
+                return True
+            else:
+                print(f"   ❌ Price optimization missing fields: {missing_fields}")
+                return False
+        return False
+
+    def test_analytics_track_interaction(self):
+        """Test analytics interaction tracking"""
+        if not hasattr(self, 'extension_tenant_id'):
+            self.extension_tenant_id = "demo_tenant_123"
+        
+        interaction_data = {
+            "tenant_id": self.extension_tenant_id,
+            "event": "listing_viewed",
+            "data": {
+                "vehicle_id": "test_vehicle_123",
+                "listing_url": "https://facebook.com/marketplace/item/123456789"
+            },
+            "url": "https://facebook.com/marketplace"
+        }
+        
+        success, response = self.run_test(
+            "Analytics Interaction Tracking",
+            "POST",
+            "analytics/track-interaction",
+            200,
+            data=interaction_data
+        )
+        
+        if success:
+            if response.get('success') and 'message' in response:
+                print("   ✅ Interaction tracked successfully")
+                return True
+            else:
+                print("   ❌ Interaction tracking failed")
+                return False
+        return False
+
+    def test_marketplace_performance_analytics(self):
+        """Test marketplace performance analytics"""
+        if not hasattr(self, 'extension_tenant_id'):
+            self.extension_tenant_id = "demo_tenant_123"
+        
+        success, response = self.run_test(
+            "Marketplace Performance Analytics",
+            "GET",
+            f"analytics/marketplace-performance?tenant_id={self.extension_tenant_id}",
+            200
+        )
+        
+        if success:
+            # Verify analytics structure
+            required_fields = ['listings_count', 'total_views', 'inquiries', 'conversion_rate']
+            missing_fields = [field for field in required_fields if field not in response]
+            
+            if not missing_fields:
+                listings = response.get('listings_count', 0)
+                views = response.get('total_views', 0)
+                inquiries = response.get('inquiries', 0)
+                conversion = response.get('conversion_rate', 0)
+                print(f"   ✅ Performance data - {listings} listings, {views} views, {inquiries} inquiries")
+                print(f"      Conversion rate: {conversion}%")
+                return True
+            else:
+                print(f"   ❌ Performance analytics missing fields: {missing_fields}")
+                return False
+        return False
+
+    def test_chrome_extension_error_handling(self):
+        """Test Chrome extension error handling"""
+        print("\n🔍 Testing Chrome Extension Error Handling...")
+        
+        # Test missing tenant_id in SEO generation
+        invalid_seo_request = {
+            "vehicle_data": {
+                "year": 2023,
+                "make": "Toyota",
+                "model": "Camry"
+            }
+        }
+        
+        success1, _ = self.run_test(
+            "SEO Generation - Missing tenant_id (Should Fail)",
+            "POST",
+            "ai/generate-seo-description",
+            422  # Validation error expected
+        )
+        
+        # Test invalid tenant_id in inventory summary
+        success2, _ = self.run_test(
+            "Inventory Summary - Invalid tenant_id",
+            "GET",
+            "inventory/summary?tenant_id=invalid_tenant",
+            200  # Should still return data but with error handling
+        )
+        
+        # Test missing required fields in analytics
+        invalid_analytics = {
+            "tenant_id": "test_tenant"
+            # Missing 'event' field
+        }
+        
+        success3, response3 = self.run_test(
+            "Analytics - Missing event field",
+            "POST",
+            "analytics/track-interaction",
+            200
+        )
+        
+        if success3 and 'error' in response3:
+            print("   ✅ Analytics correctly handled missing event field")
+            success3 = True
+        else:
+            success3 = False
+        
+        passed_tests = sum([success1, success2, success3])
+        print(f"   📊 Error Handling: {passed_tests}/3 tests passed")
+        
+        return passed_tests >= 2  # At least 2/3 should pass
+
+    def test_chrome_extension_comprehensive(self):
+        """Run comprehensive Chrome extension test suite"""
+        print("\n🔧 Running Comprehensive Chrome Extension Tests...")
+        
+        extension_tests = [
+            ("Health Check", self.test_chrome_extension_health_check),
+            ("Authentication", self.test_chrome_extension_auth),
+            ("Inventory Sync", self.test_inventory_sync),
+            ("Inventory Summary", self.test_inventory_summary),
+            ("SEO Description Generation", self.test_seo_description_generation),
+            ("Price Optimization", self.test_price_optimization),
+            ("Analytics Tracking", self.test_analytics_track_interaction),
+            ("Marketplace Performance", self.test_marketplace_performance_analytics),
+            ("Error Handling", self.test_chrome_extension_error_handling)
+        ]
+        
+        passed_tests = 0
+        total_tests = len(extension_tests)
+        
+        for test_name, test_func in extension_tests:
+            try:
+                if test_func():
+                    passed_tests += 1
+                    print(f"   ✅ {test_name} - PASSED")
+                else:
+                    print(f"   ❌ {test_name} - FAILED")
+            except Exception as e:
+                print(f"   ❌ {test_name} - ERROR: {str(e)}")
+        
+        success_rate = (passed_tests / total_tests) * 100
+        print(f"\n   📊 Chrome Extension Test Suite: {passed_tests}/{total_tests} passed ({success_rate:.1f}%)")
+        
+        return passed_tests >= total_tests * 0.8  # 80% pass rate required
+
 def main():
     print("🃏 JokerVision AutoFollow API Testing Suite")
     print("=" * 50)
