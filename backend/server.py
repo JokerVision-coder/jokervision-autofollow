@@ -205,7 +205,286 @@ class BulkFollowUpRequest(BaseModel):
     delay_hours: int = 24
     language: str = "english"
 
-# Social Media Compliance & Policy Protection Models
+# Creative Studio & Organic Strategy Models
+class CreativeTemplate(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    tenant_id: str
+    name: str
+    category: str  # "ad_creative", "social_post", "story", "video", "carousel"
+    platform: str  # "facebook", "instagram", "tiktok", "linkedin", "universal"
+    template_type: str  # "image", "video", "text", "mixed"
+    industry: str = "automotive"
+    dimensions: dict  # {"width": 1080, "height": 1080}
+    design_elements: dict  # Colors, fonts, layout structure
+    template_data: dict  # JSON structure of the template
+    preview_url: Optional[str] = None
+    usage_count: int = 0
+    rating: float = 5.0
+    tags: List[str] = []
+    is_premium: bool = False
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class CreativeAsset(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    tenant_id: str
+    name: str
+    asset_type: str  # "image", "video", "audio", "font", "logo"
+    file_url: str
+    file_size: int  # in bytes
+    dimensions: Optional[dict] = None
+    duration: Optional[float] = None  # for video/audio
+    tags: List[str] = []
+    folder: Optional[str] = None
+    usage_rights: str = "tenant_owned"  # "tenant_owned", "licensed", "stock"
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class ContentCalendar(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    tenant_id: str
+    name: str
+    platform: str
+    post_type: str  # "organic", "paid", "story", "reel"
+    content: dict  # Title, description, hashtags, etc.
+    media_assets: List[str] = []  # Asset IDs
+    scheduled_date: datetime
+    status: str = "scheduled"  # "scheduled", "published", "failed", "draft"
+    engagement_prediction: Optional[dict] = None
+    actual_performance: Optional[dict] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class OrganicStrategy(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    tenant_id: str
+    strategy_name: str
+    platform: str
+    objective: str  # "awareness", "engagement", "traffic", "leads", "sales"
+    target_audience: dict
+    content_themes: List[str]
+    posting_schedule: dict
+    hashtag_strategy: dict
+    engagement_tactics: List[str]
+    kpis: dict  # Key performance indicators
+    duration_days: int
+    status: str = "active"  # "active", "paused", "completed"
+    performance_metrics: Optional[dict] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class ContentIdea(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    tenant_id: str
+    title: str
+    platform: str
+    content_type: str  # "educational", "promotional", "behind_scenes", "user_generated", "trending"
+    description: str
+    suggested_copy: str
+    hashtags: List[str]
+    call_to_action: str
+    estimated_engagement: str = "medium"  # "low", "medium", "high"
+    difficulty_level: str = "easy"  # "easy", "medium", "hard"
+    resources_needed: List[str] = []
+    trending_score: float = 0.0
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class HashtagResearch(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    tenant_id: str
+    hashtag: str
+    platform: str
+    volume: int  # estimated monthly usage
+    difficulty: str  # "low", "medium", "high"
+    relevance_score: float  # 0.0 to 1.0
+    trending: bool = False
+    related_hashtags: List[str] = []
+    suggested_for: List[str] = []  # content types
+    last_updated: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+# Organic Growth Strategies Database
+ORGANIC_STRATEGIES = {
+    "automotive_dealership": {
+        "awareness": {
+            "content_pillars": [
+                "Vehicle showcases and reviews",
+                "Behind-the-scenes dealership life", 
+                "Customer success stories",
+                "Automotive education and tips",
+                "Community involvement"
+            ],
+            "posting_frequency": {
+                "facebook": {"posts_per_week": 5, "optimal_times": ["12:00", "15:00", "19:00"]},
+                "instagram": {"posts_per_week": 7, "stories_per_day": 3, "reels_per_week": 3},
+                "tiktok": {"videos_per_week": 5, "optimal_times": ["18:00", "20:00", "21:00"]},
+                "linkedin": {"posts_per_week": 3, "optimal_times": ["08:00", "12:00", "17:00"]}
+            },
+            "hashtag_strategy": {
+                "branded": ["#ShottenKirkToyota", "#YourDealershipName"],
+                "local": ["#SanAntonioDealer", "#TexasCars", "#LocalDealer"],
+                "industry": ["#Toyota", "#NewCars", "#CarDealer", "#AutomotiveSales"],
+                "trending": ["#CarTok", "#AutoLife", "#NewCarSmell"]
+            }
+        },
+        "engagement": {
+            "tactics": [
+                "Ask questions in captions",
+                "Create polls and interactive stories", 
+                "Respond to comments within 2 hours",
+                "Share user-generated content",
+                "Host live Q&A sessions"
+            ],
+            "content_ideas": [
+                "Car vs Car comparison videos",
+                "Guess the car price games",
+                "Customer testimonial features",
+                "Day in the life of a car salesperson",
+                "Before/after car transformation"
+            ]
+        }
+    }
+}
+
+# Creative Templates Database
+CREATIVE_TEMPLATES = {
+    "automotive_ads": [
+        {
+            "name": "Vehicle Showcase - Modern",
+            "platform": "instagram",
+            "type": "image",
+            "elements": {
+                "layout": "hero_image_with_overlay",
+                "colors": ["#1a1a1a", "#ffffff", "#ff6b35"],
+                "fonts": ["Montserrat Bold", "Open Sans"],
+                "components": ["vehicle_image", "price_overlay", "cta_button", "dealer_logo"]
+            }
+        },
+        {
+            "name": "Deal of the Week - Video",
+            "platform": "tiktok", 
+            "type": "video",
+            "elements": {
+                "duration": "15-30 seconds",
+                "style": "fast_paced_cuts",
+                "music": "upbeat_trendy",
+                "text_overlays": ["price", "features", "call_to_action"]
+            }
+        }
+    ]
+}
+
+class CreativeEngine:
+    @staticmethod
+    def generate_content_ideas(platform: str, objective: str, industry: str = "automotive") -> List[dict]:
+        """Generate AI-powered content ideas"""
+        base_ideas = {
+            "facebook": [
+                {
+                    "title": "Customer Success Story Feature",
+                    "type": "testimonial",
+                    "description": "Share a detailed customer journey from inquiry to purchase",
+                    "copy": "Meet [Customer Name]! They came to us looking for [need] and drove away with [vehicle]. Here's their story...",
+                    "hashtags": ["#CustomerStory", "#HappyCustomer", "#TestimonialTuesday"],
+                    "engagement": "high"
+                },
+                {
+                    "title": "Vehicle Feature Spotlight", 
+                    "type": "educational",
+                    "description": "Highlight a specific feature of a vehicle in your inventory",
+                    "copy": "Did you know the [Vehicle Model] comes with [Feature]? Here's why it matters for your daily drive...",
+                    "hashtags": ["#VehicleFeatures", "#TechTuesday", "#SafetyFirst"],
+                    "engagement": "medium"
+                }
+            ],
+            "instagram": [
+                {
+                    "title": "Behind-the-Scenes Content",
+                    "type": "behind_scenes", 
+                    "description": "Show the process of preparing a car for delivery",
+                    "copy": "The magic happens before you arrive! ✨ Watch how we prep your new ride for that perfect first drive",
+                    "hashtags": ["#BehindTheScenes", "#CarPrep", "#DetailingDay"],
+                    "engagement": "high"
+                },
+                {
+                    "title": "Quick Car Care Tips",
+                    "type": "educational",
+                    "description": "Share valuable car maintenance tips", 
+                    "copy": "Pro tip: [Maintenance tip] 🚗💡 Your car (and wallet) will thank you later!",
+                    "hashtags": ["#CarCareTips", "#MaintenanceMonday", "#ProTips"],
+                    "engagement": "medium"
+                }
+            ],
+            "tiktok": [
+                {
+                    "title": "Car Feature in 15 Seconds",
+                    "type": "viral_trend",
+                    "description": "Quick showcase of a cool car feature using trending audio",
+                    "copy": "POV: You discover [car feature] for the first time 🤯",
+                    "hashtags": ["#CarTok", "#FeatureReveal", "#MindBlown"],
+                    "engagement": "very_high"
+                }
+            ]
+        }
+        
+        return base_ideas.get(platform, [])
+    
+    @staticmethod
+    def optimize_hashtags(platform: str, content_type: str, location: str = "") -> dict:
+        """Generate optimized hashtag strategy"""
+        base_tags = {
+            "facebook": {
+                "limit": 5,  # Facebook doesn't favor many hashtags
+                "strategy": "focus_on_branded_and_local"
+            },
+            "instagram": {
+                "limit": 30,
+                "strategy": "mix_of_all_types",
+                "distribution": {
+                    "branded": 2,
+                    "industry": 10, 
+                    "local": 5,
+                    "trending": 8,
+                    "niche": 5
+                }
+            },
+            "tiktok": {
+                "limit": 20,
+                "strategy": "trending_heavy",
+                "focus": "viral_potential"
+            },
+            "linkedin": {
+                "limit": 10,
+                "strategy": "professional_industry_focus"
+            }
+        }
+        
+        return base_tags.get(platform, {})
+    
+    @staticmethod
+    def calculate_content_score(content_data: dict, platform: str) -> dict:
+        """Calculate predicted performance score for content"""
+        score = 0.5  # Base score
+        
+        # Platform-specific scoring
+        if platform == "instagram":
+            if "hashtags" in content_data and len(content_data["hashtags"]) > 20:
+                score += 0.2
+            if "visual_appeal" in content_data and content_data["visual_appeal"] == "high":
+                score += 0.3
+        
+        elif platform == "tiktok":
+            if "trending_audio" in content_data:
+                score += 0.4
+            if "video_length" in content_data and 15 <= content_data["video_length"] <= 30:
+                score += 0.2
+        
+        # General scoring factors
+        if "call_to_action" in content_data:
+            score += 0.1
+        if "user_generated" in content_data and content_data["user_generated"]:
+            score += 0.2
+        
+        return {
+            "predicted_score": min(score, 1.0),
+            "engagement_level": "high" if score > 0.8 else "medium" if score > 0.6 else "low",
+            "viral_potential": "high" if score > 0.9 else "medium" if score > 0.7 else "low"
+        }
 class PolicyRule(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     platform: str  # "facebook", "instagram", "tiktok", "linkedin"
