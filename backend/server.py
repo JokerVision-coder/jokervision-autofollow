@@ -3661,7 +3661,7 @@ async def enhance_listing(request: dict):
         response = await chat.send_message(user_message)
         
         # Parse AI response (simplified)
-        ai_content = response.content.strip()
+        ai_content = response.strip()
         
         # Extract components (this is a simplified version)
         lines = ai_content.split('\n')
