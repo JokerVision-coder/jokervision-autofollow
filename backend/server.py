@@ -1185,7 +1185,234 @@ async def update_sms_config(config: SMSConfig):
         "message": "SMS configuration updated (restart required for environment changes)"
     }
 
-# User Management Routes
+# SaaS Platform Management Routes
+@api_router.post("/tenants", response_model=Tenant)
+async def create_tenant(tenant_data: TenantCreate):
+    """Create new tenant/dealership"""
+    # Check if subdomain already exists
+    existing = await db.tenants.find_one({"subdomain": tenant_data.subdomain})
+    if existing:
+        raise HTTPException(status_code=400, detail="Subdomain already taken")
+    
+    # Get subscription tier details
+    tier = SUBSCRIPTION_TIERS.get(tenant_data.subscription_tier)
+    if not tier:
+        raise HTTPException(status_code=400, detail="Invalid subscription tier")
+    
+    # Create tenant
+    tenant_obj = Tenant(
+        **tenant_data.dict(),
+        monthly_price=tier.price,
+        max_users=tier.max_users,
+        max_leads=tier.max_leads,
+        trial_end_date=datetime.now(timezone.utc) + timedelta(days=14)  # 14-day trial
+    )
+    
+    tenant_doc = tenant_obj.dict()
+    tenant_doc['created_at'] = tenant_doc['created_at'].isoformat()
+    if tenant_doc.get('trial_end_date'):
+        tenant_doc['trial_end_date'] = tenant_doc['trial_end_date'].isoformat()
+    
+    await db.tenants.insert_one(tenant_doc)
+    
+    # Create initial admin user for the tenant
+    admin_user = User(
+        tenant_id=tenant_obj.id,
+        username="admin",
+        email=tenant_data.billing_email,
+        full_name="Admin User",
+        role="admin"
+    )
+    
+    user_doc = admin_user.dict()
+    user_doc['created_at'] = user_doc['created_at'].isoformat()
+    user_doc['password_hash'] = "default_admin_hash"
+    
+    await db.users.insert_one(user_doc)
+    
+    return tenant_obj
+
+@api_router.get("/tenants", response_model=List[Tenant])
+async def get_tenants():
+    """Get all tenants (admin only)"""
+    tenants = await db.tenants.find().sort("created_at", -1).to_list(1000)
+    result = []
+    for tenant in tenants:
+        if isinstance(tenant.get('created_at'), str):
+            tenant['created_at'] = datetime.fromisoformat(tenant['created_at'])
+        if isinstance(tenant.get('trial_end_date'), str) and tenant.get('trial_end_date'):
+            tenant['trial_end_date'] = datetime.fromisoformat(tenant['trial_end_date'])
+        if isinstance(tenant.get('last_payment_date'), str) and tenant.get('last_payment_date'):
+            tenant['last_payment_date'] = datetime.fromisoformat(tenant['last_payment_date'])
+        if isinstance(tenant.get('next_billing_date'), str) and tenant.get('next_billing_date'):
+            tenant['next_billing_date'] = datetime.fromisoformat(tenant['next_billing_date'])
+        result.append(Tenant(**tenant))
+    return result
+
+@api_router.get("/tenants/{tenant_id}", response_model=Tenant)
+async def get_tenant(tenant_id: str):
+    """Get tenant details"""
+    tenant = await db.tenants.find_one({"id": tenant_id})
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    
+    if isinstance(tenant.get('created_at'), str):
+        tenant['created_at'] = datetime.fromisoformat(tenant['created_at'])
+    if isinstance(tenant.get('trial_end_date'), str) and tenant.get('trial_end_date'):
+        tenant['trial_end_date'] = datetime.fromisoformat(tenant['trial_end_date'])
+    
+    return Tenant(**tenant)
+
+@api_router.put("/tenants/{tenant_id}/subscription")
+async def update_tenant_subscription(tenant_id: str, subscription_tier: str):
+    """Update tenant subscription tier"""
+    tier = SUBSCRIPTION_TIERS.get(subscription_tier)
+    if not tier:
+        raise HTTPException(status_code=400, detail="Invalid subscription tier")
+    
+    update_data = {
+        "subscription_tier": subscription_tier,
+        "monthly_price": tier.price,
+        "max_users": tier.max_users,
+        "max_leads": tier.max_leads
+    }
+    
+    await db.tenants.update_one({"id": tenant_id}, {"$set": update_data})
+    return {"status": "updated", "tenant_id": tenant_id, "new_tier": subscription_tier}
+
+@api_router.get("/subscription-tiers")
+async def get_subscription_tiers():
+    """Get available subscription tiers"""
+    return {
+        "tiers": SUBSCRIPTION_TIERS,
+        "features_comparison": {
+            "starter": ["Lead Management", "SMS Follow-up", "Basic Analytics", "Up to 4 Team Members"],
+            "professional": ["Everything in Starter", "AI Voice Calling", "Advanced Analytics", "Facebook Integration", "Custom Branding", "Up to 10 Team Members"],
+            "enterprise": ["Everything in Professional", "API Access", "Custom Integrations", "Priority Support", "White Label", "Up to 50 Team Members"]
+        }
+    }
+
+@api_router.get("/tenants/{tenant_id}/usage")
+async def get_tenant_usage(tenant_id: str, month: int = None, year: int = None):
+    """Get tenant usage statistics"""
+    now = datetime.now(timezone.utc)
+    target_month = month or now.month
+    target_year = year or now.year
+    
+    # Get or create usage record
+    usage = await db.usage.find_one({
+        "tenant_id": tenant_id,
+        "month": target_month,
+        "year": target_year
+    })
+    
+    if not usage:
+        # Create new usage record
+        usage_obj = Usage(
+            tenant_id=tenant_id,
+            month=target_month,
+            year=target_year
+        )
+        usage_doc = usage_obj.dict()
+        usage_doc['created_at'] = usage_doc['created_at'].isoformat()
+        await db.usage.insert_one(usage_doc)
+        usage = usage_doc
+    
+    # Get tenant subscription limits
+    tenant = await db.tenants.find_one({"id": tenant_id})
+    tier = SUBSCRIPTION_TIERS.get(tenant['subscription_tier']) if tenant else None
+    
+    return {
+        "usage": usage,
+        "limits": {
+            "sms_credits": tier.sms_credits if tier else 0,
+            "voice_minutes": tier.voice_minutes if tier else 0,
+            "ai_responses": tier.ai_responses if tier else 0,
+            "max_leads": tier.max_leads if tier else 0,
+            "max_users": tier.max_users if tier else 0
+        } if tier else {},
+        "percentage_used": {
+            "sms": (usage.get('sms_sent', 0) / tier.sms_credits * 100) if tier and tier.sms_credits > 0 else 0,
+            "voice": (usage.get('voice_minutes_used', 0) / tier.voice_minutes * 100) if tier and tier.voice_minutes > 0 else 0,
+            "ai": (usage.get('ai_responses_used', 0) / tier.ai_responses * 100) if tier and tier.ai_responses > 0 else 0,
+            "leads": (usage.get('leads_created', 0) / tier.max_leads * 100) if tier and tier.max_leads > 0 else 0
+        } if tier else {}
+    }
+
+@api_router.post("/tenants/{tenant_id}/usage/update")
+async def update_tenant_usage(tenant_id: str, usage_type: str, amount: int = 1):
+    """Update tenant usage (called internally)"""
+    now = datetime.now(timezone.utc)
+    
+    # Find or create current month usage
+    usage = await db.usage.find_one({
+        "tenant_id": tenant_id,
+        "month": now.month,
+        "year": now.year
+    })
+    
+    if not usage:
+        usage_obj = Usage(tenant_id=tenant_id, month=now.month, year=now.year)
+        usage_doc = usage_obj.dict()
+        usage_doc['created_at'] = usage_doc['created_at'].isoformat()
+        await db.usage.insert_one(usage_doc)
+    
+    # Update usage counter
+    update_field = f"{usage_type}_used" if usage_type in ['sms_sent', 'voice_minutes', 'ai_responses'] else usage_type
+    await db.usage.update_one(
+        {"tenant_id": tenant_id, "month": now.month, "year": now.year},
+        {"$inc": {update_field: amount}}
+    )
+    
+    return {"status": "updated", "usage_type": usage_type, "amount": amount}
+
+# Platform Analytics Routes
+@api_router.get("/platform/analytics")
+async def get_platform_analytics():
+    """Get platform-wide analytics (super admin only)"""
+    # Total tenants
+    total_tenants = await db.tenants.count_documents({})
+    active_tenants = await db.tenants.count_documents({"subscription_status": "active"})
+    trial_tenants = await db.tenants.count_documents({"trial_end_date": {"$gt": datetime.now(timezone.utc).isoformat()}})
+    
+    # Revenue calculations
+    tenants = await db.tenants.find({"subscription_status": "active"}).to_list(1000)
+    monthly_revenue = sum(tenant.get('monthly_price', 0) for tenant in tenants)
+    
+    # Usage statistics
+    current_month = datetime.now(timezone.utc).month
+    current_year = datetime.now(timezone.utc).year
+    
+    usage_stats = await db.usage.find({
+        "month": current_month,
+        "year": current_year
+    }).to_list(1000)
+    
+    total_sms = sum(usage.get('sms_sent', 0) for usage in usage_stats)
+    total_voice_minutes = sum(usage.get('voice_minutes_used', 0) for usage in usage_stats)
+    total_ai_responses = sum(usage.get('ai_responses_used', 0) for usage in usage_stats)
+    
+    return {
+        "tenants": {
+            "total": total_tenants,
+            "active": active_tenants,
+            "trial": trial_tenants,
+            "conversion_rate": (active_tenants / total_tenants * 100) if total_tenants > 0 else 0
+        },
+        "revenue": {
+            "monthly": monthly_revenue,
+            "annual_projection": monthly_revenue * 12
+        },
+        "usage": {
+            "total_sms_sent": total_sms,
+            "total_voice_minutes": total_voice_minutes,
+            "total_ai_responses": total_ai_responses
+        },
+        "subscription_breakdown": {
+            tier: len([t for t in tenants if t.get('subscription_tier') == tier])
+            for tier in SUBSCRIPTION_TIERS.keys()
+        }
+    }
 @api_router.post("/users", response_model=User)
 async def create_user(user_data: UserCreate):
     """Create new collaborator (max 3 total users including admin)"""
