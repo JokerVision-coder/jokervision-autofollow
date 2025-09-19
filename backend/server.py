@@ -3524,13 +3524,14 @@ async def generate_seo_description(request: SEODescriptionRequest):
         """
         
         # Use Emergent LLM API
-        llm_client = LlmChat(
+        chat = LlmChat(
             api_key=llm_key,
             session_id=f"seo_generation_{request.tenant_id}_{str(uuid.uuid4())[:8]}",
             system_message="You are an expert automotive SEO copywriter specializing in Facebook Marketplace listings."
-        )
-        user_message = UserMessage(prompt)
-        response = llm_client.chat([user_message])
+        ).with_model("openai", "gpt-4o-mini")
+        
+        user_message = UserMessage(text=prompt)
+        response = await chat.send_message(user_message)
         
         optimized_description = response.content.strip()
         
