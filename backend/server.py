@@ -3529,7 +3529,7 @@ async def generate_seo_description(request: SEODescriptionRequest):
             session_id=f"seo_generation_{request.tenant_id}_{str(uuid.uuid4())[:8]}",
             system_message="You are an expert automotive SEO copywriter specializing in Facebook Marketplace listings."
         )
-        user_message = UserMessage(content=prompt)
+        user_message = UserMessage(prompt)
         response = llm_client.chat([user_message])
         
         optimized_description = response.content.strip()
@@ -3655,7 +3655,7 @@ async def enhance_listing(request: dict):
             session_id=f"listing_enhancement_{tenant_id}_{str(uuid.uuid4())[:8]}",
             system_message="You are an expert automotive marketing specialist focused on Facebook Marketplace optimization."
         )
-        user_message = UserMessage(content=prompt)
+        user_message = UserMessage(prompt)
         response = llm_client.chat([user_message])
         
         # Parse AI response (simplified)
@@ -3719,7 +3719,7 @@ async def enhance_text(request: dict):
             session_id=f"text_enhancement_{tenant_id}_{str(uuid.uuid4())[:8]}",
             system_message="You are a professional copywriter specializing in automotive content optimization."
         )
-        user_message = UserMessage(content=prompt)
+        user_message = UserMessage(prompt)
         response = llm_client.chat([user_message])
         
         enhanced_text = response.content.strip()
