@@ -3725,7 +3725,7 @@ async def enhance_text(request: dict):
         user_message = UserMessage(text=prompt)
         response = await chat.send_message(user_message)
         
-        enhanced_text = response.content.strip()
+        enhanced_text = response.strip()
         
         # Log enhancement
         enhancement_doc = {
