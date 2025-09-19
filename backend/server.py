@@ -205,7 +205,293 @@ class BulkFollowUpRequest(BaseModel):
     delay_hours: int = 24
     language: str = "english"
 
-# Social Media Advertising & ROI Optimization Models
+# Social Media Compliance & Policy Protection Models
+class PolicyRule(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    platform: str  # "facebook", "instagram", "tiktok", "linkedin"
+    category: str  # "content", "targeting", "frequency", "landing_page", "creative"
+    rule_type: str  # "prohibited", "restricted", "warning", "best_practice"
+    title: str
+    description: str
+    violation_keywords: List[str] = []
+    max_frequency: Optional[dict] = None  # {"daily": 5, "weekly": 20}
+    severity: str = "medium"  # "low", "medium", "high", "critical"
+    auto_fix: bool = False
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class ComplianceCheck(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    tenant_id: str
+    campaign_id: Optional[str] = None
+    creative_id: Optional[str] = None
+    check_type: str  # "pre_launch", "ongoing", "post_violation"
+    platform: str
+    status: str = "pending"  # "pending", "passed", "failed", "warning"
+    violations: List[dict] = []
+    recommendations: List[str] = []
+    risk_score: float = 0.0  # 0.0 to 1.0
+    checked_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class AccountHealth(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    tenant_id: str
+    platform: str
+    account_id: str
+    health_score: float = 1.0  # 0.0 to 1.0 (1.0 = perfect health)
+    violation_count: int = 0
+    warning_count: int = 0
+    last_violation_date: Optional[datetime] = None
+    spending_velocity: float = 0.0  # Daily spend increase rate
+    frequency_score: float = 1.0  # Posting frequency compliance
+    content_score: float = 1.0  # Content quality score
+    status: str = "healthy"  # "healthy", "at_risk", "restricted", "suspended"
+    recommendations: List[str] = []
+    last_checked: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class SafetyGuideline(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    platform: str
+    category: str
+    guideline: str
+    importance: str = "high"  # "low", "medium", "high", "critical"
+    auto_enforce: bool = True
+
+# Platform-Specific Policy Rules
+PLATFORM_POLICIES = {
+    "facebook": {
+        "prohibited_content": [
+            "before/after weight loss claims", "miracle cures", "get rich quick",
+            "tobacco", "weapons", "adult content", "discriminatory language",
+            "misleading claims", "fake testimonials", "clickbait"
+        ],
+        "restricted_targeting": [
+            "health conditions", "financial status", "personal struggles",
+            "age under 18 for certain products", "lookalike audiences over 10%"
+        ],
+        "frequency_limits": {
+            "daily_posts": 5,
+            "weekly_campaigns": 20,
+            "audience_overlap": 0.25
+        },
+        "creative_requirements": {
+            "text_ratio": 0.20,  # Max 20% text in images
+            "video_length": {"min": 1, "max": 240},  # seconds
+            "image_resolution": {"min_width": 1200, "min_height": 628}
+        }
+    },
+    "instagram": {
+        "prohibited_content": [
+            "fake followers/engagement", "adult content", "counterfeit goods",
+            "before/after claims", "misleading information", "spam hashtags"
+        ],
+        "hashtag_limits": {
+            "max_per_post": 30,
+            "banned_hashtags": ["#follow4follow", "#like4like", "#followback"]
+        },
+        "frequency_limits": {
+            "daily_posts": 3,
+            "daily_stories": 10,
+            "hourly_actions": 60
+        },
+        "engagement_rules": {
+            "max_follows_per_hour": 20,
+            "max_likes_per_hour": 100,
+            "max_comments_per_hour": 20
+        }
+    },
+    "tiktok": {
+        "prohibited_content": [
+            "political ads", "adult content", "dangerous challenges",
+            "misleading health claims", "fake news", "copyright violations"
+        ],
+        "creative_requirements": {
+            "video_length": {"min": 9, "max": 60},  # seconds
+            "resolution": "720p minimum",
+            "format": ["mp4", "mov", "avi"]
+        },
+        "frequency_limits": {
+            "daily_posts": 3,
+            "campaign_changes": 5
+        },
+        "targeting_restrictions": [
+            "no custom audiences under 1000",
+            "no sensitive interest targeting"
+        ]
+    },
+    "linkedin": {
+        "prohibited_content": [
+            "inappropriate professional content", "misleading job postings",
+            "get rich quick schemes", "adult content", "discriminatory language"
+        ],
+        "targeting_limits": {
+            "audience_size_min": 1000,
+            "location_targeting_max": 10
+        },
+        "frequency_limits": {
+            "daily_inmails": 100,
+            "connection_requests": 100,
+            "sponsored_content": 5
+        },
+        "professional_standards": [
+            "business-appropriate imagery",
+            "professional language only",
+            "accurate company information"
+        ]
+    }
+}
+
+class ComplianceEngine:
+    @staticmethod
+    def check_content_compliance(content: str, platform: str) -> dict:
+        """Check content for policy violations"""
+        violations = []
+        risk_score = 0.0
+        
+        platform_rules = PLATFORM_POLICIES.get(platform, {})
+        prohibited = platform_rules.get("prohibited_content", [])
+        
+        content_lower = content.lower()
+        
+        for prohibited_item in prohibited:
+            if any(word in content_lower for word in prohibited_item.split()):
+                violations.append({
+                    "type": "prohibited_content",
+                    "description": f"Contains prohibited content: {prohibited_item}",
+                    "severity": "high",
+                    "recommendation": f"Remove or replace content related to: {prohibited_item}"
+                })
+                risk_score += 0.3
+        
+        # Check for excessive capitalization
+        if len([c for c in content if c.isupper()]) / len(content) > 0.3:
+            violations.append({
+                "type": "formatting_issue",
+                "description": "Excessive use of capital letters (looks like shouting)",
+                "severity": "medium",
+                "recommendation": "Use normal capitalization"
+            })
+            risk_score += 0.1
+        
+        # Check for too many exclamation marks
+        if content.count('!') > 3:
+            violations.append({
+                "type": "formatting_issue", 
+                "description": "Too many exclamation marks",
+                "severity": "low",
+                "recommendation": "Limit exclamation marks to 1-2 per post"
+            })
+            risk_score += 0.05
+        
+        return {
+            "violations": violations,
+            "risk_score": min(risk_score, 1.0),
+            "status": "failed" if risk_score > 0.5 else "warning" if risk_score > 0.2 else "passed"
+        }
+    
+    @staticmethod
+    def check_frequency_compliance(tenant_id: str, platform: str, campaign_data: dict) -> dict:
+        """Check posting/campaign frequency compliance"""
+        violations = []
+        risk_score = 0.0
+        
+        platform_rules = PLATFORM_POLICIES.get(platform, {})
+        frequency_limits = platform_rules.get("frequency_limits", {})
+        
+        # This would check against actual database records in production
+        # For now, return sample compliance check
+        
+        return {
+            "violations": violations,
+            "risk_score": risk_score,
+            "status": "passed"
+        }
+    
+    @staticmethod
+    def check_creative_compliance(creative_data: dict, platform: str) -> dict:
+        """Check creative assets for policy compliance"""
+        violations = []
+        risk_score = 0.0
+        
+        platform_rules = PLATFORM_POLICIES.get(platform, {})
+        creative_requirements = platform_rules.get("creative_requirements", {})
+        
+        # Check text ratio for Facebook/Instagram images
+        if platform in ["facebook", "instagram"] and creative_data.get("type") == "image":
+            text_ratio = creative_data.get("text_ratio", 0.0)
+            max_text_ratio = creative_requirements.get("text_ratio", 0.20)
+            
+            if text_ratio > max_text_ratio:
+                violations.append({
+                    "type": "text_ratio_violation",
+                    "description": f"Text ratio ({text_ratio:.0%}) exceeds limit ({max_text_ratio:.0%})",
+                    "severity": "high",
+                    "recommendation": "Reduce text in image or use text overlay in post caption"
+                })
+                risk_score += 0.4
+        
+        # Check video length requirements
+        if creative_data.get("type") == "video":
+            duration = creative_data.get("duration", 0)
+            video_limits = creative_requirements.get("video_length", {})
+            
+            if duration < video_limits.get("min", 0):
+                violations.append({
+                    "type": "video_too_short",
+                    "description": f"Video is too short ({duration}s)",
+                    "severity": "medium",
+                    "recommendation": f"Minimum length is {video_limits['min']}s"
+                })
+                risk_score += 0.2
+            
+            if duration > video_limits.get("max", 999):
+                violations.append({
+                    "type": "video_too_long", 
+                    "description": f"Video is too long ({duration}s)",
+                    "severity": "medium",
+                    "recommendation": f"Maximum length is {video_limits['max']}s"
+                })
+                risk_score += 0.2
+        
+        return {
+            "violations": violations,
+            "risk_score": min(risk_score, 1.0),
+            "status": "failed" if risk_score > 0.5 else "warning" if risk_score > 0.2 else "passed"
+        }
+    
+    @staticmethod
+    def generate_safe_posting_schedule(platform: str, posts_per_day: int) -> dict:
+        """Generate safe posting schedule to avoid frequency violations"""
+        platform_rules = PLATFORM_POLICIES.get(platform, {})
+        frequency_limits = platform_rules.get("frequency_limits", {})
+        
+        max_daily = frequency_limits.get("daily_posts", 10)
+        recommended_posts = min(posts_per_day, max_daily)
+        
+        # Generate optimal posting times (platform-specific)
+        optimal_times = {
+            "facebook": ["9:00", "13:00", "15:00", "19:00", "21:00"],
+            "instagram": ["11:00", "13:00", "17:00", "19:00", "21:00"],
+            "tiktok": ["6:00", "10:00", "19:00", "20:00", "21:00"],
+            "linkedin": ["8:00", "12:00", "17:00", "18:00", "19:00"]
+        }
+        
+        schedule = []
+        times = optimal_times.get(platform, ["9:00", "13:00", "17:00"])
+        
+        for i in range(recommended_posts):
+            if i < len(times):
+                schedule.append({
+                    "time": times[i],
+                    "priority": "high" if i < 2 else "medium"
+                })
+        
+        return {
+            "platform": platform,
+            "recommended_posts_per_day": recommended_posts,
+            "max_safe_posts": max_daily,
+            "schedule": schedule,
+            "warning": f"Exceeding {max_daily} posts per day may trigger platform restrictions" if posts_per_day > max_daily else None
+        }
 class AdCampaign(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     tenant_id: str
