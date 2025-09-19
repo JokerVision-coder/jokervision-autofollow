@@ -1911,380 +1911,413 @@ async def update_sms_config(config: SMSConfig):
         "message": "SMS configuration updated (restart required for environment changes)"
     }
 
-# Compliance & Safety Routes
-@api_router.post("/compliance/check-content")
-async def check_content_compliance_api(
+# Creative Studio & Organic Strategy Routes
+@api_router.get("/creative/templates")
+async def get_creative_templates(
     tenant_id: str,
-    platform: str,
-    content: str,
-    creative_data: dict = None
+    platform: str = None,
+    category: str = None,
+    industry: str = "automotive"
 ):
-    """Check content and creative for policy compliance before posting"""
+    """Get creative templates filtered by criteria"""
     try:
-        # Check content compliance
-        content_check = ComplianceEngine.check_content_compliance(content, platform)
+        query = {"tenant_id": tenant_id}
+        if platform:
+            query["platform"] = platform
+        if category:
+            query["category"] = category
         
-        # Check creative compliance if provided
-        creative_check = {}
-        if creative_data:
-            creative_check = ComplianceEngine.check_creative_compliance(creative_data, platform)
+        # Get custom templates
+        custom_templates = await db.creative_templates.find(query).to_list(1000)
         
-        # Combine results
-        all_violations = content_check.get("violations", []) + creative_check.get("violations", [])
-        combined_risk_score = (content_check.get("risk_score", 0) + creative_check.get("risk_score", 0)) / 2
-        
-        # Determine overall status
-        overall_status = "passed"
-        if combined_risk_score > 0.5:
-            overall_status = "failed"
-        elif combined_risk_score > 0.2:
-            overall_status = "warning"
-        
-        # Create compliance check record
-        compliance_check = ComplianceCheck(
-            tenant_id=tenant_id,
-            check_type="pre_launch",
-            platform=platform,
-            status=overall_status,
-            violations=[v for v in all_violations],
-            risk_score=combined_risk_score
-        )
-        
-        check_doc = compliance_check.dict()
-        check_doc['checked_at'] = check_doc['checked_at'].isoformat()
-        await db.compliance_checks.insert_one(check_doc)
+        # Add built-in templates
+        builtin_templates = []
+        for template_data in CREATIVE_TEMPLATES.get("automotive_ads", []):
+            if not platform or template_data.get("platform") == platform:
+                builtin_templates.append({
+                    "id": f"builtin_{hash(template_data['name'])}",
+                    "name": template_data["name"],
+                    "platform": template_data["platform"],
+                    "type": template_data["type"],
+                    "elements": template_data["elements"],
+                    "is_builtin": True,
+                    "is_premium": False
+                })
         
         return {
-            "compliance_check_id": compliance_check.id,
-            "status": overall_status,
-            "risk_score": combined_risk_score,
-            "violations": all_violations,
-            "safe_to_publish": overall_status in ["passed", "warning"],
-            "recommendations": [v["recommendation"] for v in all_violations]
+            "custom_templates": custom_templates,
+            "builtin_templates": builtin_templates,
+            "total_count": len(custom_templates) + len(builtin_templates)
         }
         
     except Exception as e:
-        logging.error(f"Compliance check error: {str(e)}")
-        raise HTTPException(status_code=500, detail="Compliance check failed")
+        logging.error(f"Get templates error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to retrieve templates")
 
-@api_router.get("/compliance/account-health/{platform}")
-async def get_account_health(tenant_id: str, platform: str):
-    """Get account health status and recommendations"""
+@api_router.post("/creative/generate-ideas")
+async def generate_content_ideas_api(
+    tenant_id: str,
+    platform: str,
+    objective: str = "engagement",
+    count: int = 10
+):
+    """Generate AI-powered content ideas"""
     try:
-        # Get or create account health record
-        health_record = await db.account_health.find_one({
-            "tenant_id": tenant_id,
-            "platform": platform
-        })
+        # Generate base ideas
+        ideas = CreativeEngine.generate_content_ideas(platform, objective)
         
-        if not health_record:
-            # Create initial health record
-            health_obj = AccountHealth(
+        # Enhance with AI and save to database
+        enhanced_ideas = []
+        for idea in ideas[:count]:
+            content_idea = ContentIdea(
                 tenant_id=tenant_id,
+                title=idea["title"],
                 platform=platform,
-                account_id=f"{tenant_id}_{platform}"
+                content_type=idea["type"],
+                description=idea["description"],
+                suggested_copy=idea["copy"],
+                hashtags=idea["hashtags"],
+                call_to_action="Learn more about our inventory!",
+                estimated_engagement=idea["engagement"]
             )
-            health_doc = health_obj.dict()
-            health_doc['last_checked'] = health_doc['last_checked'].isoformat()
-            await db.account_health.insert_one(health_doc)
-            health_record = health_doc
-        
-        # Update health score based on recent violations
-        recent_violations = await db.compliance_checks.count_documents({
-            "tenant_id": tenant_id,
-            "platform": platform,
-            "status": "failed",
-            "checked_at": {"$gte": (datetime.now(timezone.utc) - timedelta(days=30)).isoformat()}
-        })
-        
-        # Calculate health score (1.0 = perfect, 0.0 = very poor)
-        base_score = 1.0
-        violation_penalty = min(recent_violations * 0.1, 0.5)  # Max 50% penalty
-        current_health_score = max(base_score - violation_penalty, 0.1)
-        
-        # Generate recommendations based on health score
-        recommendations = []
-        if current_health_score < 0.5:
-            recommendations.extend([
-                "Review and update all active campaigns for policy compliance",
-                "Reduce posting frequency to avoid spam detection",
-                "Review recent violations and implement corrective measures"
-            ])
-        elif current_health_score < 0.8:
-            recommendations.extend([
-                "Monitor content more closely before publishing",
-                "Consider reducing ad spend temporarily"
-            ])
-        
-        # Update health record
-        await db.account_health.update_one(
-            {"tenant_id": tenant_id, "platform": platform},
-            {
-                "$set": {
-                    "health_score": current_health_score,
-                    "violation_count": recent_violations,
-                    "recommendations": recommendations,
-                    "last_checked": datetime.now(timezone.utc).isoformat()
-                }
-            }
-        )
+            
+            idea_doc = content_idea.dict()
+            idea_doc['created_at'] = idea_doc['created_at'].isoformat()
+            await db.content_ideas.insert_one(idea_doc)
+            
+            enhanced_ideas.append(content_idea)
         
         return {
-            "tenant_id": tenant_id,
             "platform": platform,
-            "health_score": current_health_score,
-            "status": "healthy" if current_health_score > 0.8 else "at_risk" if current_health_score > 0.5 else "poor",
-            "violation_count": recent_violations,
-            "recommendations": recommendations,
-            "next_check_due": (datetime.now(timezone.utc) + timedelta(days=7)).isoformat()
+            "objective": objective,
+            "ideas_generated": len(enhanced_ideas),
+            "ideas": enhanced_ideas
         }
         
     except Exception as e:
-        logging.error(f"Account health check error: {str(e)}")
-        raise HTTPException(status_code=500, detail="Account health check failed")
+        logging.error(f"Generate ideas error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to generate content ideas")
 
-@api_router.post("/compliance/safe-schedule")
-async def generate_safe_posting_schedule_api(
-    tenant_id: str,
-    platform: str,
-    posts_per_day: int = 3,
-    campaign_count: int = 1
-):
-    """Generate safe posting schedule to avoid platform restrictions"""
+@api_router.post("/organic/strategy")
+async def create_organic_strategy(tenant_id: str, strategy_data: dict):
+    """Create comprehensive organic social media strategy"""
     try:
-        # Generate safe schedule
-        schedule = ComplianceEngine.generate_safe_posting_schedule(platform, posts_per_day)
+        platform = strategy_data.get("platform")
+        objective = strategy_data.get("objective", "awareness")
         
-        # Add platform-specific warnings and tips
-        platform_tips = {
-            "facebook": [
-                "Avoid posting identical content across multiple pages",
-                "Space out campaign launches by at least 2 hours",
-                "Use Facebook Creator Studio for optimal scheduling"
-            ],
-            "instagram": [
-                "Mix content types (photos, videos, stories, reels)",
-                "Avoid excessive hashtag usage (#spam-like behavior)",
-                "Engage authentically with your audience"
-            ],
-            "tiktok": [
-                "Post during peak hours in your audience's timezone",
-                "Avoid back-to-back video uploads",
-                "Focus on original, creative content"
-            ],
-            "linkedin": [
-                "Post during business hours for B2B content",
-                "Maintain professional tone and imagery",
-                "Engage meaningfully with connections"
-            ]
-        }
+        # Get strategy template
+        strategy_template = ORGANIC_STRATEGIES.get("automotive_dealership", {}).get(objective, {})
         
-        schedule["platform_tips"] = platform_tips.get(platform, [])
-        schedule["compliance_score"] = 1.0 if posts_per_day <= schedule["max_safe_posts"] else 0.7
-        
-        return schedule
-        
-    except Exception as e:
-        logging.error(f"Safe schedule generation error: {str(e)}")
-        raise HTTPException(status_code=500, detail="Schedule generation failed")
-
-@api_router.get("/compliance/policy-guidelines/{platform}")
-async def get_policy_guidelines(platform: str):
-    """Get comprehensive policy guidelines for platform"""
-    try:
-        platform_policies = PLATFORM_POLICIES.get(platform, {})
-        
-        if not platform_policies:
-            raise HTTPException(status_code=404, detail=f"Guidelines not found for platform: {platform}")
-        
-        # Format guidelines for easy consumption
-        guidelines = {
-            "platform": platform,
-            "last_updated": datetime.now().isoformat(),
-            "categories": {
-                "prohibited_content": {
-                    "title": "Prohibited Content",
-                    "description": "Content that will result in immediate violations",
-                    "items": platform_policies.get("prohibited_content", []),
-                    "severity": "critical"
-                },
-                "frequency_limits": {
-                    "title": "Frequency Limits",
-                    "description": "Maximum posting/campaign frequencies",
-                    "items": platform_policies.get("frequency_limits", {}),
-                    "severity": "high"
-                },
-                "creative_requirements": {
-                    "title": "Creative Requirements", 
-                    "description": "Technical specifications for images/videos",
-                    "items": platform_policies.get("creative_requirements", {}),
-                    "severity": "medium"
-                }
+        # Create strategy object
+        strategy = OrganicStrategy(
+            tenant_id=tenant_id,
+            strategy_name=f"{platform.title()} {objective.title()} Strategy",
+            platform=platform,
+            objective=objective,
+            target_audience=strategy_data.get("target_audience", {}),
+            content_themes=strategy_template.get("content_pillars", []),
+            posting_schedule=strategy_template.get("posting_frequency", {}).get(platform, {}),
+            hashtag_strategy=strategy_template.get("hashtag_strategy", {}),
+            engagement_tactics=strategy_template.get("tactics", []),
+            kpis={
+                "follower_growth": "10% monthly",
+                "engagement_rate": ">3%",
+                "reach_increase": "25% monthly",
+                "website_traffic": "15% increase"
             },
-            "best_practices": [
-                f"Always test small before scaling on {platform}",
-                "Monitor account health daily",
-                "Keep detailed records of all campaign changes",
-                "Respond quickly to any platform notifications"
-            ]
-        }
+            duration_days=strategy_data.get("duration_days", 30)
+        )
         
-        return guidelines
+        strategy_doc = strategy.dict()
+        strategy_doc['created_at'] = strategy_doc['created_at'].isoformat()
+        await db.organic_strategies.insert_one(strategy_doc)
+        
+        return strategy
         
     except Exception as e:
-        logging.error(f"Policy guidelines error: {str(e)}")
-        raise HTTPException(status_code=500, detail="Failed to retrieve guidelines")
+        logging.error(f"Create strategy error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to create organic strategy")
 
-@api_router.post("/compliance/bulk-audit")
-async def bulk_audit_campaigns(tenant_id: str, platform: str = None):
-    """Audit all campaigns for compliance issues"""
+@api_router.get("/organic/content-calendar")
+async def get_content_calendar(
+    tenant_id: str,
+    platform: str = None,
+    start_date: str = None,
+    end_date: str = None
+):
+    """Get content calendar with scheduling"""
     try:
-        # Get campaigns to audit
         query = {"tenant_id": tenant_id}
         if platform:
             query["platform"] = platform
         
-        campaigns = await db.ad_campaigns.find(query).to_list(1000)
+        if start_date and end_date:
+            query["scheduled_date"] = {
+                "$gte": start_date,
+                "$lte": end_date
+            }
         
-        audit_results = []
-        total_violations = 0
+        calendar_items = await db.content_calendar.find(query).sort("scheduled_date", 1).to_list(1000)
         
-        for campaign in campaigns:
-            # Get campaign creatives
-            creatives = await db.ad_creatives.find({"campaign_id": campaign["id"]}).to_list(100)
+        # Format for calendar display
+        calendar_data = {}
+        for item in calendar_items:
+            date_key = item["scheduled_date"][:10]  # YYYY-MM-DD
+            if date_key not in calendar_data:
+                calendar_data[date_key] = []
             
-            campaign_violations = []
-            
-            # Check each creative
-            for creative in creatives:
-                content_check = ComplianceEngine.check_content_compliance(
-                    creative.get("headline", "") + " " + creative.get("description", ""),
-                    campaign["platform"]
-                )
-                
-                creative_check = ComplianceEngine.check_creative_compliance(
-                    {
-                        "type": creative.get("creative_type", "image"),
-                        "text_ratio": creative.get("text_ratio", 0.0),
-                        "duration": creative.get("duration", 0)
-                    },
-                    campaign["platform"]
-                )
-                
-                violations = content_check.get("violations", []) + creative_check.get("violations", [])
-                if violations:
-                    campaign_violations.extend(violations)
-            
-            audit_results.append({
-                "campaign_id": campaign["id"],
-                "campaign_name": campaign["campaign_name"],
-                "platform": campaign["platform"],
-                "violations": campaign_violations,
-                "violation_count": len(campaign_violations),
-                "risk_level": "high" if len(campaign_violations) > 5 else "medium" if len(campaign_violations) > 2 else "low",
-                "needs_immediate_attention": len(campaign_violations) > 5
+            calendar_data[date_key].append({
+                "id": item["id"],
+                "platform": item["platform"],
+                "post_type": item["post_type"],
+                "title": item["content"].get("title", "Untitled Post"),
+                "status": item["status"],
+                "time": item["scheduled_date"][11:16]  # HH:MM
             })
-            
-            total_violations += len(campaign_violations)
         
-        # Save audit results
+        return {
+            "tenant_id": tenant_id,
+            "calendar_data": calendar_data,
+            "total_scheduled": len(calendar_items)
+        }
+        
+    except Exception as e:
+        logging.error(f"Get content calendar error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to retrieve content calendar")
+
+@api_router.post("/organic/hashtag-research")
+async def research_hashtags(tenant_id: str, keywords: List[str], platform: str):
+    """Research and suggest optimal hashtags"""
+    try:
+        hashtag_suggestions = []
+        
+        # Base automotive hashtags
+        automotive_base = [
+            "#Cars", "#Toyota", "#Automotive", "#NewCar", "#CarDealer",
+            "#CarSales", "#DreamCar", "#AutoLife", "#VehicleShowcase"
+        ]
+        
+        # Platform-specific suggestions
+        platform_specific = {
+            "instagram": [
+                "#Instacar", "#CarGram", "#AutoDaily", "#CarPhotography", 
+                "#CarsOfInstagram", "#CarLifestyle", "#AutoEnthusiast"
+            ],
+            "tiktok": [
+                "#CarTok", "#AutoTok", "#CarReview", "#CarHacks",
+                "#CarTips", "#DealerLife", "#CarShopping"
+            ],
+            "facebook": [
+                "#LocalDealer", "#CommunityFirst", "#CarExperts",
+                "#TrustedDealer", "#CarService"
+            ],
+            "linkedin": [
+                "#AutomotiveIndustry", "#CarSales", "#AutomotiveProfessional",
+                "#DealershipLife", "#AutoBusiness"
+            ]
+        }
+        
+        # Combine and optimize
+        all_suggestions = automotive_base + platform_specific.get(platform, [])
+        
+        # Add keyword-based hashtags
+        for keyword in keywords:
+            keyword_tags = [
+                f"#{keyword.replace(' ', '')}",
+                f"#{keyword.replace(' ', '').title()}Cars",
+                f"#{keyword.replace(' ', '')}Deal"
+            ]
+            all_suggestions.extend(keyword_tags)
+        
+        # Create hashtag research objects
+        for tag in all_suggestions[:30]:  # Limit to 30 suggestions
+            hashtag_research = HashtagResearch(
+                tenant_id=tenant_id,
+                hashtag=tag,
+                platform=platform,
+                volume=random.randint(1000, 100000),  # Simulated volume
+                difficulty="medium",
+                relevance_score=random.uniform(0.6, 0.95),
+                trending=random.choice([True, False]),
+                related_hashtags=random.sample(all_suggestions, 3)
+            )
+            
+            research_doc = hashtag_research.dict()
+            research_doc['last_updated'] = research_doc['last_updated'].isoformat()
+            await db.hashtag_research.insert_one(research_doc)
+            
+            hashtag_suggestions.append(hashtag_research)
+        
+        # Optimize hashtag strategy
+        optimization = CreativeEngine.optimize_hashtags(platform, "general")
+        
+        return {
+            "platform": platform,
+            "keywords_researched": keywords,
+            "hashtag_suggestions": hashtag_suggestions,
+            "optimization_strategy": optimization,
+            "recommended_mix": {
+                "high_volume_low_competition": [h for h in hashtag_suggestions if h.difficulty == "low"][:5],
+                "medium_competition": [h for h in hashtag_suggestions if h.difficulty == "medium"][:10],
+                "trending_hashtags": [h for h in hashtag_suggestions if h.trending][:5]
+            }
+        }
+        
+    except Exception as e:
+        logging.error(f"Hashtag research error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to research hashtags")
+
+@api_router.post("/creative/analyze-content")
+async def analyze_content_performance(tenant_id: str, content_data: dict, platform: str):
+    """Analyze content and predict performance"""
+    try:
+        # Calculate content score
+        performance_prediction = CreativeEngine.calculate_content_score(content_data, platform)
+        
+        # Generate improvement suggestions
+        suggestions = []
+        
+        if performance_prediction["predicted_score"] < 0.7:
+            suggestions.extend([
+                "Add more engaging visual elements",
+                "Include a clear call-to-action",
+                "Use trending hashtags for better visibility"
+            ])
+        
+        if platform == "instagram" and len(content_data.get("hashtags", [])) < 20:
+            suggestions.append("Use more hashtags (aim for 20-30 on Instagram)")
+        
+        if platform == "tiktok" and "trending_audio" not in content_data:
+            suggestions.append("Consider using trending audio for better reach")
+        
+        # Save analysis
+        analysis_record = {
+            "id": str(uuid.uuid4()),
+            "tenant_id": tenant_id,
+            "platform": platform,
+            "content_data": content_data,
+            "performance_prediction": performance_prediction,
+            "suggestions": suggestions,
+            "analyzed_at": datetime.now(timezone.utc).isoformat()
+        }
+        
+        await db.content_analysis.insert_one(analysis_record)
+        
+        return {
+            "analysis_id": analysis_record["id"],
+            "performance_prediction": performance_prediction,
+            "suggestions": suggestions,
+            "optimization_tips": {
+                "best_posting_times": {
+                    "facebook": ["12:00", "15:00", "19:00"],
+                    "instagram": ["11:00", "14:00", "17:00", "20:00"],
+                    "tiktok": ["18:00", "19:00", "20:00"],
+                    "linkedin": ["08:00", "12:00", "17:00"]
+                }.get(platform, []),
+                "recommended_frequency": {
+                    "facebook": "3-5 posts per week",
+                    "instagram": "1 post per day + 3 stories",
+                    "tiktok": "3-5 videos per week",
+                    "linkedin": "2-3 posts per week"
+                }.get(platform, "")
+            }
+        }
+        
+    except Exception as e:
+        logging.error(f"Content analysis error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to analyze content")
+
+@api_router.get("/creative/asset-library")
+async def get_asset_library(tenant_id: str, asset_type: str = None, folder: str = None):
+    """Get creative assets library"""
+    try:
+        query = {"tenant_id": tenant_id}
+        if asset_type:
+            query["asset_type"] = asset_type
+        if folder:
+            query["folder"] = folder
+        
+        assets = await db.creative_assets.find(query).sort("created_at", -1).to_list(1000)
+        
+        # Organize by folders
+        folders = {}
+        for asset in assets:
+            folder_name = asset.get("folder", "Uncategorized")
+            if folder_name not in folders:
+                folders[folder_name] = []
+            folders[folder_name].append(asset)
+        
+        return {
+            "tenant_id": tenant_id,
+            "total_assets": len(assets),
+            "folders": folders,
+            "asset_types": list(set(asset.get("asset_type") for asset in assets))
+        }
+        
+    except Exception as e:
+        logging.error(f"Get asset library error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to retrieve asset library")
+
+@api_router.post("/organic/growth-audit")
+async def conduct_growth_audit(tenant_id: str, platform: str):
+    """Conduct comprehensive organic growth audit"""
+    try:
+        # Get current strategies
+        strategies = await db.organic_strategies.find({
+            "tenant_id": tenant_id,
+            "platform": platform,
+            "status": "active"
+        }).to_list(100)
+        
+        # Get recent content performance
+        recent_content = await db.content_calendar.find({
+            "tenant_id": tenant_id,
+            "platform": platform,
+            "status": "published"
+        }).sort("scheduled_date", -1).limit(30).to_list(30)
+        
+        # Calculate audit scores
+        strategy_score = 0.8 if strategies else 0.3
+        content_consistency = len(recent_content) / 30  # Posts in last 30 days
+        
+        # Generate audit results
+        audit_results = {
+            "overall_score": (strategy_score + min(content_consistency, 1.0)) / 2,
+            "strategy_assessment": {
+                "has_strategy": len(strategies) > 0,
+                "strategy_count": len(strategies),
+                "content_consistency": content_consistency,
+                "posting_frequency": "optimal" if content_consistency >= 0.8 else "needs_improvement"
+            },
+            "recommendations": [],
+            "priority_actions": []
+        }
+        
+        # Generate recommendations
+        if not strategies:
+            audit_results["recommendations"].append("Create a comprehensive organic growth strategy")
+            audit_results["priority_actions"].append("Set up content pillars and posting schedule")
+        
+        if content_consistency < 0.5:
+            audit_results["recommendations"].append("Increase posting consistency")
+            audit_results["priority_actions"].append("Use content calendar for better planning")
+        
+        # Save audit
         audit_record = {
             "id": str(uuid.uuid4()),
             "tenant_id": tenant_id,
             "platform": platform,
             "audit_date": datetime.now(timezone.utc).isoformat(),
-            "campaigns_audited": len(campaigns),
-            "total_violations": total_violations,
             "results": audit_results
         }
         
-        await db.compliance_audits.insert_one(audit_record)
+        await db.growth_audits.insert_one(audit_record)
         
-        return {
-            "audit_id": audit_record["id"],
-            "summary": {
-                "campaigns_audited": len(campaigns),
-                "total_violations": total_violations,
-                "high_risk_campaigns": len([r for r in audit_results if r["risk_level"] == "high"]),
-                "needs_immediate_attention": len([r for r in audit_results if r["needs_immediate_attention"]])
-            },
-            "results": audit_results,
-            "recommendations": [
-                "Address high-risk campaigns immediately",
-                "Review and update content guidelines",
-                "Implement pre-approval process for new campaigns",
-                "Schedule regular compliance audits"
-            ] if total_violations > 10 else [
-                "Maintain current compliance standards",
-                "Continue regular monitoring"
-            ]
-        }
+        return audit_results
         
     except Exception as e:
-        logging.error(f"Bulk audit error: {str(e)}")
-        raise HTTPException(status_code=500, detail="Bulk audit failed")
-
-@api_router.post("/compliance/emergency-pause")
-async def emergency_pause_campaigns(tenant_id: str, platform: str, reason: str):
-    """Emergency pause all campaigns to prevent account suspension"""
-    try:
-        # Pause all active campaigns
-        result = await db.ad_campaigns.update_many(
-            {
-                "tenant_id": tenant_id,
-                "platform": platform,
-                "status": "active"
-            },
-            {
-                "$set": {
-                    "status": "paused",
-                    "paused_reason": reason,
-                    "paused_at": datetime.now(timezone.utc).isoformat(),
-                    "auto_paused": True
-                }
-            }
-        )
-        
-        # Log emergency action
-        emergency_log = {
-            "id": str(uuid.uuid4()),
-            "tenant_id": tenant_id,
-            "platform": platform,
-            "action": "emergency_pause",
-            "reason": reason,
-            "campaigns_affected": result.modified_count,
-            "timestamp": datetime.now(timezone.utc).isoformat()
-        }
-        
-        await db.emergency_actions.insert_one(emergency_log)
-        
-        # Update account health status
-        await db.account_health.update_one(
-            {"tenant_id": tenant_id, "platform": platform},
-            {
-                "$set": {
-                    "status": "emergency_paused",
-                    "last_emergency_action": datetime.now(timezone.utc).isoformat()
-                }
-            },
-            upsert=True
-        )
-        
-        return {
-            "action": "emergency_pause_complete",
-            "campaigns_paused": result.modified_count,
-            "reason": reason,
-            "next_steps": [
-                "Review all paused campaigns for compliance",
-                "Fix any policy violations identified",
-                "Contact platform support if needed",
-                "Gradually resume campaigns after fixes"
-            ]
-        }
-        
-    except Exception as e:
-        logging.error(f"Emergency pause error: {str(e)}")
-        raise HTTPException(status_code=500, detail="Emergency pause failed")
+        logging.error(f"Growth audit error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to conduct growth audit")
 @api_router.post("/campaigns", response_model=AdCampaign)
 async def create_ad_campaign(campaign_data: AdCampaignCreate):
     """Create new advertising campaign"""
