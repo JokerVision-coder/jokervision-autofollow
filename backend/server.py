@@ -133,14 +133,103 @@ class FollowUpMessageCreate(BaseModel):
     scheduled_datetime: datetime
     language: str = "english"
 
+# Multi-Tenant SaaS Models
+class Tenant(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    company_name: str
+    subdomain: str  # unique subdomain for each dealership
+    phone: str
+    email: str
+    address: str
+    logo_url: Optional[str] = None
+    subscription_tier: str = "starter"  # starter, professional, enterprise
+    subscription_status: str = "active"  # active, suspended, cancelled
+    billing_email: str
+    monthly_price: float
+    max_users: int = 4  # based on subscription tier
+    max_leads: int = 1000  # based on subscription tier
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    trial_end_date: Optional[datetime] = None
+    last_payment_date: Optional[datetime] = None
+    next_billing_date: Optional[datetime] = None
+
+class TenantCreate(BaseModel):
+    company_name: str
+    subdomain: str
+    phone: str
+    email: str
+    address: str
+    billing_email: str
+    subscription_tier: str = "starter"
+
+class SubscriptionTier(BaseModel):
+    name: str
+    price: float
+    max_users: int
+    max_leads: int
+    features: List[str]
+    sms_credits: int
+    voice_minutes: int
+    ai_responses: int
+
+# Subscription Tiers Definition
+SUBSCRIPTION_TIERS = {
+    "starter": SubscriptionTier(
+        name="Starter",
+        price=99.00,
+        max_users=4,
+        max_leads=1000,
+        features=["Lead Management", "SMS Follow-up", "Basic Analytics", "3 Team Members"],
+        sms_credits=500,
+        voice_minutes=0,
+        ai_responses=1000
+    ),
+    "professional": SubscriptionTier(
+        name="Professional", 
+        price=199.00,
+        max_users=10,
+        max_leads=5000,
+        features=["Everything in Starter", "AI Voice Calling", "Advanced Analytics", "Facebook Integration", "Custom Branding"],
+        sms_credits=2000,
+        voice_minutes=500,
+        ai_responses=5000
+    ),
+    "enterprise": SubscriptionTier(
+        name="Enterprise",
+        price=399.00,
+        max_users=50,
+        max_leads=25000,
+        features=["Everything in Professional", "API Access", "Custom Integrations", "Priority Support", "White Label"],
+        sms_credits=10000,
+        voice_minutes=2000,
+        ai_responses=25000
+    )
+}
+
+class Usage(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    tenant_id: str
+    month: int
+    year: int
+    sms_sent: int = 0
+    voice_minutes_used: int = 0
+    ai_responses_used: int = 0
+    leads_created: int = 0
+    sales_recorded: int = 0
+    active_users: int = 0
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+# Keep the BulkFollowUpRequest for backward compatibility
 class BulkFollowUpRequest(BaseModel):
     lead_ids: List[str]
     stage: str
     delay_hours: int = 24
     language: str = "english"
 
+# Update existing models to include tenant_id
 class User(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    tenant_id: str  # Multi-tenant support
     username: str
     email: str
     full_name: str
@@ -150,16 +239,42 @@ class User(BaseModel):
     last_login: Optional[datetime] = None
 
 class UserCreate(BaseModel):
+    tenant_id: str
     username: str
     email: str
     full_name: str
     password: str
     role: str = "collaborator"
 
+class Lead(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    tenant_id: str  # Multi-tenant support
+    first_name: str
+    last_name: str
+    primary_phone: str
+    alternate_phone: Optional[str] = None
+    email: str
+    date_of_birth: Optional[str] = None
+    budget: Optional[str] = None
+    income: Optional[str] = None
+    vehicle_type: Optional[str] = None
+    employment_status: Optional[str] = None
+    employment_duration: Optional[str] = None
+    occupation: Optional[str] = None
+    employer: Optional[str] = None
+    address: Optional[str] = None
+    reference_number: Optional[str] = None
+    status: str = Field(default="new")
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    last_contacted: Optional[datetime] = None
+    notes: Optional[str] = None
+    assigned_to: Optional[str] = None  # User ID
+
 class SoldVehicle(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    tenant_id: str  # Multi-tenant support
     lead_id: Optional[str] = None
-    salesperson_id: str  # User ID who made the sale
+    salesperson_id: str
     stock_number: str
     vehicle_make: str
     vehicle_model: str
@@ -168,16 +283,17 @@ class SoldVehicle(BaseModel):
     sale_date: datetime
     sale_price: float
     cost_price: float
-    front_profit: float  # Gross profit on vehicle
-    back_profit: float   # Finance, warranty, accessories profit
+    front_profit: float
+    back_profit: float
     total_profit: float
-    commission_rate: float  # Calculated based on units sold
+    commission_rate: float
     commission_earned: float
     customer_name: str
-    financing_type: Optional[str] = None  # "cash", "finance", "lease"
+    financing_type: Optional[str] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class SoldVehicleCreate(BaseModel):
+    tenant_id: str
     lead_id: Optional[str] = None
     salesperson_id: str
     stock_number: str
