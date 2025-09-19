@@ -1,0 +1,22 @@
+{
+  "name": "jokervision-deployment",
+  "version": "1.0.0",
+  "description": "Deployment scripts and configuration for JokerVision AutoFollow",
+  "scripts": {
+    "deploy:railway": "./railway-deploy.sh",
+    "deploy:vercel": "./vercel-deploy.sh",
+    "deploy:all": "npm run deploy:railway && npm run deploy:vercel",
+    "setup:env": "cp production.env.template ../.env",
+    "validate:env": "node validate-env.js"
+  },
+  "dependencies": {
+    "@railway/cli": "^3.0.0",
+    "vercel": "^32.0.0"
+  },
+  "devDependencies": {
+    "dotenv": "^16.0.0"
+  },
+  "keywords": ["deployment", "jokervision", "railway", "vercel", "production"],
+  "author": "JokerVision Team",
+  "license": "MIT"
+}
