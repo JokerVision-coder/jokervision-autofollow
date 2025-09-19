@@ -3651,13 +3651,14 @@ async def enhance_listing(request: dict):
         """
         
         # Use AI to enhance listing
-        llm_client = LlmChat(
+        chat = LlmChat(
             api_key=llm_key,
             session_id=f"listing_enhancement_{tenant_id}_{str(uuid.uuid4())[:8]}",
             system_message="You are an expert automotive marketing specialist focused on Facebook Marketplace optimization."
-        )
-        user_message = UserMessage(prompt)
-        response = llm_client.chat([user_message])
+        ).with_model("openai", "gpt-4o-mini")
+        
+        user_message = UserMessage(text=prompt)
+        response = await chat.send_message(user_message)
         
         # Parse AI response (simplified)
         ai_content = response.content.strip()
