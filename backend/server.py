@@ -13,6 +13,7 @@ from emergentintegrations.llm.chat import LlmChat, UserMessage
 import json
 import requests
 import asyncio
+import random
 from fastapi import BackgroundTasks
 
 ROOT_DIR = Path(__file__).parent
