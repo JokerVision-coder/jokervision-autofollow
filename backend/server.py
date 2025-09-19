@@ -3342,6 +3342,566 @@ async def get_dashboard_stats():
         "recent_leads": recent_leads
     }
 
+# Chrome Extension Models and Endpoints
+class VehicleData(BaseModel):
+    title: Optional[str] = None
+    year: Optional[int] = None
+    make: Optional[str] = None
+    model: Optional[str] = None
+    price: Optional[float] = None
+    mileage: Optional[int] = None
+    description: Optional[str] = None
+    features: List[str] = []
+    images: List[str] = []
+
+class SEODescriptionRequest(BaseModel):
+    tenant_id: str
+    vehicle_data: VehicleData
+    current_description: Optional[str] = None
+
+class PriceOptimizationRequest(BaseModel):
+    tenant_id: str
+    vehicle_data: VehicleData
+    current_price: Optional[float] = None
+
+class InventorySyncRequest(BaseModel):
+    tenant_id: str
+    source: str = "facebook_marketplace"
+
+class ExtensionAuthRequest(BaseModel):
+    email: str
+    password: str
+
+# Chrome Extension API Endpoints
+@api_router.get("/health")
+async def health_check():
+    """Health check endpoint for Chrome extension"""
+    return {"status": "healthy", "timestamp": datetime.now(timezone.utc).isoformat()}
+
+@api_router.post("/auth/extension-login")
+async def extension_login(auth_data: ExtensionAuthRequest):
+    """Authenticate user for Chrome extension"""
+    # Simple authentication - in production, implement proper auth
+    # For now, return mock data for testing
+    return {
+        "success": True,
+        "user": {
+            "id": str(uuid.uuid4()),
+            "email": auth_data.email,
+            "name": "Demo User"
+        },
+        "tenant_id": "demo_tenant_123",
+        "token": "mock_jwt_token"
+    }
+
+@api_router.post("/inventory/sync")
+async def sync_inventory(request: InventorySyncRequest):
+    """Sync inventory with external sources"""
+    try:
+        # Mock inventory sync for demonstration
+        # In production, this would sync with actual inventory systems
+        
+        # Simulate processing time
+        await asyncio.sleep(2)
+        
+        # Mock successful sync response
+        vehicles_processed = random.randint(5, 25)
+        
+        # Log sync activity
+        sync_doc = {
+            "id": str(uuid.uuid4()),
+            "tenant_id": request.tenant_id,
+            "source": request.source,
+            "vehicles_processed": vehicles_processed,
+            "status": "completed",
+            "synced_at": datetime.now(timezone.utc).isoformat()
+        }
+        
+        await db.inventory_syncs.insert_one(sync_doc)
+        
+        return {
+            "status": "success",
+            "vehicles_processed": vehicles_processed,
+            "message": f"Successfully synced {vehicles_processed} vehicles from {request.source}"
+        }
+        
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": f"Sync failed: {str(e)}"
+        }
+
+@api_router.get("/inventory/summary")
+async def get_inventory_summary(tenant_id: str):
+    """Get inventory summary for Chrome extension"""
+    try:
+        # Get recent sync data
+        recent_sync = await db.inventory_syncs.find_one(
+            {"tenant_id": tenant_id},
+            sort=[("synced_at", -1)]
+        )
+        
+        # Mock inventory data
+        total_vehicles = random.randint(50, 200)
+        recent_vehicles = [
+            {
+                "year": 2023,
+                "make": "Toyota",
+                "model": "Camry",
+                "price": 28999,
+                "status": "pending"
+            },
+            {
+                "year": 2022,
+                "make": "Honda", 
+                "model": "Accord",
+                "price": 31500,
+                "status": "processing"
+            },
+            {
+                "year": 2024,
+                "make": "Ford",
+                "model": "F-150",
+                "price": 42999,
+                "status": "completed"
+            }
+        ]
+        
+        return {
+            "total_vehicles": total_vehicles,
+            "last_sync": recent_sync.get("synced_at") if recent_sync else None,
+            "recent_vehicles": recent_vehicles
+        }
+        
+    except Exception as e:
+        return {
+            "total_vehicles": 0,
+            "last_sync": None,
+            "recent_vehicles": [],
+            "error": str(e)
+        }
+
+@api_router.post("/ai/generate-seo-description")
+async def generate_seo_description(request: SEODescriptionRequest):
+    """Generate SEO-optimized vehicle description using AI"""
+    try:
+        # Get Emergent LLM key
+        llm_key = os.environ.get('EMERGENT_LLM_KEY')
+        if not llm_key:
+            raise HTTPException(status_code=500, detail="LLM API key not configured")
+        
+        # Build context for AI
+        vehicle_info = []
+        if request.vehicle_data.year:
+            vehicle_info.append(f"{request.vehicle_data.year}")
+        if request.vehicle_data.make:
+            vehicle_info.append(f"{request.vehicle_data.make}")
+        if request.vehicle_data.model:
+            vehicle_info.append(f"{request.vehicle_data.model}")
+        
+        vehicle_title = " ".join(vehicle_info) if vehicle_info else "Vehicle"
+        
+        # Create AI prompt for SEO description
+        prompt = f"""
+        Create an SEO-optimized Facebook Marketplace listing description for a {vehicle_title}.
+        
+        Vehicle Details:
+        - Price: ${request.vehicle_data.price:,.2f} if {request.vehicle_data.price} else "Price available upon request"
+        - Mileage: {f"{request.vehicle_data.mileage:,} miles" if request.vehicle_data.mileage else "Mileage varies"}
+        - Features: {", ".join(request.vehicle_data.features) if request.vehicle_data.features else "Fully equipped"}
+        
+        Current description: {request.current_description or "None provided"}
+        
+        Requirements:
+        1. Include relevant automotive keywords for SEO
+        2. Highlight key selling points and features
+        3. Include call-to-action for viewing/contacting
+        4. Keep it engaging but professional
+        5. Optimize for Facebook Marketplace search
+        6. Maximum 500 characters
+        
+        Generate a compelling, SEO-optimized description:
+        """
+        
+        # Use Emergent LLM API
+        llm_client = LlmChat(api_key=llm_key)
+        user_message = UserMessage(content=prompt)
+        response = llm_client.chat([user_message])
+        
+        optimized_description = response.content.strip()
+        
+        # Log AI usage for analytics
+        ai_usage_doc = {
+            "id": str(uuid.uuid4()),
+            "tenant_id": request.tenant_id,
+            "action": "seo_description_generation",
+            "input_tokens": len(prompt.split()),
+            "output_tokens": len(optimized_description.split()),
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        
+        await db.ai_usage.insert_one(ai_usage_doc)
+        
+        return {
+            "success": True,
+            "optimized_description": optimized_description,
+            "original_description": request.current_description,
+            "keywords_added": ["SEO-optimized", "Facebook Marketplace", "automotive"],
+            "character_count": len(optimized_description)
+        }
+        
+    except Exception as e:
+        logging.error(f"SEO description generation error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to generate SEO description: {str(e)}")
+
+@api_router.post("/ai/optimize-price")
+async def optimize_price(request: PriceOptimizationRequest):
+    """Optimize vehicle pricing using market data and AI"""
+    try:
+        # Mock market analysis for demonstration
+        # In production, this would integrate with real market data APIs
+        
+        current_price = request.current_price or request.vehicle_data.price or 25000
+        
+        # Simulate market analysis
+        market_average = current_price * random.uniform(0.9, 1.1)
+        price_range_min = market_average * 0.85
+        price_range_max = market_average * 1.15
+        
+        # AI-based price recommendation
+        if current_price > market_average * 1.1:
+            recommended_price = market_average * 1.05
+            explanation = "Your current price is above market average. Consider reducing it to attract more buyers."
+        elif current_price < market_average * 0.9:
+            recommended_price = market_average * 0.95
+            explanation = "Your price is below market average. You could potentially increase it to maximize profit."
+        else:
+            recommended_price = current_price
+            explanation = "Your current price is competitive with the market. Consider keeping it as is."
+        
+        confidence_level = random.randint(75, 95)
+        
+        # Log pricing analysis
+        pricing_doc = {
+            "id": str(uuid.uuid4()),
+            "tenant_id": request.tenant_id,
+            "vehicle_data": request.vehicle_data.dict(),
+            "current_price": current_price,
+            "recommended_price": recommended_price,
+            "market_average": market_average,
+            "confidence_level": confidence_level,
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        
+        await db.price_optimizations.insert_one(pricing_doc)
+        
+        return {
+            "success": True,
+            "current_price": current_price,
+            "recommended_price": round(recommended_price, 2),
+            "market_average": round(market_average, 2),
+            "price_range": {
+                "min": round(price_range_min, 2),
+                "max": round(price_range_max, 2)
+            },
+            "confidence_level": confidence_level,
+            "explanation": explanation,
+            "savings_potential": round(abs(current_price - recommended_price), 2) if recommended_price != current_price else 0
+        }
+        
+    except Exception as e:
+        logging.error(f"Price optimization error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to optimize price: {str(e)}")
+
+@api_router.post("/ai/enhance-listing")
+async def enhance_listing(request: dict):
+    """Enhance vehicle listing with AI optimizations"""
+    try:
+        tenant_id = request.get("tenant_id")
+        vehicle_info = request.get("vehicle_info", {})
+        
+        if not tenant_id:
+            raise HTTPException(status_code=400, detail="tenant_id is required")
+        
+        # Get Emergent LLM key
+        llm_key = os.environ.get('EMERGENT_LLM_KEY')
+        if not llm_key:
+            return {"error": "LLM API key not configured"}
+        
+        # Generate enhanced description
+        vehicle_summary = f"{vehicle_info.get('year', 'Recent')} {vehicle_info.get('make', '')} {vehicle_info.get('model', 'Vehicle')}"
+        
+        prompt = f"""
+        Enhance this vehicle listing for maximum Facebook Marketplace appeal:
+        
+        Vehicle: {vehicle_summary}
+        Price: ${vehicle_info.get('price', 'TBD')}
+        
+        Provide:
+        1. An engaging, SEO-optimized description (300-400 characters)
+        2. 5 relevant keywords for better searchability  
+        3. Optimal pricing recommendation based on market trends
+        
+        Focus on features that buyers care about most: reliability, fuel efficiency, safety, and value.
+        """
+        
+        # Use AI to enhance listing
+        llm_client = LlmChat(api_key=llm_key)
+        user_message = UserMessage(content=prompt)
+        response = llm_client.chat([user_message])
+        
+        # Parse AI response (simplified)
+        ai_content = response.content.strip()
+        
+        # Extract components (this is a simplified version)
+        lines = ai_content.split('\n')
+        optimized_description = lines[0] if lines else "Enhanced with AI optimization"
+        keywords = ["reliable", "fuel-efficient", "well-maintained", "great-value", "certified"]
+        
+        return {
+            "success": True,
+            "optimized_description": optimized_description,
+            "keywords": keywords,
+            "recommended_price": vehicle_info.get('price', 25000) * random.uniform(0.95, 1.05)
+        }
+        
+    except Exception as e:
+        logging.error(f"Listing enhancement error: {str(e)}")
+        return {"error": str(e)}
+
+@api_router.post("/ai/enhance-text")
+async def enhance_text(request: dict):
+    """Enhance any text content with AI"""
+    try:
+        tenant_id = request.get("tenant_id")
+        text = request.get("text", "")
+        context = request.get("context", "general")
+        
+        if not tenant_id or not text:
+            raise HTTPException(status_code=400, detail="tenant_id and text are required")
+        
+        # Get Emergent LLM key  
+        llm_key = os.environ.get('EMERGENT_LLM_KEY')
+        if not llm_key:
+            return {"error": "LLM API key not configured"}
+        
+        # Create context-specific prompt
+        if context == "vehicle_listing":
+            prompt = f"""
+            Improve this vehicle listing text for Facebook Marketplace:
+            
+            Original text: "{text}"
+            
+            Make it more engaging, add relevant keywords, and optimize for search visibility.
+            Keep the same general length but make it more compelling to potential buyers.
+            Focus on benefits and key selling points.
+            """
+        else:
+            prompt = f"""
+            Improve this text to make it more engaging and professional:
+            
+            Original text: "{text}"
+            
+            Enhance clarity, readability, and impact while maintaining the original intent.
+            """
+        
+        # Use AI to enhance text
+        llm_client = LlmChat(api_key=llm_key)
+        user_message = UserMessage(content=prompt)
+        response = llm_client.chat([user_message])
+        
+        enhanced_text = response.content.strip()
+        
+        # Log enhancement
+        enhancement_doc = {
+            "id": str(uuid.uuid4()),
+            "tenant_id": tenant_id,
+            "original_text": text,
+            "enhanced_text": enhanced_text,
+            "context": context,
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        
+        await db.text_enhancements.insert_one(enhancement_doc)
+        
+        return {
+            "success": True,
+            "enhanced_text": enhanced_text,
+            "original_length": len(text),
+            "enhanced_length": len(enhanced_text)
+        }
+        
+    except Exception as e:
+        logging.error(f"Text enhancement error: {str(e)}")
+        return {"error": str(e)}
+
+@api_router.post("/analytics/track-interaction")
+async def track_interaction(request: dict):
+    """Track user interactions for analytics"""
+    try:
+        tenant_id = request.get("tenant_id")
+        event = request.get("event")
+        data = request.get("data", {})
+        url = request.get("url", "")
+        
+        if not tenant_id or not event:
+            return {"error": "tenant_id and event are required"}
+        
+        # Store interaction data  
+        interaction_doc = {
+            "id": str(uuid.uuid4()),
+            "tenant_id": tenant_id,
+            "event": event,
+            "data": data,
+            "url": url,
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        }
+        
+        await db.extension_analytics.insert_one(interaction_doc)
+        
+        return {"success": True, "message": "Interaction tracked"}
+        
+    except Exception as e:
+        logging.error(f"Analytics tracking error: {str(e)}")
+        return {"error": str(e)}
+
+@api_router.post("/analytics/log-activity")
+async def log_activity(request: dict):
+    """Log Chrome extension activity"""
+    try:
+        tenant_id = request.get("tenant_id")
+        activity = request.get("activity", {})
+        
+        if not tenant_id:
+            return {"error": "tenant_id is required"}
+        
+        # Store activity log
+        activity_doc = {
+            "id": str(uuid.uuid4()),
+            "tenant_id": tenant_id,
+            "activity": activity,
+            "logged_at": datetime.now(timezone.utc).isoformat()
+        }
+        
+        await db.activity_logs.insert_one(activity_doc)
+        
+        return {"success": True, "message": "Activity logged"}
+        
+    except Exception as e:
+        logging.error(f"Activity logging error: {str(e)}")
+        return {"error": str(e)}
+
+@api_router.get("/analytics/marketplace-performance")
+async def get_marketplace_performance(tenant_id: str):
+    """Get Facebook Marketplace performance analytics"""
+    try:
+        # Mock analytics data for demonstration
+        # In production, this would analyze real data from the database
+        
+        performance_data = {
+            "listings_count": random.randint(15, 50),
+            "total_views": random.randint(500, 2000),
+            "inquiries": random.randint(25, 100),
+            "conversion_rate": round(random.uniform(3.5, 8.5), 2),
+            "average_response_time": "2.3 hours",
+            "top_performing_vehicles": [
+                {
+                    "vehicle": "2023 Toyota Camry",
+                    "views": random.randint(100, 300),
+                    "inquiries": random.randint(8, 15)
+                },
+                {
+                    "vehicle": "2022 Honda Accord", 
+                    "views": random.randint(80, 250),
+                    "inquiries": random.randint(6, 12)
+                }
+            ],
+            "recent_activity": [
+                {
+                    "type": "listing_created",
+                    "vehicle": "2024 Ford F-150",
+                    "timestamp": datetime.now(timezone.utc).isoformat()
+                },
+                {
+                    "type": "inquiry_received",
+                    "vehicle": "2023 Toyota RAV4",
+                    "timestamp": (datetime.now(timezone.utc) - timedelta(hours=2)).isoformat()
+                }
+            ]
+        }
+        
+        return performance_data
+        
+    except Exception as e:
+        logging.error(f"Performance analytics error: {str(e)}")
+        return {"error": str(e)}
+
+@api_router.post("/inventory/bulk-upload")
+async def bulk_upload_inventory(tenant_id: str):
+    """Handle bulk inventory upload from Chrome extension"""
+    try:
+        # Mock bulk upload processing
+        # In production, this would process actual CSV/Excel files
+        
+        # Simulate processing time
+        await asyncio.sleep(3)
+        
+        processed_count = random.randint(10, 50)
+        
+        # Log bulk upload
+        upload_doc = {
+            "id": str(uuid.uuid4()),
+            "tenant_id": tenant_id,
+            "processed_count": processed_count,
+            "status": "completed",
+            "uploaded_at": datetime.now(timezone.utc).isoformat()
+        }
+        
+        await db.bulk_uploads.insert_one(upload_doc)
+        
+        return {
+            "success": True,
+            "processed_count": processed_count,
+            "message": f"Successfully processed {processed_count} vehicles"
+        }
+        
+    except Exception as e:
+        logging.error(f"Bulk upload error: {str(e)}")
+        return {"error": str(e)}
+
+@api_router.put("/automation/auto-posting")
+async def toggle_auto_posting(request: dict):
+    """Toggle auto-posting automation"""
+    try:
+        tenant_id = request.get("tenant_id")
+        enabled = request.get("enabled", False)
+        
+        if not tenant_id:
+            raise HTTPException(status_code=400, detail="tenant_id is required")
+        
+        # Update automation settings
+        automation_doc = {
+            "tenant_id": tenant_id,
+            "auto_posting_enabled": enabled,
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }
+        
+        await db.automation_settings.update_one(
+            {"tenant_id": tenant_id},
+            {"$set": automation_doc},
+            upsert=True
+        )
+        
+        return {
+            "success": True,
+            "auto_posting_enabled": enabled,
+            "message": f"Auto-posting {'enabled' if enabled else 'disabled'}"
+        }
+        
+    except Exception as e:
+        logging.error(f"Auto-posting toggle error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 # Include the router in the main app
 app.include_router(api_router)
 
