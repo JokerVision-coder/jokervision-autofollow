@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Link, useNavigate } from 'react-router-dom';
+import { isMobile, isTablet, isDesktop } from 'react-device-detect';
 import axios from 'axios';
 import './App.css';
 import { Button } from './components/ui/button';
@@ -13,10 +14,12 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './components/ui/select';
 import { Switch } from './components/ui/switch';
 import { toast, Toaster } from 'sonner';
+import CreativeStudio from './CreativeStudio';
 import { 
   Users, MessageSquare, Calendar, BarChart3, Plus, Send, Bot, Phone, Mail, 
   DollarSign, Briefcase, Clock, Settings, Zap, TrendingUp, PhoneCall, MessageCircle,
-  Trophy, Target, UserPlus, Trash2, Eye, Edit, Car, Calculator
+  Trophy, Target, UserPlus, Trash2, Eye, Edit, Car, Calculator, Palette, 
+  Smartphone, Monitor, Tablet, Globe, TrendingDown
 } from 'lucide-react';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
