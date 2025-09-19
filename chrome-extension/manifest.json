@@ -1,0 +1,89 @@
+{
+  "manifest_version": 3,
+  "name": "JokerVision AutoDealer Pro - Facebook Marketplace AI",
+  "version": "2.0.0",
+  "description": "Advanced AI-powered Facebook Marketplace automation for car dealerships. Outperforms competitors with intelligent SEO optimization and automated inventory management.",
+  
+  "permissions": [
+    "activeTab",
+    "storage",
+    "scripting",
+    "identity",
+    "background",
+    "tabs",
+    "webRequest",
+    "declarativeNetRequest"
+  ],
+  
+  "host_permissions": [
+    "https://www.facebook.com/*",
+    "https://facebook.com/*",
+    "https://marketplace.facebook.com/*",
+    "https://graph.facebook.com/*",
+    "https://autofollow-pro.preview.emergentagent.com/*",
+    "https://*.cars.com/*",
+    "https://*.autotrader.com/*",
+    "https://*.carvana.com/*"
+  ],
+  
+  "background": {
+    "service_worker": "background.js"
+  },
+  
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.facebook.com/*",
+        "https://facebook.com/*",
+        "https://marketplace.facebook.com/*"
+      ],
+      "js": ["content.js"],
+      "css": ["styles.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "JokerVision AutoDealer Pro",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "injection.js",
+        "ai-optimizer.js",
+        "marketplace-injector.js",
+        "icons/*"
+      ],
+      "matches": [
+        "https://www.facebook.com/*",
+        "https://facebook.com/*",
+        "https://marketplace.facebook.com/*"
+      ]
+    }
+  ],
+  
+  "externally_connectable": {
+    "matches": [
+      "https://autofollow-pro.preview.emergentagent.com/*"
+    ]
+  },
+  
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  }
+}
