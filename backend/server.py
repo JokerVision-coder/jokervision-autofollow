@@ -29,30 +29,9 @@ app = FastAPI()
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
 
-# Lead Models
-class Lead(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    first_name: str
-    last_name: str
-    primary_phone: str
-    alternate_phone: Optional[str] = None
-    email: str
-    date_of_birth: Optional[str] = None
-    budget: Optional[str] = None
-    income: Optional[str] = None
-    vehicle_type: Optional[str] = None
-    employment_status: Optional[str] = None
-    employment_duration: Optional[str] = None
-    occupation: Optional[str] = None
-    employer: Optional[str] = None
-    address: Optional[str] = None
-    reference_number: Optional[str] = None
-    status: str = Field(default="new")  # new, contacted, scheduled, closed
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    last_contacted: Optional[datetime] = None
-    notes: Optional[str] = None
-
+# Lead Models - Updated for Multi-Tenant
 class LeadCreate(BaseModel):
+    tenant_id: str
     first_name: str
     last_name: str
     primary_phone: str
