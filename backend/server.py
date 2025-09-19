@@ -205,7 +205,167 @@ class BulkFollowUpRequest(BaseModel):
     delay_hours: int = 24
     language: str = "english"
 
-# Update existing models to include tenant_id
+# Social Media Advertising & ROI Optimization Models
+class AdCampaign(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    tenant_id: str
+    campaign_name: str
+    platform: str  # "facebook", "instagram", "tiktok", "linkedin"
+    campaign_type: str  # "lead_generation", "traffic", "conversions", "brand_awareness"
+    status: str = "active"  # "active", "paused", "completed"
+    budget_type: str = "daily"  # "daily", "lifetime"
+    budget_amount: float
+    target_audience: dict  # JSON with audience targeting data
+    ad_creative: dict  # JSON with creative assets and copy
+    objective: str  # "leads", "sales", "appointments"
+    start_date: datetime
+    end_date: Optional[datetime] = None
+    platform_campaign_id: Optional[str] = None  # ID from social platform
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class AdCampaignCreate(BaseModel):
+    tenant_id: str
+    campaign_name: str
+    platform: str
+    campaign_type: str
+    budget_type: str = "daily"
+    budget_amount: float
+    target_audience: dict
+    ad_creative: dict
+    objective: str
+    start_date: datetime
+    end_date: Optional[datetime] = None
+
+class AdMetrics(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    tenant_id: str
+    campaign_id: str
+    date: datetime
+    impressions: int = 0
+    clicks: int = 0
+    spend: float = 0.0
+    leads_generated: int = 0
+    appointments_scheduled: int = 0
+    sales_closed: int = 0
+    revenue_generated: float = 0.0
+    cpm: float = 0.0  # Cost per mille
+    cpc: float = 0.0  # Cost per click
+    cpl: float = 0.0  # Cost per lead
+    cpa: float = 0.0  # Cost per appointment
+    roas: float = 0.0  # Return on ad spend
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class AdMetricsCreate(BaseModel):
+    tenant_id: str
+    campaign_id: str
+    date: datetime
+    impressions: int = 0
+    clicks: int = 0
+    spend: float = 0.0
+    leads_generated: int = 0
+    appointments_scheduled: int = 0
+    sales_closed: int = 0
+    revenue_generated: float = 0.0
+
+class ROIOptimization(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    tenant_id: str
+    campaign_id: str
+    optimization_type: str  # "budget_reallocation", "bid_adjustment", "audience_expansion", "creative_rotation"
+    recommendation: str
+    impact_prediction: dict  # Predicted improvements
+    status: str = "pending"  # "pending", "applied", "rejected"
+    confidence_score: float  # 0.0 to 1.0
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    applied_at: Optional[datetime] = None
+
+class SocialMediaAccount(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    tenant_id: str
+    platform: str  # "facebook", "instagram", "tiktok", "linkedin"
+    account_id: str  # Platform-specific account ID
+    account_name: str
+    access_token: str  # Encrypted access token
+    refresh_token: Optional[str] = None
+    token_expires_at: Optional[datetime] = None
+    is_active: bool = True
+    permissions: List[str] = []  # Platform permissions granted
+    connected_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class AdCreative(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    tenant_id: str
+    name: str
+    platform: str
+    creative_type: str  # "image", "video", "carousel", "collection"
+    headline: str
+    description: str
+    call_to_action: str
+    image_urls: List[str] = []
+    video_url: Optional[str] = None
+    landing_page_url: str
+    performance_score: Optional[float] = None  # AI-calculated performance prediction
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+# AI-Powered Optimization Algorithms
+class OptimizationEngine:
+    @staticmethod
+    def calculate_roi_metrics(metrics: AdMetrics) -> dict:
+        """Calculate comprehensive ROI metrics"""
+        if metrics.spend == 0:
+            return {}
+        
+        return {
+            "cpm": (metrics.spend / metrics.impressions * 1000) if metrics.impressions > 0 else 0,
+            "cpc": (metrics.spend / metrics.clicks) if metrics.clicks > 0 else 0,
+            "cpl": (metrics.spend / metrics.leads_generated) if metrics.leads_generated > 0 else 0,
+            "cpa": (metrics.spend / metrics.appointments_scheduled) if metrics.appointments_scheduled > 0 else 0,
+            "roas": (metrics.revenue_generated / metrics.spend) if metrics.spend > 0 else 0,
+            "conversion_rate": (metrics.leads_generated / metrics.clicks * 100) if metrics.clicks > 0 else 0,
+            "appointment_rate": (metrics.appointments_scheduled / metrics.leads_generated * 100) if metrics.leads_generated > 0 else 0,
+            "close_rate": (metrics.sales_closed / metrics.appointments_scheduled * 100) if metrics.appointments_scheduled > 0 else 0
+        }
+    
+    @staticmethod
+    def generate_optimization_recommendations(campaign_metrics: List[AdMetrics]) -> List[dict]:
+        """Generate AI-powered optimization recommendations"""
+        recommendations = []
+        
+        if not campaign_metrics:
+            return recommendations
+        
+        # Calculate averages
+        avg_cpl = sum(m.cpl for m in campaign_metrics) / len(campaign_metrics)
+        avg_roas = sum(m.roas for m in campaign_metrics) / len(campaign_metrics)
+        avg_cpc = sum(m.cpc for m in campaign_metrics) / len(campaign_metrics)
+        
+        # Budget reallocation recommendations
+        if avg_roas > 3.0:  # High ROAS
+            recommendations.append({
+                "type": "budget_increase",
+                "message": f"High ROAS ({avg_roas:.2f}x) detected. Consider increasing budget by 25-50%.",
+                "confidence": 0.85,
+                "impact": "High revenue increase potential"
+            })
+        elif avg_roas < 1.5:  # Low ROAS
+            recommendations.append({
+                "type": "optimization_needed",
+                "message": f"Low ROAS ({avg_roas:.2f}x). Review targeting and creative performance.",
+                "confidence": 0.90,
+                "impact": "Prevent budget waste"
+            })
+        
+        # Cost per lead optimization
+        industry_avg_cpl = 50.0  # Car dealership industry average
+        if avg_cpl > industry_avg_cpl * 1.5:
+            recommendations.append({
+                "type": "targeting_refinement",
+                "message": f"CPL (${avg_cpl:.2f}) is above industry average. Refine audience targeting.",
+                "confidence": 0.80,
+                "impact": "Reduce acquisition costs"
+            })
+        
+        return recommendations
 class User(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     tenant_id: str  # Multi-tenant support
