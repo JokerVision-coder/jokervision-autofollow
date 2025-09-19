@@ -3716,13 +3716,14 @@ async def enhance_text(request: dict):
             """
         
         # Use AI to enhance text
-        llm_client = LlmChat(
+        chat = LlmChat(
             api_key=llm_key,
             session_id=f"text_enhancement_{tenant_id}_{str(uuid.uuid4())[:8]}",
             system_message="You are a professional copywriter specializing in automotive content optimization."
-        )
-        user_message = UserMessage(prompt)
-        response = llm_client.chat([user_message])
+        ).with_model("openai", "gpt-4o-mini")
+        
+        user_message = UserMessage(text=prompt)
+        response = await chat.send_message(user_message)
         
         enhanced_text = response.content.strip()
         
