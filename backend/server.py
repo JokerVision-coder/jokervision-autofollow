@@ -1631,7 +1631,380 @@ async def update_sms_config(config: SMSConfig):
         "message": "SMS configuration updated (restart required for environment changes)"
     }
 
-# Social Media Advertising Routes
+# Compliance & Safety Routes
+@api_router.post("/compliance/check-content")
+async def check_content_compliance_api(
+    tenant_id: str,
+    platform: str,
+    content: str,
+    creative_data: dict = None
+):
+    """Check content and creative for policy compliance before posting"""
+    try:
+        # Check content compliance
+        content_check = ComplianceEngine.check_content_compliance(content, platform)
+        
+        # Check creative compliance if provided
+        creative_check = {}
+        if creative_data:
+            creative_check = ComplianceEngine.check_creative_compliance(creative_data, platform)
+        
+        # Combine results
+        all_violations = content_check.get("violations", []) + creative_check.get("violations", [])
+        combined_risk_score = (content_check.get("risk_score", 0) + creative_check.get("risk_score", 0)) / 2
+        
+        # Determine overall status
+        overall_status = "passed"
+        if combined_risk_score > 0.5:
+            overall_status = "failed"
+        elif combined_risk_score > 0.2:
+            overall_status = "warning"
+        
+        # Create compliance check record
+        compliance_check = ComplianceCheck(
+            tenant_id=tenant_id,
+            check_type="pre_launch",
+            platform=platform,
+            status=overall_status,
+            violations=[v for v in all_violations],
+            risk_score=combined_risk_score
+        )
+        
+        check_doc = compliance_check.dict()
+        check_doc['checked_at'] = check_doc['checked_at'].isoformat()
+        await db.compliance_checks.insert_one(check_doc)
+        
+        return {
+            "compliance_check_id": compliance_check.id,
+            "status": overall_status,
+            "risk_score": combined_risk_score,
+            "violations": all_violations,
+            "safe_to_publish": overall_status in ["passed", "warning"],
+            "recommendations": [v["recommendation"] for v in all_violations]
+        }
+        
+    except Exception as e:
+        logging.error(f"Compliance check error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Compliance check failed")
+
+@api_router.get("/compliance/account-health/{platform}")
+async def get_account_health(tenant_id: str, platform: str):
+    """Get account health status and recommendations"""
+    try:
+        # Get or create account health record
+        health_record = await db.account_health.find_one({
+            "tenant_id": tenant_id,
+            "platform": platform
+        })
+        
+        if not health_record:
+            # Create initial health record
+            health_obj = AccountHealth(
+                tenant_id=tenant_id,
+                platform=platform,
+                account_id=f"{tenant_id}_{platform}"
+            )
+            health_doc = health_obj.dict()
+            health_doc['last_checked'] = health_doc['last_checked'].isoformat()
+            await db.account_health.insert_one(health_doc)
+            health_record = health_doc
+        
+        # Update health score based on recent violations
+        recent_violations = await db.compliance_checks.count_documents({
+            "tenant_id": tenant_id,
+            "platform": platform,
+            "status": "failed",
+            "checked_at": {"$gte": (datetime.now(timezone.utc) - timedelta(days=30)).isoformat()}
+        })
+        
+        # Calculate health score (1.0 = perfect, 0.0 = very poor)
+        base_score = 1.0
+        violation_penalty = min(recent_violations * 0.1, 0.5)  # Max 50% penalty
+        current_health_score = max(base_score - violation_penalty, 0.1)
+        
+        # Generate recommendations based on health score
+        recommendations = []
+        if current_health_score < 0.5:
+            recommendations.extend([
+                "Review and update all active campaigns for policy compliance",
+                "Reduce posting frequency to avoid spam detection",
+                "Review recent violations and implement corrective measures"
+            ])
+        elif current_health_score < 0.8:
+            recommendations.extend([
+                "Monitor content more closely before publishing",
+                "Consider reducing ad spend temporarily"
+            ])
+        
+        # Update health record
+        await db.account_health.update_one(
+            {"tenant_id": tenant_id, "platform": platform},
+            {
+                "$set": {
+                    "health_score": current_health_score,
+                    "violation_count": recent_violations,
+                    "recommendations": recommendations,
+                    "last_checked": datetime.now(timezone.utc).isoformat()
+                }
+            }
+        )
+        
+        return {
+            "tenant_id": tenant_id,
+            "platform": platform,
+            "health_score": current_health_score,
+            "status": "healthy" if current_health_score > 0.8 else "at_risk" if current_health_score > 0.5 else "poor",
+            "violation_count": recent_violations,
+            "recommendations": recommendations,
+            "next_check_due": (datetime.now(timezone.utc) + timedelta(days=7)).isoformat()
+        }
+        
+    except Exception as e:
+        logging.error(f"Account health check error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Account health check failed")
+
+@api_router.post("/compliance/safe-schedule")
+async def generate_safe_posting_schedule_api(
+    tenant_id: str,
+    platform: str,
+    posts_per_day: int = 3,
+    campaign_count: int = 1
+):
+    """Generate safe posting schedule to avoid platform restrictions"""
+    try:
+        # Generate safe schedule
+        schedule = ComplianceEngine.generate_safe_posting_schedule(platform, posts_per_day)
+        
+        # Add platform-specific warnings and tips
+        platform_tips = {
+            "facebook": [
+                "Avoid posting identical content across multiple pages",
+                "Space out campaign launches by at least 2 hours",
+                "Use Facebook Creator Studio for optimal scheduling"
+            ],
+            "instagram": [
+                "Mix content types (photos, videos, stories, reels)",
+                "Avoid excessive hashtag usage (#spam-like behavior)",
+                "Engage authentically with your audience"
+            ],
+            "tiktok": [
+                "Post during peak hours in your audience's timezone",
+                "Avoid back-to-back video uploads",
+                "Focus on original, creative content"
+            ],
+            "linkedin": [
+                "Post during business hours for B2B content",
+                "Maintain professional tone and imagery",
+                "Engage meaningfully with connections"
+            ]
+        }
+        
+        schedule["platform_tips"] = platform_tips.get(platform, [])
+        schedule["compliance_score"] = 1.0 if posts_per_day <= schedule["max_safe_posts"] else 0.7
+        
+        return schedule
+        
+    except Exception as e:
+        logging.error(f"Safe schedule generation error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Schedule generation failed")
+
+@api_router.get("/compliance/policy-guidelines/{platform}")
+async def get_policy_guidelines(platform: str):
+    """Get comprehensive policy guidelines for platform"""
+    try:
+        platform_policies = PLATFORM_POLICIES.get(platform, {})
+        
+        if not platform_policies:
+            raise HTTPException(status_code=404, detail=f"Guidelines not found for platform: {platform}")
+        
+        # Format guidelines for easy consumption
+        guidelines = {
+            "platform": platform,
+            "last_updated": datetime.now().isoformat(),
+            "categories": {
+                "prohibited_content": {
+                    "title": "Prohibited Content",
+                    "description": "Content that will result in immediate violations",
+                    "items": platform_policies.get("prohibited_content", []),
+                    "severity": "critical"
+                },
+                "frequency_limits": {
+                    "title": "Frequency Limits",
+                    "description": "Maximum posting/campaign frequencies",
+                    "items": platform_policies.get("frequency_limits", {}),
+                    "severity": "high"
+                },
+                "creative_requirements": {
+                    "title": "Creative Requirements", 
+                    "description": "Technical specifications for images/videos",
+                    "items": platform_policies.get("creative_requirements", {}),
+                    "severity": "medium"
+                }
+            },
+            "best_practices": [
+                f"Always test small before scaling on {platform}",
+                "Monitor account health daily",
+                "Keep detailed records of all campaign changes",
+                "Respond quickly to any platform notifications"
+            ]
+        }
+        
+        return guidelines
+        
+    except Exception as e:
+        logging.error(f"Policy guidelines error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to retrieve guidelines")
+
+@api_router.post("/compliance/bulk-audit")
+async def bulk_audit_campaigns(tenant_id: str, platform: str = None):
+    """Audit all campaigns for compliance issues"""
+    try:
+        # Get campaigns to audit
+        query = {"tenant_id": tenant_id}
+        if platform:
+            query["platform"] = platform
+        
+        campaigns = await db.ad_campaigns.find(query).to_list(1000)
+        
+        audit_results = []
+        total_violations = 0
+        
+        for campaign in campaigns:
+            # Get campaign creatives
+            creatives = await db.ad_creatives.find({"campaign_id": campaign["id"]}).to_list(100)
+            
+            campaign_violations = []
+            
+            # Check each creative
+            for creative in creatives:
+                content_check = ComplianceEngine.check_content_compliance(
+                    creative.get("headline", "") + " " + creative.get("description", ""),
+                    campaign["platform"]
+                )
+                
+                creative_check = ComplianceEngine.check_creative_compliance(
+                    {
+                        "type": creative.get("creative_type", "image"),
+                        "text_ratio": creative.get("text_ratio", 0.0),
+                        "duration": creative.get("duration", 0)
+                    },
+                    campaign["platform"]
+                )
+                
+                violations = content_check.get("violations", []) + creative_check.get("violations", [])
+                if violations:
+                    campaign_violations.extend(violations)
+            
+            audit_results.append({
+                "campaign_id": campaign["id"],
+                "campaign_name": campaign["campaign_name"],
+                "platform": campaign["platform"],
+                "violations": campaign_violations,
+                "violation_count": len(campaign_violations),
+                "risk_level": "high" if len(campaign_violations) > 5 else "medium" if len(campaign_violations) > 2 else "low",
+                "needs_immediate_attention": len(campaign_violations) > 5
+            })
+            
+            total_violations += len(campaign_violations)
+        
+        # Save audit results
+        audit_record = {
+            "id": str(uuid.uuid4()),
+            "tenant_id": tenant_id,
+            "platform": platform,
+            "audit_date": datetime.now(timezone.utc).isoformat(),
+            "campaigns_audited": len(campaigns),
+            "total_violations": total_violations,
+            "results": audit_results
+        }
+        
+        await db.compliance_audits.insert_one(audit_record)
+        
+        return {
+            "audit_id": audit_record["id"],
+            "summary": {
+                "campaigns_audited": len(campaigns),
+                "total_violations": total_violations,
+                "high_risk_campaigns": len([r for r in audit_results if r["risk_level"] == "high"]),
+                "needs_immediate_attention": len([r for r in audit_results if r["needs_immediate_attention"]])
+            },
+            "results": audit_results,
+            "recommendations": [
+                "Address high-risk campaigns immediately",
+                "Review and update content guidelines",
+                "Implement pre-approval process for new campaigns",
+                "Schedule regular compliance audits"
+            ] if total_violations > 10 else [
+                "Maintain current compliance standards",
+                "Continue regular monitoring"
+            ]
+        }
+        
+    except Exception as e:
+        logging.error(f"Bulk audit error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Bulk audit failed")
+
+@api_router.post("/compliance/emergency-pause")
+async def emergency_pause_campaigns(tenant_id: str, platform: str, reason: str):
+    """Emergency pause all campaigns to prevent account suspension"""
+    try:
+        # Pause all active campaigns
+        result = await db.ad_campaigns.update_many(
+            {
+                "tenant_id": tenant_id,
+                "platform": platform,
+                "status": "active"
+            },
+            {
+                "$set": {
+                    "status": "paused",
+                    "paused_reason": reason,
+                    "paused_at": datetime.now(timezone.utc).isoformat(),
+                    "auto_paused": True
+                }
+            }
+        )
+        
+        # Log emergency action
+        emergency_log = {
+            "id": str(uuid.uuid4()),
+            "tenant_id": tenant_id,
+            "platform": platform,
+            "action": "emergency_pause",
+            "reason": reason,
+            "campaigns_affected": result.modified_count,
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        }
+        
+        await db.emergency_actions.insert_one(emergency_log)
+        
+        # Update account health status
+        await db.account_health.update_one(
+            {"tenant_id": tenant_id, "platform": platform},
+            {
+                "$set": {
+                    "status": "emergency_paused",
+                    "last_emergency_action": datetime.now(timezone.utc).isoformat()
+                }
+            },
+            upsert=True
+        )
+        
+        return {
+            "action": "emergency_pause_complete",
+            "campaigns_paused": result.modified_count,
+            "reason": reason,
+            "next_steps": [
+                "Review all paused campaigns for compliance",
+                "Fix any policy violations identified",
+                "Contact platform support if needed",
+                "Gradually resume campaigns after fixes"
+            ]
+        }
+        
+    except Exception as e:
+        logging.error(f"Emergency pause error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Emergency pause failed")
 @api_router.post("/campaigns", response_model=AdCampaign)
 async def create_ad_campaign(campaign_data: AdCampaignCreate):
     """Create new advertising campaign"""
