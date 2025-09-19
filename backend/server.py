@@ -3533,7 +3533,7 @@ async def generate_seo_description(request: SEODescriptionRequest):
         user_message = UserMessage(text=prompt)
         response = await chat.send_message(user_message)
         
-        optimized_description = response.content.strip()
+        optimized_description = response.strip()
         
         # Log AI usage for analytics
         ai_usage_doc = {
