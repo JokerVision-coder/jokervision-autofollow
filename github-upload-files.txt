@@ -1,0 +1,47 @@
+# GitHub Upload Instructions for JokerVision AutoFollow
+
+## Step 1: Go to your GitHub repository
+https://github.com/JokerVision-coder/jokervision-autofollow
+
+## Step 2: Upload these 3 files
+
+### File 1: requirements.txt
+```
+aiofiles==23.1.0
+fastapi==0.68.0
+uvicorn==0.15.0
+python-dotenv==0.19.0
+motor==3.0.0
+pydantic==1.8.2
+emergentintegrations>=0.1.0
+requests==2.31.0
+email-validator==2.0.0
+```
+
+### File 2: Procfile
+```
+web: uvicorn server:app --host 0.0.0.0 --port $PORT
+```
+
+### File 3: server.py
+This file is too large to display here (155KB). 
+
+## Alternative: Use the deployment folder files
+
+Instead of uploading the full server.py, you can:
+1. Upload the contents of your backend/ folder directly
+2. Or use the Railway CLI method I'll show you
+
+## Railway Environment Variables to Set:
+```
+MONGO_URL=mongodb+srv://jokervision-admin:wbUmK1qbqLw3yDXp@jokervision-production.52hur0a.mongodb.net/jokervision_production?retryWrites=true&w=majority&appName=jokervision-production
+DB_NAME=jokervision_production
+EMERGENT_LLM_KEY=sk-emergent-2C05bB8C455C19d449
+TEXTBELT_API_KEY=textbelt_test_key
+FACEBOOK_APP_ID=test_app_id_123
+FACEBOOK_APP_SECRET=test_app_secret_456
+FACEBOOK_VERIFY_TOKEN=shottenkirk_verify_2024
+SECRET_KEY=jokervision_super_secure_key_2024_production_xyz789
+JWT_SECRET=jwt_secret_key_jokervision_auth_token_abc123
+PORT=8001
+```
