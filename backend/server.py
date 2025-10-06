@@ -974,6 +974,7 @@ class Lead(BaseModel):
     last_contacted: Optional[datetime] = None
     notes: Optional[str] = None
     assigned_to: Optional[str] = None  # User ID
+    fb_sender_id: Optional[str] = None  # Facebook Messenger ID
 
 class SoldVehicle(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
