@@ -3521,8 +3521,8 @@ async def get_inventory_summary(tenant_id: str):
         logger.error(f"Inventory summary error: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to retrieve inventory summary")
 
-@api_router.post("/inventory/sync")
-async def sync_dealership_inventory(tenant_id: str = Query(...), background_tasks: BackgroundTasks = None):
+@api_router.post("/inventory/sync/{tenant_id}")
+async def sync_dealership_inventory(tenant_id: str, background_tasks: BackgroundTasks):
     """Sync real inventory from Shottenkirk Toyota website"""
     try:
         # Start background task to scrape inventory
