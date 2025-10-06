@@ -202,13 +202,13 @@ const CreativeStudio = () => {
   const header = (
     <div className="bg-glass backdrop-blur-lg border-b border-glass-muted p-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold joker-brand">Creative Studio</h1>
+        <h1 className="text-2xl font-bold text-glass-bright joker-brand">Creative Studio</h1>
         <div className="flex items-center space-x-3">
           <Badge className="badge-neon neon-purple">
             Pro Tools
           </Badge>
           {isMobile && (
-            <Button size="sm" variant="outline">
+            <Button size="sm" variant="outline" className="text-glass-bright">
               <Eye className="w-4 h-4" />
             </Button>
           )}
