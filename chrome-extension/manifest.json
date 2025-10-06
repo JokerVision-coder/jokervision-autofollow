@@ -20,7 +20,7 @@
     "https://facebook.com/*",
     "https://marketplace.facebook.com/*",
     "https://graph.facebook.com/*",
-    "https://leadgenie-sales.preview.emergentagent.com/*",
+    "https://joker-dealership.preview.emergentagent.com/*",
     "https://*.cars.com/*",
     "https://*.autotrader.com/*",
     "https://*.carvana.com/*"
@@ -79,7 +79,7 @@
   
   "externally_connectable": {
     "matches": [
-      "https://leadgenie-sales.preview.emergentagent.com/*"
+      "https://joker-dealership.preview.emergentagent.com/*"
     ]
   },
   

@@ -5,7 +5,7 @@ import json
 
 def test_error_handling():
     """Test Chrome extension error handling scenarios"""
-    base_url = "https://leadgenie-sales.preview.emergentagent.com/api"
+    base_url = "https://joker-dealership.preview.emergentagent.com/api"
     
     print("🔧 Testing Chrome Extension Error Handling")
     print("=" * 50)

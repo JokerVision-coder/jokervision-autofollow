@@ -4,7 +4,7 @@
 
     class FacebookMarketplaceIntegration {
         constructor() {
-            this.apiBaseUrl = 'https://leadgenie-sales.preview.emergentagent.com/api';
+            this.apiBaseUrl = 'https://joker-dealership.preview.emergentagent.com/api';
             this.initialized = false;
             this.observers = [];
             this.init();

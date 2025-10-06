@@ -1,7 +1,7 @@
 // JokerVision AutoDealer Pro - Chrome Extension Popup JavaScript
 class JokerVisionExtension {
     constructor() {
-        this.apiBaseUrl = 'https://leadgenie-sales.preview.emergentagent.com/api';
+        this.apiBaseUrl = 'https://joker-dealership.preview.emergentagent.com/api';
         this.currentTenantId = null;
         this.currentUser = null;
         this.init();
@@ -47,7 +47,7 @@ class JokerVisionExtension {
         document.querySelector('.container').appendChild(authDiv);
         
         document.getElementById('openDashboard').addEventListener('click', () => {
-            chrome.tabs.create({ url: 'https://leadgenie-sales.preview.emergentagent.com' });
+            chrome.tabs.create({ url: 'https://joker-dealership.preview.emergentagent.com' });
         });
     }
 
@@ -109,7 +109,7 @@ class JokerVisionExtension {
 
         // Footer actions
         document.getElementById('openDashboard')?.addEventListener('click', () => {
-            chrome.tabs.create({ url: 'https://leadgenie-sales.preview.emergentagent.com' });
+            chrome.tabs.create({ url: 'https://joker-dealership.preview.emergentagent.com' });
         });
 
         document.getElementById('openSettings')?.addEventListener('click', () => {
