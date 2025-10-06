@@ -366,6 +366,50 @@ CREATIVE_TEMPLATES = {
                 "music": "upbeat_trendy",
                 "text_overlays": ["price", "features", "call_to_action"]
             }
+        },
+        {
+            "name": "Facebook Marketplace Listing",
+            "platform": "facebook",
+            "type": "image",
+            "elements": {
+                "layout": "detailed_grid",
+                "colors": ["#1877f2", "#ffffff", "#42b883"],
+                "fonts": ["Helvetica Neue", "Arial"],
+                "components": ["multiple_vehicle_images", "detailed_specs", "price_prominent", "contact_info", "location"]
+            }
+        },
+        {
+            "name": "Facebook Event Promotion",
+            "platform": "facebook",
+            "type": "image",
+            "elements": {
+                "layout": "event_banner",
+                "colors": ["#1877f2", "#ffffff", "#ff6b35"],
+                "fonts": ["Open Sans Bold", "Roboto"],
+                "components": ["event_title", "date_time", "dealership_logo", "special_offers", "cta_button"]
+            }
+        },
+        {
+            "name": "Facebook Sales Event",
+            "platform": "facebook",
+            "type": "carousel",
+            "elements": {
+                "layout": "multi_card_carousel",
+                "colors": ["#1877f2", "#ffffff", "#28a745"],
+                "fonts": ["Helvetica Neue Bold", "Arial"],
+                "components": ["vehicle_cards", "savings_badges", "financing_info", "urgency_text"]
+            }
+        },
+        {
+            "name": "Facebook Customer Testimonial",
+            "platform": "facebook",
+            "type": "video",
+            "elements": {
+                "duration": "30-60 seconds",
+                "style": "authentic_customer_story",
+                "audio": "clear_voiceover",
+                "text_overlays": ["customer_name", "vehicle_purchased", "satisfaction_rating"]
+            }
         }
     ]
 }
