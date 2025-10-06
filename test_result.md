@@ -200,7 +200,11 @@ metadata:
   run_ui: false
 
 test_plan:
-  current_focus: []
+  current_focus:
+    - "Core Sales Workflow APIs"
+    - "AI Chat Integration" 
+    - "SMS Integration"
+    - "Leads Management Component"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
