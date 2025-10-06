@@ -18,7 +18,7 @@ import {
   Palette, Wand2, TrendingUp, Hash, Calendar, BarChart3, Upload, 
   FileImage, FileVideo, FileText, Folder, Download, Eye, Copy,
   Smartphone, Monitor, Tablet, Sparkles, Target, Lightbulb,
-  Camera, Video, Music, Type, Layout, Zap, Star, Globe
+  Camera, Video, Music, Type, Layout, Zap, Star, Globe, Plus
 } from 'lucide-react';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
