@@ -1429,6 +1429,7 @@ function App() {
           <Route path="/sales" element={<SalesDashboard />} />
           <Route path="/leads" element={<LeadsManagement />} />
           <Route path="/team" element={<TeamManagement />} />
+          <Route path="/creative" element={<CreativeStudio />} />
         </Routes>
         <Toaster position="top-right" />
       </div>
