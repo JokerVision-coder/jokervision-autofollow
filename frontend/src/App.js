@@ -1404,6 +1404,13 @@ const Navigation = () => {
               <Users className="w-4 h-4 mr-2" />
               Team
             </Link>
+            <Link 
+              to="/creative" 
+              className="text-glass hover:text-glass-bright font-medium transition-colors duration-200 flex items-center"
+            >
+              <Palette className="w-4 h-4 mr-2" />
+              Creative Studio
+            </Link>
           </div>
         </div>
       </div>
