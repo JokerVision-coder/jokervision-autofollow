@@ -249,12 +249,10 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Data Model Consistency Issue"
-    - "User Management APIs"
-    - "Sales Tracking APIs"
     - "Leads Management Component"
-  stuck_tasks: 
-    - "Data Model Consistency Issue"
+    - "Frontend Integration Testing"
+    - "End-to-End Workflow Testing"
+  stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
