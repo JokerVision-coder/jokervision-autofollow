@@ -246,11 +246,12 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Core Sales Workflow APIs"
-    - "AI Chat Integration" 
-    - "SMS Integration"
+    - "Data Model Consistency Issue"
+    - "User Management APIs"
+    - "Sales Tracking APIs"
     - "Leads Management Component"
-  stuck_tasks: []
+  stuck_tasks: 
+    - "Data Model Consistency Issue"
   test_all: false
   test_priority: "high_first"
 
