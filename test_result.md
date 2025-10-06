@@ -165,6 +165,42 @@ backend:
         - agent: "testing"
         - comment: "✅ SMS INTEGRATION WORKING: All SMS stages functional (initial, second_follow, third_follow, appointment_reminder). Mock provider working correctly. TextBelt integration available but no API key configured (TEXTBELT_API_KEY empty). SMS templates are personalized with lead data, proper length (300-500 chars), and include contact phone (210-632-8712). Follow-up workflow and bulk messaging endpoints working. SMS configuration endpoints working."
 
+  - task: "User Management APIs"
+    implemented: true
+    working: false
+    file: "server.py"
+    stuck_count: 1
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+        - working: false
+        - agent: "testing"
+        - comment: "❌ USER MANAGEMENT FAILING: GET /api/users returns 500 Internal Server Error. Likely data model inconsistency with existing user records missing required fields (similar to leads tenant_id issue). User creation and authentication endpoints may work but retrieval fails. This affects sales tracking which depends on user data."
+
+  - task: "Sales Tracking APIs"
+    implemented: true
+    working: false
+    file: "server.py"
+    stuck_count: 1
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+        - working: false
+        - agent: "testing"
+        - comment: "❌ SALES TRACKING PARTIALLY FAILING: GET /api/sales returns 500 Internal Server Error. GET /api/sales/dashboard works correctly showing commission tiers (12%, 15%, 20%) and structure. Sales creation likely works but retrieval fails due to data model issues. Dashboard shows 0 sales currently."
+
+  - task: "Data Model Consistency Issue"
+    implemented: true
+    working: false
+    file: "server.py"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: false
+        - agent: "testing"
+        - comment: "❌ CRITICAL DATA MODEL ISSUE: Existing database records (leads, users, sales) missing required tenant_id field causing 500 errors on GET endpoints. New records work fine but existing data retrieval fails. This affects: GET /api/leads, GET /api/users, GET /api/sales. Need database migration or model compatibility fix."
+
 frontend:
   - task: "Chrome Extension Files"
     implemented: true
