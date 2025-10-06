@@ -15,6 +15,7 @@ import requests
 import asyncio
 import random
 from fastapi import BackgroundTasks
+from inventory_scraper import ShottenkilkInventoryScraper
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
