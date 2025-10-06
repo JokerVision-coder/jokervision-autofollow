@@ -3167,8 +3167,9 @@ async def facebook_webhook_handler(request: dict):
                                 email=f"fb_{sender_id}@facebook.com"
                             )
                             
-                            lead_obj = Lead(**lead_data.dict())
-                            lead_obj.fb_sender_id = sender_id
+                            lead_dict = lead_data.dict()
+                            lead_dict['fb_sender_id'] = sender_id
+                            lead_obj = Lead(**lead_dict)
                             lead_doc = lead_obj.dict()
                             lead_doc['created_at'] = lead_doc['created_at'].isoformat()
                             
