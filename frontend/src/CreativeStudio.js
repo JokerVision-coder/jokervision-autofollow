@@ -28,13 +28,13 @@ const API = `${BACKEND_URL}/api`;
 const ResponsiveLayout = ({ children, sidebar, header }) => {
   if (isMobile) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
         {header}
         <div className="p-4">
           {children}
         </div>
         {sidebar && (
-          <div className="fixed bottom-0 left-0 right-0 bg-glass p-4 border-t border-glass-muted">
+          <div className="fixed bottom-0 left-0 right-0 bg-glass backdrop-blur-lg p-4 border-t border-glass-muted">
             {sidebar}
           </div>
         )}
@@ -43,7 +43,7 @@ const ResponsiveLayout = ({ children, sidebar, header }) => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
       {header}
       <div className="flex">
         {sidebar && (
