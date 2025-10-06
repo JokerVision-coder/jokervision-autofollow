@@ -753,6 +753,539 @@ const TeamManagement = () => {
   );
 };
 
+// Leads Management Component
+const LeadsManagement = () => {
+  const [leads, setLeads] = useState([]);
+  const [filteredLeads, setFilteredLeads] = useState([]);
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [showAddLeadDialog, setShowAddLeadDialog] = useState(false);
+  const [selectedLead, setSelectedLead] = useState(null);
+  const [showChatDialog, setShowChatDialog] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchLeads();
+  }, []);
+
+  useEffect(() => {
+    // Filter leads based on status and search term
+    let filtered = leads;
+    
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(lead => lead.status === statusFilter);
+    }
+    
+    if (searchTerm) {
+      filtered = filtered.filter(lead => 
+        `${lead.first_name} ${lead.last_name}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        lead.primary_phone.includes(searchTerm) ||
+        lead.email.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+    
+    setFilteredLeads(filtered);
+  }, [leads, statusFilter, searchTerm]);
+
+  const fetchLeads = async () => {
+    try {
+      const response = await axios.get(`${API}/leads`);
+      setLeads(response.data);
+    } catch (error) {
+      console.error('Error fetching leads:', error);
+      toast.error('Failed to load leads');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSendSMS = async (leadId) => {
+    try {
+      await axios.post(`${API}/sms/send`, {
+        lead_id: leadId,
+        message: "Hello! This is a follow-up from JokerVision AutoFollow. Are you still interested in finding the perfect vehicle?"
+      });
+      toast.success('SMS sent successfully!');
+      fetchLeads();
+    } catch (error) {
+      console.error('Error sending SMS:', error);
+      toast.error('Failed to send SMS');
+    }
+  };
+
+  const handleAIChat = (lead) => {
+    setSelectedLead(lead);
+    setShowChatDialog(true);
+  };
+
+  const handleScheduleAppointment = async (leadId) => {
+    try {
+      const appointmentData = {
+        lead_id: leadId,
+        appointment_date: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // Tomorrow
+        appointment_type: "test_drive",
+        notes: "Scheduled via leads management"
+      };
+      
+      await axios.post(`${API}/appointments`, appointmentData);
+      toast.success('Appointment scheduled successfully!');
+      fetchLeads();
+    } catch (error) {
+      console.error('Error scheduling appointment:', error);
+      toast.error('Failed to schedule appointment');
+    }
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'new': return 'neon-cyan';
+      case 'contacted': return 'neon-orange';
+      case 'scheduled': return 'neon-green';
+      case 'closed': return 'text-glass-muted';
+      default: return 'text-glass';
+    }
+  };
+
+  const getStatusIcon = (status) => {
+    switch (status) {
+      case 'new': return <Target className="w-4 h-4" />;
+      case 'contacted': return <Phone className="w-4 h-4" />;
+      case 'scheduled': return <Calendar className="w-4 h-4" />;
+      case 'closed': return <Trophy className="w-4 h-4" />;
+      default: return <Users className="w-4 h-4" />;
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="spinner-neon"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen p-6">
+      <div className="container mx-auto">
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="text-4xl font-bold text-glass-bright mb-2">Leads Management</h1>
+            <p className="text-glass-muted">Manage and follow up with potential customers</p>
+          </div>
+          <Dialog open={showAddLeadDialog} onOpenChange={setShowAddLeadDialog}>
+            <DialogTrigger asChild>
+              <Button className="btn-neon">
+                <Plus className="w-4 h-4 mr-2" />
+                Add Lead
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="modal-glass max-w-2xl">
+              <DialogHeader>
+                <DialogTitle className="text-glass-bright">Add New Lead</DialogTitle>
+                <DialogDescription className="text-glass-muted">
+                  Add a new potential customer to the system
+                </DialogDescription>
+              </DialogHeader>
+              <AddLeadForm onSuccess={() => { setShowAddLeadDialog(false); fetchLeads(); }} />
+            </DialogContent>
+          </Dialog>
+        </div>
+
+        {/* Filters and Search */}
+        <Card className="glass-card mb-6">
+          <CardContent className="p-4">
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex-1">
+                <Input
+                  placeholder="Search leads by name, phone, or email..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="text-glass"
+                />
+              </div>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-48 glass-card text-glass">
+                  <SelectValue placeholder="Filter by status" />
+                </SelectTrigger>
+                <SelectContent className="modal-glass">
+                  <SelectItem value="all">All Statuses</SelectItem>
+                  <SelectItem value="new">New</SelectItem>
+                  <SelectItem value="contacted">Contacted</SelectItem>
+                  <SelectItem value="scheduled">Scheduled</SelectItem>
+                  <SelectItem value="closed">Closed</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Leads Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+          <Card className="glass-card">
+            <CardContent className="p-4 text-center">
+              <div className="text-2xl font-bold text-glass-bright">{leads.length}</div>
+              <div className="text-sm text-glass-muted">Total Leads</div>
+            </CardContent>
+          </Card>
+          <Card className="glass-card">
+            <CardContent className="p-4 text-center">
+              <div className="text-2xl font-bold neon-cyan">{leads.filter(l => l.status === 'new').length}</div>
+              <div className="text-sm text-glass-muted">New</div>
+            </CardContent>
+          </Card>
+          <Card className="glass-card">
+            <CardContent className="p-4 text-center">
+              <div className="text-2xl font-bold neon-orange">{leads.filter(l => l.status === 'contacted').length}</div>
+              <div className="text-sm text-glass-muted">Contacted</div>
+            </CardContent>
+          </Card>
+          <Card className="glass-card">
+            <CardContent className="p-4 text-center">
+              <div className="text-2xl font-bold neon-green">{leads.filter(l => l.status === 'scheduled').length}</div>
+              <div className="text-sm text-glass-muted">Scheduled</div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Leads Table */}
+        <Card className="glass-card">
+          <CardContent className="p-0">
+            <div className="table-glass">
+              <table className="w-full">
+                <thead>
+                  <tr>
+                    <th className="text-left">Customer</th>
+                    <th className="text-left">Contact</th>
+                    <th className="text-left">Vehicle Interest</th>
+                    <th className="text-left">Budget</th>
+                    <th className="text-left">Status</th>
+                    <th className="text-left">Last Contact</th>
+                    <th className="text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredLeads.map((lead, index) => (
+                    <tr key={lead.id} className={`fade-in-up`} style={{animationDelay: `${index * 0.1}s`}}>
+                      <td>
+                        <div className="flex items-center space-x-3">
+                          <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-semibold">
+                            {lead.first_name[0]}{lead.last_name[0]}
+                          </div>
+                          <div>
+                            <div className="font-semibold text-glass-bright">
+                              {lead.first_name} {lead.last_name}
+                            </div>
+                            <div className="text-sm text-glass-muted">
+                              {lead.address && lead.address.split(',')[0]}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <div className="text-sm">
+                          <div className="flex items-center text-glass-bright">
+                            <Phone className="w-3 h-3 mr-2" />
+                            {lead.primary_phone}
+                          </div>
+                          <div className="flex items-center text-glass-muted mt-1">
+                            <Mail className="w-3 h-3 mr-2" />
+                            {lead.email}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="text-glass">{lead.vehicle_type || 'Not specified'}</td>
+                      <td className="text-glass">{lead.budget || 'Not specified'}</td>
+                      <td>
+                        <Badge className={`badge-neon ${getStatusColor(lead.status)} flex items-center`}>
+                          {getStatusIcon(lead.status)}
+                          <span className="ml-1">{lead.status}</span>
+                        </Badge>
+                      </td>
+                      <td className="text-glass-muted text-sm">
+                        {lead.last_contacted 
+                          ? new Date(lead.last_contacted).toLocaleDateString()
+                          : 'Never'
+                        }
+                      </td>
+                      <td>
+                        <div className="flex justify-end space-x-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleSendSMS(lead.id)}
+                            className="text-blue-400 border-blue-400 hover:bg-blue-400 hover:text-white"
+                          >
+                            <MessageSquare className="w-3 h-3" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleAIChat(lead)}
+                            className="text-purple-400 border-purple-400 hover:bg-purple-400 hover:text-white"
+                          >
+                            <Bot className="w-3 h-3" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleScheduleAppointment(lead.id)}
+                            className="text-green-400 border-green-400 hover:bg-green-400 hover:text-white"
+                          >
+                            <Calendar className="w-3 h-3" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* AI Chat Dialog */}
+        <Dialog open={showChatDialog} onOpenChange={setShowChatDialog}>
+          <DialogContent className="modal-glass max-w-2xl">
+            <DialogHeader>
+              <DialogTitle className="text-glass-bright flex items-center">
+                <Bot className="w-5 h-5 mr-2 neon-purple" />
+                AI Chat Assistant
+              </DialogTitle>
+              <DialogDescription className="text-glass-muted">
+                {selectedLead && `Chat with ${selectedLead.first_name} ${selectedLead.last_name}`}
+              </DialogDescription>
+            </DialogHeader>
+            {selectedLead && (
+              <AIChat 
+                lead={selectedLead} 
+                onClose={() => setShowChatDialog(false)}
+                onSuccess={fetchLeads}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
+      </div>
+    </div>
+  );
+};
+
+// Add Lead Form Component
+const AddLeadForm = ({ onSuccess }) => {
+  const [formData, setFormData] = useState({
+    tenant_id: 'default_dealership',
+    first_name: '',
+    last_name: '',
+    primary_phone: '',
+    email: '',
+    budget: '',
+    vehicle_type: '',
+    address: ''
+  });
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.post(`${API}/leads`, formData);
+      toast.success('Lead added successfully!');
+      onSuccess();
+    } catch (error) {
+      console.error('Error adding lead:', error);
+      toast.error('Failed to add lead');
+    }
+  };
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <Label className="text-glass">First Name *</Label>
+          <Input
+            name="first_name"
+            value={formData.first_name}
+            onChange={handleChange}
+            required
+            className="text-glass"
+          />
+        </div>
+        <div>
+          <Label className="text-glass">Last Name *</Label>
+          <Input
+            name="last_name"
+            value={formData.last_name}
+            onChange={handleChange}
+            required
+            className="text-glass"
+          />
+        </div>
+      </div>
+      
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <Label className="text-glass">Phone *</Label>
+          <Input
+            name="primary_phone"
+            value={formData.primary_phone}
+            onChange={handleChange}
+            required
+            className="text-glass"
+          />
+        </div>
+        <div>
+          <Label className="text-glass">Email *</Label>
+          <Input
+            name="email"
+            type="email"
+            value={formData.email}
+            onChange={handleChange}
+            required
+            className="text-glass"
+          />
+        </div>
+      </div>
+      
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <Label className="text-glass">Vehicle Type</Label>
+          <Select value={formData.vehicle_type} onValueChange={(value) => setFormData({...formData, vehicle_type: value})}>
+            <SelectTrigger className="glass-card text-glass">
+              <SelectValue placeholder="Select vehicle type" />
+            </SelectTrigger>
+            <SelectContent className="modal-glass">
+              <SelectItem value="sedan">Sedan</SelectItem>
+              <SelectItem value="SUV">SUV</SelectItem>
+              <SelectItem value="truck">Truck</SelectItem>
+              <SelectItem value="car">Car</SelectItem>
+              <SelectItem value="coupe">Coupe</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Label className="text-glass">Budget</Label>
+          <Input
+            name="budget"
+            value={formData.budget}
+            onChange={handleChange}
+            placeholder="e.g., $20,000-$30,000"
+            className="text-glass"
+          />
+        </div>
+      </div>
+      
+      <div>
+        <Label className="text-glass">Address</Label>
+        <Textarea
+          name="address"
+          value={formData.address}
+          onChange={handleChange}
+          className="text-glass"
+          rows={2}
+        />
+      </div>
+      
+      <Button type="submit" className="w-full btn-neon">
+        Add Lead
+      </Button>
+    </form>
+  );
+};
+
+// AI Chat Component
+const AIChat = ({ lead, onClose, onSuccess }) => {
+  const [message, setMessage] = useState('');
+  const [chatHistory, setChatHistory] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const handleSendMessage = async () => {
+    if (!message.trim()) return;
+    
+    setLoading(true);
+    const userMessage = message;
+    setMessage('');
+    
+    // Add user message to history
+    setChatHistory(prev => [...prev, { type: 'user', message: userMessage, timestamp: new Date() }]);
+    
+    try {
+      const response = await axios.post(`${API}/ai/respond`, {
+        lead_id: lead.id,
+        message: userMessage
+      });
+      
+      // Add AI response to history
+      setChatHistory(prev => [...prev, { 
+        type: 'ai', 
+        message: response.data.response, 
+        timestamp: new Date() 
+      }]);
+      
+      toast.success('AI response generated');
+      
+    } catch (error) {
+      console.error('Error getting AI response:', error);
+      toast.error('Failed to get AI response');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* Chat History */}
+      <div className="max-h-64 overflow-y-auto space-y-3 p-4 glass-card rounded-lg">
+        {chatHistory.length === 0 ? (
+          <div className="text-center text-glass-muted py-8">
+            <Bot className="w-12 h-12 mx-auto mb-2 neon-purple" />
+            <p>Start a conversation with the AI assistant</p>
+            <p className="text-sm">Ask about vehicle availability, scheduling appointments, or general inquiries</p>
+          </div>
+        ) : (
+          chatHistory.map((chat, index) => (
+            <div key={index} className={`flex ${chat.type === 'user' ? 'justify-end' : 'justify-start'}`}>
+              <div className={`max-w-xs p-3 rounded-lg ${
+                chat.type === 'user' 
+                  ? 'bg-blue-600 text-white' 
+                  : 'glass-card text-glass'
+              }`}>
+                <p className="text-sm">{chat.message}</p>
+                <p className="text-xs opacity-70 mt-1">
+                  {chat.timestamp.toLocaleTimeString()}
+                </p>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+      
+      {/* Message Input */}
+      <div className="flex space-x-2">
+        <Input
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+          placeholder="Type your message..."
+          className="flex-1 text-glass"
+          disabled={loading}
+        />
+        <Button 
+          onClick={handleSendMessage} 
+          disabled={loading || !message.trim()}
+          className="btn-neon"
+        >
+          {loading ? (
+            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+          ) : (
+            <Send className="w-4 h-4" />
+          )}
+        </Button>
+      </div>
+    </div>
+  );
+};
+
 // Add User Form Component
 const AddUserForm = ({ onSuccess }) => {
   const [formData, setFormData] = useState({
