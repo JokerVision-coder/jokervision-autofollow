@@ -70,6 +70,7 @@ class AutoFollowProAPITester:
     def test_create_lead(self):
         """Test creating a new lead"""
         lead_data = {
+            "tenant_id": "demo_tenant_123",
             "first_name": "Gilbert",
             "last_name": "Pradia",
             "primary_phone": "830-734-0597",
