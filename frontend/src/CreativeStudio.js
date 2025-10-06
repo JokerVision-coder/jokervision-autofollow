@@ -135,7 +135,7 @@ const CreativeStudio = () => {
         <Button
           variant={activeTab === 'templates' ? 'default' : 'ghost'}
           onClick={() => setActiveTab('templates')}
-          className="w-full justify-start text-glass"
+          className={`w-full justify-start ${activeTab === 'templates' ? 'bg-purple-600 text-white' : 'text-glass-bright hover:text-white hover:bg-glass'}`}
         >
           <Layout className="w-4 h-4 mr-2" />
           Templates
@@ -143,7 +143,7 @@ const CreativeStudio = () => {
         <Button
           variant={activeTab === 'ideas' ? 'default' : 'ghost'}
           onClick={() => setActiveTab('ideas')}
-          className="w-full justify-start text-glass"
+          className={`w-full justify-start ${activeTab === 'ideas' ? 'bg-purple-600 text-white' : 'text-glass-bright hover:text-white hover:bg-glass'}`}
         >
           <Lightbulb className="w-4 h-4 mr-2" />
           Content Ideas
@@ -151,7 +151,7 @@ const CreativeStudio = () => {
         <Button
           variant={activeTab === 'hashtags' ? 'default' : 'ghost'}
           onClick={() => setActiveTab('hashtags')}
-          className="w-full justify-start text-glass"
+          className={`w-full justify-start ${activeTab === 'hashtags' ? 'bg-purple-600 text-white' : 'text-glass-bright hover:text-white hover:bg-glass'}`}
         >
           <Hash className="w-4 h-4 mr-2" />
           Hashtag Research
@@ -159,7 +159,7 @@ const CreativeStudio = () => {
         <Button
           variant={activeTab === 'assets' ? 'default' : 'ghost'}
           onClick={() => setActiveTab('assets')}
-          className="w-full justify-start text-glass"
+          className={`w-full justify-start ${activeTab === 'assets' ? 'bg-purple-600 text-white' : 'text-glass-bright hover:text-white hover:bg-glass'}`}
         >
           <Folder className="w-4 h-4 mr-2" />
           Asset Library
@@ -167,7 +167,7 @@ const CreativeStudio = () => {
         <Button
           variant={activeTab === 'strategy' ? 'default' : 'ghost'}
           onClick={() => setActiveTab('strategy')}
-          className="w-full justify-start text-glass"
+          className={`w-full justify-start ${activeTab === 'strategy' ? 'bg-purple-600 text-white' : 'text-glass-bright hover:text-white hover:bg-glass'}`}
         >
           <Target className="w-4 h-4 mr-2" />
           Growth Strategy
