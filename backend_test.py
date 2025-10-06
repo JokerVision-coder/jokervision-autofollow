@@ -163,17 +163,30 @@ class AutoFollowProAPITester:
             
         ai_request = {
             "lead_id": self.created_lead_id,
-            "incoming_message": "I'm interested in a Honda Civic",
+            "incoming_message": "I'm interested in scheduling an appointment to see a Toyota Camry",
             "phone_number": "830-734-0597"
         }
         
-        return self.run_test(
+        success, response = self.run_test(
             "AI Response Generation",
             "POST",
             "ai/respond",
             200,
             data=ai_request
         )
+        
+        if success:
+            # Check if AI response contains appointment-focused content
+            ai_response = response.get('response', '')
+            has_appointment_keywords = any(keyword in ai_response.lower() for keyword in ['appointment', 'visit', 'schedule', 'come in'])
+            has_phone_number = '210-632-8712' in ai_response
+            
+            print(f"   AI Response Quality Check:")
+            print(f"   - Contains appointment keywords: {'✅' if has_appointment_keywords else '❌'}")
+            print(f"   - Contains contact phone: {'✅' if has_phone_number else '❌'}")
+            print(f"   - Response preview: {ai_response[:150]}...")
+            
+        return success
 
     def test_bulk_import(self):
         """Test bulk import functionality"""
