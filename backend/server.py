@@ -3159,11 +3159,11 @@ async def facebook_webhook_handler(request: dict):
                             # Create new lead from Facebook profile
                             # Note: In production, you'd get profile info from Facebook API
                             lead_data = LeadCreate(
+                                tenant_id="default_dealership",
                                 first_name="Facebook",
                                 last_name="Lead",
                                 primary_phone="",
-                                email=f"fb_{sender_id}@facebook.com",
-                                marketplace_inquiry=message_text[:100]
+                                email=f"fb_{sender_id}@facebook.com"
                             )
                             
                             lead_obj = Lead(**lead_data.dict())
