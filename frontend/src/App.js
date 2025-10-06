@@ -1420,6 +1420,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/sales" element={<SalesDashboard />} />
+          <Route path="/leads" element={<LeadsManagement />} />
           <Route path="/team" element={<TeamManagement />} />
         </Routes>
         <Toaster position="top-right" />
