@@ -6076,6 +6076,12 @@ async def get_ai_lead_score(lead_id: str):
             "lead_id": lead_id,
             "ai_score": ai_score,
             "conversion_probability": round(conversion_prob * 100, 1),
+            "priority_level": "High" if ai_score >= 80 else "Medium" if ai_score >= 60 else "Low",
+            "recommended_actions": [
+                "Send personalized SMS within 2 hours" if ai_score >= 80 else "Schedule follow-up call",
+                "Prepare vehicle information" if ai_score >= 70 else "Send general inventory",
+                "Set up test drive appointment" if ai_score >= 85 else "Build relationship first"
+            ],
             "score_factors": {
                 "source_quality": "High" if lead.get('source', '').find('Voice') != -1 else "Medium",
                 "recency": "Fresh" if lead.get('created_at') else "Standard",
