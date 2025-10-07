@@ -1893,6 +1893,11 @@ function App() {
           <Route path="/pipeline" element={<SalesPipeline />} />
           <Route path="/marketing" element={<MassMarketing />} />
           <Route path="/social" element={<SocialMediaHub />} />
+          <Route path="/reviews" element={<ReviewsManager />} />
+          <Route path="/calendar" element={<CalendarIntegration />} />
+          <Route path="/workflows" element={<WorkflowBuilder />} />
+          <Route path="/ai-toolkit" element={<AIToolkit />} />
+          <Route path="/subscription" element={<SubscriptionManagement />} />
         </Routes>
         <Toaster position="top-right" />
       </div>
