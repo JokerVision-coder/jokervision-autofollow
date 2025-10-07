@@ -237,6 +237,12 @@ const MainTabNavigator = ({ connectionStatus, voiceAIAvailable }) => {
       />
       
       <Tab.Screen 
+        name="PredictiveAI" 
+        component={PredictiveAIScreen}
+        options={{ title: '🧠 Predictive AI' }}
+      />
+      
+      <Tab.Screen 
         name="Notifications" 
         component={NotificationsScreen}
         options={{ title: '🔔 Alerts' }}
