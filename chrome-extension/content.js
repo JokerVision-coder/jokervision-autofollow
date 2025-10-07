@@ -524,6 +524,423 @@ class MarketplaceContentScript {
         this.showNotification('Analytics panel coming soon!', 'info');
     }
 
+    // Facebook Marketplace Automation Methods
+
+    async scanCurrentVehicle() {
+        try {
+            const vehicleData = this.extractVehicleDataFromCurrentPage();
+            if (vehicleData) {
+                // Send to background script for upload
+                const response = await chrome.runtime.sendMessage({
+                    action: 'uploadVehicleData',
+                    data: vehicleData
+                });
+                return response;
+            } else {
+                return { success: false, error: 'No vehicle data found on current page' };
+            }
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    }
+
+    async scanAndUploadInventory() {
+        try {
+            const vehicles = await this.scanMarketplaceInventory();
+            if (vehicles && vehicles.length > 0) {
+                let uploadedCount = 0;
+                let failedCount = 0;
+
+                for (const vehicle of vehicles) {
+                    try {
+                        const response = await chrome.runtime.sendMessage({
+                            action: 'uploadVehicleData',
+                            data: vehicle
+                        });
+                        if (response.success) {
+                            uploadedCount++;
+                        } else {
+                            failedCount++;
+                        }
+                    } catch (error) {
+                        failedCount++;
+                    }
+                }
+
+                return {
+                    success: true,
+                    uploaded: uploadedCount,
+                    failed: failedCount,
+                    total: vehicles.length
+                };
+            } else {
+                return { success: false, error: 'No vehicles found to upload' };
+            }
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    }
+
+    async scanMarketplaceInventory() {
+        try {
+            const vehicles = [];
+            
+            // Look for vehicle listings on the current page
+            const listingSelectors = [
+                '[data-testid="marketplace-item"]',
+                '.marketplace-item',
+                '[role="article"]',
+                '.feed-story-item'
+            ];
+
+            for (const selector of listingSelectors) {
+                const listings = document.querySelectorAll(selector);
+                
+                for (const listing of listings) {
+                    const vehicleData = this.extractVehicleDataFromElement(listing);
+                    if (vehicleData && this.isVehicleListing(vehicleData)) {
+                        vehicles.push(vehicleData);
+                    }
+                }
+
+                if (vehicles.length > 0) break; // Found vehicles with this selector
+            }
+
+            return { vehicles };
+        } catch (error) {
+            console.error('Error scanning marketplace inventory:', error);
+            return { vehicles: [] };
+        }
+    }
+
+    extractVehicleDataFromCurrentPage() {
+        // Extract vehicle data from the current page
+        const title = this.getTextContent([
+            'h1[data-testid="marketplace-listing-title"]',
+            'h1',
+            '.marketplace-listing-title',
+            '[data-testid="post-title"]'
+        ]);
+
+        const price = this.getTextContent([
+            '[data-testid="marketplace-listing-price"]',
+            '.marketplace-listing-price',
+            '.price',
+            '[data-testid="price"]'
+        ]);
+
+        const description = this.getTextContent([
+            '[data-testid="marketplace-listing-description"]',
+            '.marketplace-listing-description',
+            '.description',
+            '[data-testid="post-content"]'
+        ]);
+
+        const location = this.getTextContent([
+            '[data-testid="marketplace-listing-location"]',
+            '.marketplace-listing-location',
+            '.location'
+        ]);
+
+        // Extract images
+        const images = [];
+        const imageElements = document.querySelectorAll('img[src*="scontent"], img[src*="fbcdn"]');
+        imageElements.forEach(img => {
+            if (img.src && !img.src.includes('profile') && !img.src.includes('avatar')) {
+                images.push(img.src);
+            }
+        });
+
+        if (title && price) {
+            return {
+                title: title.trim(),
+                price: this.cleanPrice(price),
+                description: description?.trim() || '',
+                location: location?.trim() || '',
+                images: images.slice(0, 10), // Limit to 10 images
+                url: window.location.href,
+                scrapedAt: new Date().toISOString(),
+                source: 'facebook_marketplace'
+            };
+        }
+
+        return null;
+    }
+
+    extractVehicleDataFromElement(element) {
+        try {
+            const title = this.getTextContentFromElement(element, [
+                'h3', 'h4', '.title', '[data-testid="title"]', 'a[role="link"]'
+            ]);
+
+            const price = this.getTextContentFromElement(element, [
+                '.price', '[data-testid="price"]', '.marketplace-listing-price'
+            ]);
+
+            const location = this.getTextContentFromElement(element, [
+                '.location', '[data-testid="location"]', '.marketplace-listing-location'
+            ]);
+
+            // Get the link to the full listing
+            const linkElement = element.querySelector('a[href*="/marketplace/item/"]');
+            const url = linkElement ? new URL(linkElement.href, window.location.origin).href : null;
+
+            // Extract image
+            const imageElement = element.querySelector('img');
+            const image = imageElement ? imageElement.src : null;
+
+            if (title && price && this.isVehicleTitle(title)) {
+                return {
+                    title: title.trim(),
+                    price: this.cleanPrice(price),
+                    location: location?.trim() || '',
+                    url: url,
+                    images: image ? [image] : [],
+                    scrapedAt: new Date().toISOString(),
+                    source: 'facebook_marketplace'
+                };
+            }
+        } catch (error) {
+            console.error('Error extracting vehicle data from element:', error);
+        }
+
+        return null;
+    }
+
+    getTextContent(selectors) {
+        for (const selector of selectors) {
+            const element = document.querySelector(selector);
+            if (element && element.textContent.trim()) {
+                return element.textContent.trim();
+            }
+        }
+        return null;
+    }
+
+    getTextContentFromElement(parent, selectors) {
+        for (const selector of selectors) {
+            const element = parent.querySelector(selector);
+            if (element && element.textContent.trim()) {
+                return element.textContent.trim();
+            }
+        }
+        return null;
+    }
+
+    isVehicleListing(vehicleData) {
+        return this.isVehicleTitle(vehicleData.title);
+    }
+
+    isVehicleTitle(title) {
+        const vehicleKeywords = [
+            'car', 'truck', 'suv', 'sedan', 'coupe', 'convertible', 'wagon', 'hatchback',
+            'ford', 'chevrolet', 'toyota', 'honda', 'nissan', 'bmw', 'mercedes', 'audi',
+            'volkswagen', 'hyundai', 'kia', 'mazda', 'subaru', 'lexus', 'acura', 'infiniti',
+            'cadillac', 'buick', 'gmc', 'dodge', 'chrysler', 'jeep', 'ram', 'lincoln',
+            'volvo', 'jaguar', 'land rover', 'porsche', 'ferrari', 'lamborghini', 'maserati',
+            'tesla', 'pickup', 'van', 'minivan', 'crossover', 'roadster', 'sports car'
+        ];
+
+        const titleLower = title.toLowerCase();
+        return vehicleKeywords.some(keyword => titleLower.includes(keyword));
+    }
+
+    cleanPrice(priceText) {
+        if (!priceText) return null;
+        
+        // Extract numbers and currency symbols
+        const match = priceText.match(/[\$€£¥]?[\d,]+/);
+        return match ? match[0] : priceText.trim();
+    }
+
+    startLeadMonitoring(settings) {
+        // Monitor for lead activity (messages, inquiries, etc.)
+        this.leadMonitoringSettings = settings;
+        this.setupLeadCapture();
+    }
+
+    monitorLeadActivity() {
+        // Start monitoring for lead activity on the current page
+        this.setupLeadCapture();
+    }
+
+    setupLeadCapture() {
+        // Monitor for message buttons, contact forms, etc.
+        const messageButtons = document.querySelectorAll([
+            '[data-testid="message-seller-button"]',
+            'button[aria-label*="Message"]',
+            'button[aria-label*="Contact"]',
+            '.message-button'
+        ].join(', '));
+
+        messageButtons.forEach(button => {
+            if (!button.dataset.jvMonitored) {
+                button.dataset.jvMonitored = 'true';
+                button.addEventListener('click', (e) => {
+                    this.captureLeadInteraction(e.target);
+                });
+            }
+        });
+
+        // Monitor for form submissions
+        const forms = document.querySelectorAll('form');
+        forms.forEach(form => {
+            if (!form.dataset.jvMonitored) {
+                form.dataset.jvMonitored = 'true';
+                form.addEventListener('submit', (e) => {
+                    this.captureFormSubmission(e.target);
+                });
+            }
+        });
+    }
+
+    captureLeadInteraction(element) {
+        // Extract lead information from the interaction
+        const vehicleData = this.extractVehicleDataFromCurrentPage();
+        const leadData = {
+            type: 'message_inquiry',
+            vehicle: vehicleData,
+            timestamp: new Date().toISOString(),
+            source: 'facebook_marketplace',
+            interaction: 'message_button_click'
+        };
+
+        // Send to background script
+        chrome.runtime.sendMessage({
+            action: 'capturedLead',
+            data: leadData
+        });
+    }
+
+    captureFormSubmission(form) {
+        // Extract form data for lead capture
+        const formData = new FormData(form);
+        const leadInfo = {};
+        
+        for (const [key, value] of formData.entries()) {
+            leadInfo[key] = value;
+        }
+
+        const vehicleData = this.extractVehicleDataFromCurrentPage();
+        const leadData = {
+            type: 'form_submission',
+            vehicle: vehicleData,
+            customerInfo: leadInfo,
+            timestamp: new Date().toISOString(),
+            source: 'facebook_marketplace',
+            interaction: 'form_submission'
+        };
+
+        // Send to background script
+        chrome.runtime.sendMessage({
+            action: 'capturedLead',
+            data: leadData
+        });
+    }
+
+    enhanceMarketplacePage(url) {
+        // Add JokerVision enhancements to the marketplace page
+        this.addQuickActionButtons();
+        this.setupLeadCapture();
+    }
+
+    addQuickActionButtons() {
+        // Add quick action buttons for vehicle listings
+        if (document.querySelector('.jv-quick-actions')) return; // Already added
+
+        const quickActions = document.createElement('div');
+        quickActions.className = 'jv-quick-actions';
+        quickActions.innerHTML = `
+            <div class="jv-quick-actions-container">
+                <button class="jv-action-btn" id="jv-scan-vehicle">
+                    <span>📊 Scan Vehicle</span>
+                </button>
+                <button class="jv-action-btn" id="jv-upload-vehicle">
+                    <span>⬆️ Upload to JokerVision</span>
+                </button>
+                <button class="jv-action-btn" id="jv-price-analysis">
+                    <span>💰 Price Analysis</span>
+                </button>
+            </div>
+        `;
+
+        // Add styles
+        const style = document.createElement('style');
+        style.textContent = `
+            .jv-quick-actions {
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                z-index: 10000;
+                background: white;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                padding: 10px;
+            }
+            .jv-quick-actions-container {
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+            }
+            .jv-action-btn {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                border: none;
+                padding: 8px 12px;
+                border-radius: 6px;
+                cursor: pointer;
+                font-size: 12px;
+                transition: transform 0.2s;
+            }
+            .jv-action-btn:hover {
+                transform: translateY(-2px);
+            }
+        `;
+        document.head.appendChild(style);
+        document.body.appendChild(quickActions);
+
+        // Setup button actions
+        document.getElementById('jv-scan-vehicle')?.addEventListener('click', () => {
+            this.scanCurrentVehicle();
+        });
+
+        document.getElementById('jv-upload-vehicle')?.addEventListener('click', () => {
+            this.scanCurrentVehicle().then(result => {
+                if (result.success) {
+                    alert('Vehicle uploaded successfully!');
+                } else {
+                    alert('Upload failed: ' + result.error);
+                }
+            });
+        });
+
+        document.getElementById('jv-price-analysis')?.addEventListener('click', () => {
+            this.runPriceAnalysis();
+        });
+    }
+
+    async runPriceAnalysis() {
+        const vehicleData = this.extractVehicleDataFromCurrentPage();
+        if (vehicleData) {
+            try {
+                const response = await chrome.runtime.sendMessage({
+                    action: 'optimizePrice',
+                    vehicleData: vehicleData
+                });
+                
+                if (response.success) {
+                    alert(`Price Analysis:\nCurrent: ${vehicleData.price}\nSuggested: ${response.suggestedPrice}\nMarket Position: ${response.marketPosition}`);
+                } else {
+                    alert('Price analysis failed: ' + response.error);
+                }
+            } catch (error) {
+                alert('Price analysis error: ' + error.message);
+            }
+        } else {
+            alert('No vehicle data found on this page');
+        }
+    }
+
     // Listen for messages from popup
     setupMessageListener() {
         chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
