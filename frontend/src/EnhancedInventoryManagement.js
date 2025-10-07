@@ -752,7 +752,7 @@ const VehicleCard = ({
             
             <div className="grid grid-cols-2 gap-2 text-sm text-glass-muted mb-3">
               <div>Stock: {vehicle.stock_number}</div>
-              <div>Miles: {vehicle.mileage.toLocaleString()}</div>
+              <div>Miles: {vehicle.mileage?.toLocaleString() || 0}</div>
               <div>Color: {vehicle.exterior_color}</div>
               <div>Fuel: {vehicle.fuel_type}</div>
             </div>
