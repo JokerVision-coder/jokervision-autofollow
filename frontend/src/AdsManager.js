@@ -36,6 +36,10 @@ const AdsManager = () => {
   const [activeTab, setActiveTab] = useState('google_ads');
   const [googleAds, setGoogleAds] = useState([]);
   const [craigslistAds, setCraigslistAds] = useState([]);
+  const [facebookAds, setFacebookAds] = useState([]);
+  const [instagramAds, setInstagramAds] = useState([]);
+  const [tiktokAds, setTiktokAds] = useState([]);
+  const [linkedinAds, setLinkedinAds] = useState([]);
   const [loading, setLoading] = useState(true);
   const [campaigns, setCampaigns] = useState([]);
   const [showCreateAd, setShowCreateAd] = useState(false);
