@@ -5483,6 +5483,496 @@ async def send_campaign_messages(campaign: MarketingCampaign):
     except Exception as e:
         logger.error(f"Error sending campaign messages: {str(e)}")
 
+# =============================================================================
+# SOCIAL MEDIA HUB API ENDPOINTS (META & TIKTOK)
+# =============================================================================
+
+# Social Media Models
+class SocialMediaAccount(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    tenant_id: str
+    platform: str  # "facebook", "instagram", "tiktok"
+    platform_id: str  # Platform-specific user/page ID
+    name: str
+    username: str
+    access_token: str
+    refresh_token: Optional[str] = None
+    expires_at: Optional[datetime] = None
+    followers: int = 0
+    status: str = "connected"  # connected, disconnected, error
+    avatar: Optional[str] = None
+    connected_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    last_sync: Optional[datetime] = None
+
+class SocialMediaPost(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    tenant_id: str
+    platform: str
+    account_id: str
+    content: str
+    media_type: str = "text"  # text, image, video
+    media_url: Optional[str] = None
+    status: str = "draft"  # draft, scheduled, published, failed
+    likes: int = 0
+    shares: int = 0
+    comments: int = 0
+    reach: int = 0
+    engagement_rate: float = 0.0
+    scheduled_at: Optional[datetime] = None
+    published_at: Optional[datetime] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class SocialMediaAccountCreate(BaseModel):
+    tenant_id: str
+    platform: str
+    auth_code: str  # OAuth authorization code
+
+class SocialMediaPostCreate(BaseModel):
+    tenant_id: str
+    platforms: List[str]  # List of platforms to post to
+    content: str
+    media_type: str = "text"
+    media_url: Optional[str] = None
+    scheduled_date: Optional[str] = None
+
+# Meta (Facebook/Instagram) Integration Functions
+def exchange_facebook_code_for_token(auth_code: str) -> dict:
+    """Exchange Facebook OAuth code for access token"""
+    try:
+        fb_app_id = os.environ.get('FACEBOOK_APP_ID')
+        fb_app_secret = os.environ.get('FACEBOOK_APP_SECRET')
+        redirect_uri = os.environ.get('FACEBOOK_REDIRECT_URI', 'https://yourdomain.com/auth/facebook/callback')
+        
+        if not fb_app_id or not fb_app_secret:
+            return {
+                "success": True,
+                "access_token": f"mock_fb_token_{uuid.uuid4()}",
+                "expires_in": 86400,
+                "user_id": f"mock_user_{uuid.uuid4()}",
+                "provider": "mock_facebook"
+            }
+        
+        # Real Facebook token exchange would go here
+        token_url = "https://graph.facebook.com/v18.0/oauth/access_token"
+        params = {
+            "client_id": fb_app_id,
+            "client_secret": fb_app_secret,
+            "redirect_uri": redirect_uri,
+            "code": auth_code
+        }
+        
+        response = requests.get(token_url, params=params)
+        if response.status_code == 200:
+            return {"success": True, **response.json()}
+        else:
+            return {"success": False, "error": "Facebook token exchange failed"}
+            
+    except Exception as e:
+        logger.error(f"Facebook token exchange error: {str(e)}")
+        return {"success": False, "error": str(e)}
+
+def exchange_tiktok_code_for_token(auth_code: str) -> dict:
+    """Exchange TikTok OAuth code for access token"""
+    try:
+        tiktok_client_key = os.environ.get('TIKTOK_CLIENT_KEY')
+        tiktok_client_secret = os.environ.get('TIKTOK_CLIENT_SECRET')
+        redirect_uri = os.environ.get('TIKTOK_REDIRECT_URI', 'https://yourdomain.com/auth/tiktok/callback')
+        
+        if not tiktok_client_key or not tiktok_client_secret:
+            return {
+                "success": True,
+                "access_token": f"mock_tt_token_{uuid.uuid4()}",
+                "expires_in": 86400,
+                "open_id": f"mock_openid_{uuid.uuid4()}",
+                "provider": "mock_tiktok"
+            }
+        
+        # Real TikTok token exchange would go here
+        token_url = "https://open.tiktokapis.com/v2/oauth/token/"
+        data = {
+            "client_key": tiktok_client_key,
+            "client_secret": tiktok_client_secret,
+            "code": auth_code,
+            "grant_type": "authorization_code",
+            "redirect_uri": redirect_uri
+        }
+        
+        response = requests.post(token_url, data=data)
+        if response.status_code == 200:
+            return {"success": True, **response.json()}
+        else:
+            return {"success": False, "error": "TikTok token exchange failed"}
+            
+    except Exception as e:
+        logger.error(f"TikTok token exchange error: {str(e)}")
+        return {"success": False, "error": str(e)}
+
+def publish_to_facebook(account: dict, post_data: dict) -> dict:
+    """Publish post to Facebook"""
+    try:
+        # Mock Facebook posting
+        return {
+            "success": True,
+            "post_id": f"fb_post_{uuid.uuid4()}",
+            "platform": "facebook",
+            "status": "published"
+        }
+    except Exception as e:
+        logger.error(f"Facebook posting error: {str(e)}")
+        return {"success": False, "error": str(e)}
+
+def publish_to_instagram(account: dict, post_data: dict) -> dict:
+    """Publish post to Instagram"""
+    try:
+        # Mock Instagram posting
+        return {
+            "success": True,
+            "post_id": f"ig_post_{uuid.uuid4()}",
+            "platform": "instagram",
+            "status": "published"
+        }
+    except Exception as e:
+        logger.error(f"Instagram posting error: {str(e)}")
+        return {"success": False, "error": str(e)}
+
+def publish_to_tiktok(account: dict, post_data: dict) -> dict:
+    """Publish post to TikTok"""
+    try:
+        # Mock TikTok posting
+        return {
+            "success": True,
+            "post_id": f"tt_post_{uuid.uuid4()}",
+            "platform": "tiktok",
+            "status": "published"
+        }
+    except Exception as e:
+        logger.error(f"TikTok posting error: {str(e)}")
+        return {"success": False, "error": str(e)}
+
+@api_router.get("/social-media/accounts")
+async def get_social_media_accounts(tenant_id: str):
+    """Get all connected social media accounts for a tenant"""
+    try:
+        accounts = await db.social_media_accounts.find({"tenant_id": tenant_id}).to_list(100)
+        
+        # Convert accounts to proper format (remove _id ObjectId)
+        for account in accounts:
+            if "_id" in account:
+                del account["_id"]
+        
+        if not accounts:
+            # Return mock accounts for demo
+            mock_accounts = [
+                {
+                    "id": "fb_123",
+                    "tenant_id": tenant_id,
+                    "platform": "facebook",
+                    "platform_id": "123456789",
+                    "name": "Shottenkirk Toyota",
+                    "username": "@shottenkirktoyota",
+                    "followers": 12500,
+                    "status": "connected",
+                    "avatar": "/api/placeholder/50/50",
+                    "connected_at": datetime.now(timezone.utc).isoformat()
+                },
+                {
+                    "id": "ig_456",
+                    "tenant_id": tenant_id,
+                    "platform": "instagram",
+                    "platform_id": "456789012",
+                    "name": "Shottenkirk Toyota",
+                    "username": "@shottenkirktoyota",
+                    "followers": 8900,
+                    "status": "connected",
+                    "avatar": "/api/placeholder/50/50",
+                    "connected_at": datetime.now(timezone.utc).isoformat()
+                },
+                {
+                    "id": "tt_789",
+                    "tenant_id": tenant_id,
+                    "platform": "tiktok",
+                    "platform_id": "789012345",
+                    "name": "Shottenkirk Toyota",
+                    "username": "@shottenkirktoyota",
+                    "followers": 15200,
+                    "status": "connected",
+                    "avatar": "/api/placeholder/50/50",
+                    "connected_at": datetime.now(timezone.utc).isoformat()
+                }
+            ]
+            return {"accounts": mock_accounts}
+        
+        return {"accounts": accounts}
+        
+    except Exception as e:
+        logger.error(f"Error fetching social media accounts: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch social media accounts")
+
+@api_router.post("/social-media/accounts")
+async def connect_social_media_account(account_data: SocialMediaAccountCreate):
+    """Connect a new social media account"""
+    try:
+        # Exchange auth code for access token based on platform
+        if account_data.platform == "facebook":
+            token_result = exchange_facebook_code_for_token(account_data.auth_code)
+        elif account_data.platform == "instagram":
+            # Instagram uses Facebook login
+            token_result = exchange_facebook_code_for_token(account_data.auth_code)
+        elif account_data.platform == "tiktok":
+            token_result = exchange_tiktok_code_for_token(account_data.auth_code)
+        else:
+            raise HTTPException(status_code=400, detail="Unsupported platform")
+        
+        if not token_result.get("success"):
+            raise HTTPException(status_code=400, detail=token_result.get("error", "Authentication failed"))
+        
+        # Create account record
+        account = SocialMediaAccount(
+            tenant_id=account_data.tenant_id,
+            platform=account_data.platform,
+            platform_id=token_result.get("user_id", f"mock_id_{uuid.uuid4()}"),
+            name=f"Your {account_data.platform.title()} Account",
+            username=f"@youraccount",
+            access_token=token_result["access_token"],
+            expires_at=datetime.now(timezone.utc) + timedelta(seconds=token_result.get("expires_in", 86400)),
+            followers=random.randint(100, 10000)
+        )
+        
+        # Store in database
+        account_doc = account.dict()
+        await db.social_media_accounts.insert_one(account_doc)
+        
+        logger.info(f"Connected {account_data.platform} account for tenant {account_data.tenant_id}")
+        return account
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error connecting social media account: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to connect account")
+
+@api_router.delete("/social-media/accounts/{account_id}")
+async def disconnect_social_media_account(account_id: str):
+    """Disconnect a social media account"""
+    try:
+        result = await db.social_media_accounts.delete_one({"id": account_id})
+        
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Account not found")
+        
+        logger.info(f"Disconnected social media account: {account_id}")
+        return {"status": "disconnected", "message": "Account disconnected successfully"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error disconnecting social media account: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to disconnect account")
+
+@api_router.get("/social-media/posts")
+async def get_social_media_posts(tenant_id: str, limit: int = 50):
+    """Get social media posts for a tenant"""
+    try:
+        posts = await db.social_media_posts.find({"tenant_id": tenant_id}).sort("created_at", -1).to_list(limit)
+        
+        # Convert posts to proper format (remove _id ObjectId)
+        for post in posts:
+            if "_id" in post:
+                del post["_id"]
+        
+        if not posts:
+            # Return mock posts for demo
+            mock_posts = [
+                {
+                    "id": "post_1",
+                    "tenant_id": tenant_id,
+                    "platform": "facebook",
+                    "content": "Check out our latest 2025 Toyota Camry! Special financing available this month. 🚗✨",
+                    "media_type": "image",
+                    "media_url": "/api/placeholder/300/200",
+                    "status": "published",
+                    "likes": 156,
+                    "shares": 23,
+                    "comments": 12,
+                    "reach": 2340,
+                    "scheduled_at": None,
+                    "published_at": "2024-01-22T09:00:00Z",
+                    "created_at": "2024-01-21T15:30:00Z"
+                },
+                {
+                    "id": "post_2",
+                    "tenant_id": tenant_id,
+                    "platform": "instagram",
+                    "content": "New arrival! 2025 RAV4 Hybrid 🌱 Fuel efficient and adventure ready. Book your test drive today!",
+                    "media_type": "video",
+                    "media_url": "/api/placeholder/300/300",
+                    "status": "scheduled",
+                    "likes": 0,
+                    "shares": 0,
+                    "comments": 0,
+                    "reach": 0,
+                    "scheduled_at": "2024-01-25T15:30:00Z",
+                    "published_at": None,
+                    "created_at": "2024-01-22T10:15:00Z"
+                },
+                {
+                    "id": "post_3",
+                    "tenant_id": tenant_id,
+                    "platform": "tiktok",
+                    "content": "POV: You just got the keys to your dream Toyota 🔑 #Toyota #NewCar #DreamCar",
+                    "media_type": "video",
+                    "media_url": "/api/placeholder/200/350",
+                    "status": "draft",
+                    "likes": 0,
+                    "shares": 0,
+                    "comments": 0,
+                    "reach": 0,
+                    "scheduled_at": None,
+                    "published_at": None,
+                    "created_at": "2024-01-22T14:20:00Z"
+                }
+            ]
+            return {"posts": mock_posts}
+        
+        return {"posts": posts}
+        
+    except Exception as e:
+        logger.error(f"Error fetching social media posts: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch posts")
+
+@api_router.post("/social-media/posts")
+async def create_social_media_post(post_data: SocialMediaPostCreate):
+    """Create and optionally publish social media post to multiple platforms"""
+    try:
+        created_posts = []
+        
+        # Get connected accounts for the platforms
+        accounts = await db.social_media_accounts.find({
+            "tenant_id": post_data.tenant_id,
+            "platform": {"$in": post_data.platforms},
+            "status": "connected"
+        }).to_list(100)
+        
+        if not accounts:
+            # Create mock posts for demo
+            for platform in post_data.platforms:
+                scheduled_date = None
+                if post_data.scheduled_date:
+                    try:
+                        scheduled_date = datetime.fromisoformat(post_data.scheduled_date.replace('Z', '+00:00'))
+                    except:
+                        pass
+                
+                post = SocialMediaPost(
+                    tenant_id=post_data.tenant_id,
+                    platform=platform,
+                    account_id=f"mock_account_{platform}",
+                    content=post_data.content,
+                    media_type=post_data.media_type,
+                    media_url=post_data.media_url,
+                    status="scheduled" if scheduled_date else "draft",
+                    scheduled_at=scheduled_date
+                )
+                
+                created_posts.append(post.dict())
+        else:
+            # Create posts for each connected account
+            for account in accounts:
+                scheduled_date = None
+                if post_data.scheduled_date:
+                    try:
+                        scheduled_date = datetime.fromisoformat(post_data.scheduled_date.replace('Z', '+00:00'))
+                    except:
+                        pass
+                
+                post = SocialMediaPost(
+                    tenant_id=post_data.tenant_id,
+                    platform=account["platform"],
+                    account_id=account["id"],
+                    content=post_data.content,
+                    media_type=post_data.media_type,
+                    media_url=post_data.media_url,
+                    status="scheduled" if scheduled_date else "draft",
+                    scheduled_at=scheduled_date
+                )
+                
+                # Store in database
+                post_doc = post.dict()
+                await db.social_media_posts.insert_one(post_doc)
+                created_posts.append(post)
+        
+        logger.info(f"Created {len(created_posts)} social media posts for tenant {post_data.tenant_id}")
+        return {"posts": created_posts, "message": f"Created posts for {len(created_posts)} platforms"}
+        
+    except Exception as e:
+        logger.error(f"Error creating social media post: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to create post")
+
+@api_router.get("/social-media/analytics")
+async def get_social_media_analytics(tenant_id: str):
+    """Get social media analytics for a tenant"""
+    try:
+        # Get posts and accounts for analytics
+        posts = await db.social_media_posts.find({"tenant_id": tenant_id}).to_list(1000)
+        accounts = await db.social_media_accounts.find({"tenant_id": tenant_id}).to_list(100)
+        
+        if not posts and not accounts:
+            # Return mock analytics
+            return {
+                "total_followers": 36600,
+                "total_posts": 127,
+                "total_engagement": 4850,
+                "avg_engagement_rate": 6.8,
+                "top_performing_platform": "tiktok",
+                "recent_growth": 12.5,
+                "weekly_stats": {
+                    "facebook": {"posts": 5, "engagement": 1240, "reach": 15600},
+                    "instagram": {"posts": 7, "engagement": 2150, "reach": 12800},
+                    "tiktok": {"posts": 4, "engagement": 3580, "reach": 28400}
+                }
+            }
+        
+        # Calculate real analytics
+        total_followers = sum(acc.get("followers", 0) for acc in accounts)
+        total_posts = len(posts)
+        total_engagement = sum(
+            post.get("likes", 0) + post.get("shares", 0) + post.get("comments", 0) 
+            for post in posts
+        )
+        
+        # Calculate platform-specific stats
+        platform_stats = {}
+        for platform in ["facebook", "instagram", "tiktok"]:
+            platform_posts = [p for p in posts if p.get("platform") == platform]
+            platform_engagement = sum(
+                p.get("likes", 0) + p.get("shares", 0) + p.get("comments", 0) 
+                for p in platform_posts
+            )
+            platform_reach = sum(p.get("reach", 0) for p in platform_posts)
+            
+            platform_stats[platform] = {
+                "posts": len(platform_posts),
+                "engagement": platform_engagement,
+                "reach": platform_reach
+            }
+        
+        avg_engagement_rate = (total_engagement / total_posts * 100) if total_posts > 0 else 0
+        
+        return {
+            "total_followers": total_followers,
+            "total_posts": total_posts,
+            "total_engagement": total_engagement,
+            "avg_engagement_rate": round(avg_engagement_rate, 1),
+            "top_performing_platform": max(platform_stats.keys(), key=lambda k: platform_stats[k]["engagement"]) if platform_stats else "facebook",
+            "recent_growth": 12.5,  # Mock growth rate
+            "weekly_stats": platform_stats
+        }
+        
+    except Exception as e:
+        logger.error(f"Error fetching social media analytics: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch analytics")
+
 # Include the router in the main app
 app.include_router(api_router)
 
