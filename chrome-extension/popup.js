@@ -1,7 +1,7 @@
 // JokerVision AutoDealer Pro - Chrome Extension Popup JavaScript
 class JokerVisionExtension {
     constructor() {
-        this.apiBaseUrl = 'https://dealerhub-5.preview.emergentagent.com/api';
+        this.apiBaseUrl = 'https://dealerflow-suite.preview.emergentagent.com/api';
         this.currentTenantId = null;
         this.currentUser = null;
         this.init();
@@ -47,7 +47,7 @@ class JokerVisionExtension {
         document.querySelector('.container').appendChild(authDiv);
         
         document.getElementById('openDashboard').addEventListener('click', () => {
-            chrome.tabs.create({ url: 'https://dealerhub-5.preview.emergentagent.com' });
+            chrome.tabs.create({ url: 'https://dealerflow-suite.preview.emergentagent.com' });
         });
     }
 
@@ -109,7 +109,7 @@ class JokerVisionExtension {
 
         // Footer actions
         document.getElementById('openDashboard')?.addEventListener('click', () => {
-            chrome.tabs.create({ url: 'https://dealerhub-5.preview.emergentagent.com' });
+            chrome.tabs.create({ url: 'https://dealerflow-suite.preview.emergentagent.com' });
         });
 
         document.getElementById('openSettings')?.addEventListener('click', () => {
