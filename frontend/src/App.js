@@ -1961,6 +1961,7 @@ function App() {
           <Route path="/advanced-websites" element={<AdvancedWebsiteBuilder />} />
           <Route path="/voice" element={<VoiceIntegration />} />
           <Route path="/analytics" element={<AdvancedAnalytics />} />
+          <Route path="/mobile-app" element={<MobileApp />} />
         </Routes>
         <Toaster position="top-right" />
       </div>
