@@ -95,7 +95,12 @@ class JokerVisionBackground {
             defaultLanguage: 'english',
             enableNotifications: true,
             priceOptimization: true,
-            seoEnhancement: true
+            seoEnhancement: true,
+            // Facebook Marketplace automation settings
+            autoUpload: true,
+            leadCapture: true,
+            appointmentBooking: true,
+            autoAppointmentSuggestions: true
         };
 
         await chrome.storage.local.set({ extensionSettings: defaultSettings });
