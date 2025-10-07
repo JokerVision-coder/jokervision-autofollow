@@ -266,6 +266,63 @@ class WorkflowAutomationEngine:
                     "budget": "$1000"
                 })
                 
+            elif action_type == "create_hot_lead":
+                customer_name = context.get("customer_name", "Customer")
+                vehicle_interest = context.get("interested_vehicle", "Vehicle")
+                result.update({
+                    "hot_lead_created": True,
+                    "customer_name": customer_name,
+                    "vehicle_interest": vehicle_interest,
+                    "lead_priority": "hot",
+                    "lead_score": 95,
+                    "next_steps": "Immediate follow-up required",
+                    "automotive_insight": f"Customer {customer_name} shows high purchase intent for {vehicle_interest}"
+                })
+                
+            elif action_type == "send_personalized_offer":
+                customer_name = context.get("customer_name", "Customer")
+                vehicle_interest = context.get("interested_vehicle", "Vehicle")
+                result.update({
+                    "personalized_offer_sent": True,
+                    "recipient": customer_name,
+                    "vehicle": vehicle_interest,
+                    "offer_type": "exclusive_automotive_deal",
+                    "discount": "$3000 cash back + 1.9% APR financing",
+                    "trade_in_bonus": "$2000 above market value",
+                    "expires": "48 hours",
+                    "delivery_channels": ["SMS", "Email", "Phone Call"]
+                })
+                
+            elif action_type == "schedule_test_drive":
+                customer_name = context.get("customer_name", "Customer")
+                vehicle_interest = context.get("interested_vehicle", "Vehicle")
+                result.update({
+                    "test_drive_scheduled": True,
+                    "customer": customer_name,
+                    "vehicle": vehicle_interest,
+                    "scheduled_time": (datetime.now(timezone.utc) + timedelta(days=1)).isoformat(),
+                    "duration": "45 minutes",
+                    "location": "Dealership showroom",
+                    "preparation": "Vehicle detailed, keys ready, insurance verification completed"
+                })
+                
+            elif action_type == "prepare_financing_options":
+                customer_name = context.get("customer_name", "Customer")
+                vehicle_interest = context.get("interested_vehicle", "Vehicle")
+                result.update({
+                    "financing_prepared": True,
+                    "customer": customer_name,
+                    "vehicle": vehicle_interest,
+                    "financing_options": [
+                        {"type": "Standard Loan", "apr": "3.9%", "term": "60 months"},
+                        {"type": "Low APR Special", "apr": "1.9%", "term": "48 months"},
+                        {"type": "Extended Term", "apr": "4.9%", "term": "72 months"}
+                    ],
+                    "pre_approval_amount": "$65000",
+                    "monthly_payment_estimate": "$580-750",
+                    "trade_in_value": "$18000"
+                })
+                
             else:
                 result.update({
                     "custom_action": True,
