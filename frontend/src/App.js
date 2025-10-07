@@ -1282,7 +1282,7 @@ const InventoryManagement = () => {
       make: '',
       model: '',
       year: '',
-      condition: '',
+      condition: 'any',
       priceMin: '',
       priceMax: ''
     });
