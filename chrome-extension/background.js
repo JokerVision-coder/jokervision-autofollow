@@ -150,6 +150,42 @@ class JokerVisionBackground {
                     sendResponse(analyticsResult);
                     break;
 
+                // Facebook Marketplace automation actions
+                case 'uploadVehicleData':
+                    const vehicleUploadResult = await this.handleVehicleUpload(request.data);
+                    sendResponse(vehicleUploadResult);
+                    break;
+
+                case 'capturedLead':
+                    const leadResult = await this.handleLeadCapture(request.data);
+                    sendResponse(leadResult);
+                    break;
+
+                case 'scheduleAppointment':
+                    const appointmentResult = await this.handleAppointmentScheduling(request.data);
+                    sendResponse(appointmentResult);
+                    break;
+
+                case 'scanAndUploadInventory':
+                    const scanResult = await this.scanAndUploadInventory(request.tabId);
+                    sendResponse(scanResult);
+                    break;
+
+                case 'monitorLeadActivity':
+                    this.startLeadMonitoring(sender.tab.id);
+                    sendResponse({ success: true });
+                    break;
+
+                case 'getSettings':
+                    const settings = await this.getExtensionSettings();
+                    sendResponse(settings);
+                    break;
+
+                case 'updateSettings':
+                    const updateResult = await this.updateExtensionSettings(request.settings);
+                    sendResponse(updateResult);
+                    break;
+
                 default:
                     sendResponse({ error: 'Unknown action' });
             }
