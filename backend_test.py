@@ -3715,6 +3715,36 @@ Vehicle Type: sedan"""
                 print("   ❌ Automotive actions may lack comprehensive content")
             return False
 
+    def run_workflow_automation_critical_fix_validation(self):
+        """Run CRITICAL FIX VALIDATION for workflow automation system"""
+        print("🚨 CRITICAL FIX VALIDATION - WORKFLOW AUTOMATION SYSTEM")
+        print("🎯 PRIORITY 1: Demo Scenarios Fix Validation (3/3 scenarios must execute)")
+        print("🎯 PRIORITY 2: Car Sales Terminology Coverage (80%+ target)")
+        print(f"   Backend URL: {self.base_url}")
+        print(f"   API URL: {self.api_url}")
+        
+        # Run the enhanced workflow automation tests
+        validation_passed = self.test_enhanced_workflow_automation_comprehensive()
+        
+        print(f"\n{'='*80}")
+        print("🏁 CRITICAL FIX VALIDATION RESULTS")
+        print(f"{'='*80}")
+        
+        if validation_passed:
+            print("🎉 CRITICAL FIX VALIDATION: SUCCESS!")
+            print("✅ All 3/3 demo scenarios now execute successfully")
+            print("✅ High-value lead scenario works after function naming fix")
+            print("✅ Comprehensive automotive terminology in SMS templates")
+            print("✅ Professional car dealership terminology throughout")
+            print("✅ All workflow triggers function correctly with automotive focus")
+            return True
+        else:
+            print("🚨 CRITICAL FIX VALIDATION: FAILED!")
+            print("❌ Demo scenarios may still have execution issues")
+            print("❌ Automotive terminology coverage may be insufficient")
+            print("❌ Function naming conflict may persist")
+            return False
+
 def main():
     print("🃏 JokerVision AutoFollow API Testing Suite")
     print("=" * 50)
