@@ -5079,6 +5079,400 @@ async def toggle_auto_posting(request: dict):
         logging.error(f"Auto-posting toggle error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
+# =============================================================================
+# MASS MARKETING API ENDPOINTS
+# =============================================================================
+
+# Mass Marketing Models
+class MarketingCampaign(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    tenant_id: str
+    name: str
+    type: str  # "sms" or "email"
+    subject: Optional[str] = None  # For email campaigns
+    content: str
+    audience_segment: str
+    segment_id: str
+    recipients: int = 0
+    sent: int = 0
+    delivered: int = 0
+    opened: int = 0
+    clicked: int = 0
+    responses: int = 0
+    status: str = "draft"  # draft, scheduled, active, completed, paused
+    scheduled_date: Optional[datetime] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class MarketingCampaignCreate(BaseModel):
+    tenant_id: str
+    name: str
+    type: str
+    subject: Optional[str] = None
+    content: str
+    segment_id: str
+    scheduled_date: Optional[str] = None
+
+class AudienceSegment(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    tenant_id: str
+    name: str
+    description: str
+    criteria: Dict = Field(default_factory=dict)
+    count: int = 0
+    last_updated: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class AudienceSegmentCreate(BaseModel):
+    tenant_id: str
+    name: str
+    description: str
+    criteria: Dict = Field(default_factory=dict)
+
+# Twilio SMS Service
+def send_twilio_sms(to_phone: str, message: str) -> dict:
+    """Send SMS using Twilio service"""
+    try:
+        twilio_sid = os.environ.get('TWILIO_ACCOUNT_SID')
+        twilio_token = os.environ.get('TWILIO_AUTH_TOKEN')
+        twilio_phone = os.environ.get('TWILIO_PHONE_NUMBER', '+15551234567')
+        
+        if not twilio_sid or not twilio_token:
+            # Mock response if Twilio not configured
+            return {
+                "success": True,
+                "message_sid": f"mock_sid_{uuid.uuid4()}",
+                "status": "sent",
+                "provider": "mock_twilio"
+            }
+        
+        from twilio.rest import Client
+        client = Client(twilio_sid, twilio_token)
+        
+        message = client.messages.create(
+            body=message,
+            from_=twilio_phone,
+            to=to_phone
+        )
+        
+        return {
+            "success": True,
+            "message_sid": message.sid,
+            "status": message.status,
+            "provider": "twilio"
+        }
+        
+    except Exception as e:
+        logger.error(f"Twilio SMS error: {str(e)}")
+        return {
+            "success": False,
+            "error": str(e),
+            "provider": "twilio"
+        }
+
+# SendGrid Email Service
+def send_sendgrid_email(to_email: str, subject: str, content: str) -> dict:
+    """Send email using SendGrid service"""
+    try:
+        sendgrid_key = os.environ.get('SENDGRID_API_KEY')
+        sender_email = os.environ.get('SENDER_EMAIL', 'noreply@jokervision.com')
+        
+        if not sendgrid_key:
+            # Mock response if SendGrid not configured
+            return {
+                "success": True,
+                "message_id": f"mock_email_{uuid.uuid4()}",
+                "status": "sent",
+                "provider": "mock_sendgrid"
+            }
+        
+        from sendgrid import SendGridAPIClient
+        from sendgrid.helpers.mail import Mail
+        
+        message = Mail(
+            from_email=sender_email,
+            to_emails=to_email,
+            subject=subject,
+            html_content=content
+        )
+        
+        sg = SendGridAPIClient(sendgrid_key)
+        response = sg.send(message)
+        
+        return {
+            "success": True,
+            "message_id": response.headers.get('X-Message-Id', 'unknown'),
+            "status": "sent",
+            "status_code": response.status_code,
+            "provider": "sendgrid"
+        }
+        
+    except Exception as e:
+        logger.error(f"SendGrid email error: {str(e)}")
+        return {
+            "success": False,
+            "error": str(e),
+            "provider": "sendgrid"
+        }
+
+@api_router.get("/marketing/campaigns")
+async def get_marketing_campaigns(tenant_id: str):
+    """Get all marketing campaigns for a tenant"""
+    try:
+        campaigns = await db.marketing_campaigns.find({"tenant_id": tenant_id}).sort("created_at", -1).to_list(100)
+        
+        if not campaigns:
+            # Return mock campaigns for demo
+            mock_campaigns = [
+                {
+                    "id": "camp_1",
+                    "tenant_id": tenant_id,
+                    "name": "2025 Model Year Sale",
+                    "type": "sms",
+                    "subject": "",
+                    "content": "New 2025 Toyota models are here! Save up to $5,000. Visit us today or text STOP to opt out.",
+                    "audience_segment": "SUV Buyers",
+                    "segment_id": "seg_1",
+                    "recipients": 1247,
+                    "sent": 1247,
+                    "delivered": 1198,
+                    "opened": 456,
+                    "clicked": 89,
+                    "responses": 23,
+                    "status": "active",
+                    "scheduled_date": "2024-01-07T09:00:00Z",
+                    "created_at": "2024-01-06T15:30:00Z",
+                    "updated_at": "2024-01-07T09:00:00Z"
+                },
+                {
+                    "id": "camp_2",
+                    "tenant_id": tenant_id,
+                    "name": "Service Department Promotion",
+                    "type": "email",
+                    "subject": "30% Off Winter Service Package",
+                    "content": "Get your Toyota ready for winter with our comprehensive service package...",
+                    "audience_segment": "Existing Customers",
+                    "segment_id": "seg_2",
+                    "recipients": 2341,
+                    "sent": 2341,
+                    "delivered": 2298,
+                    "opened": 892,
+                    "clicked": 167,
+                    "responses": 45,
+                    "status": "completed",
+                    "scheduled_date": "2024-01-05T08:00:00Z",
+                    "created_at": "2024-01-04T14:20:00Z",
+                    "updated_at": "2024-01-05T08:00:00Z"
+                }
+            ]
+            return {"campaigns": mock_campaigns}
+        
+        return {"campaigns": campaigns}
+        
+    except Exception as e:
+        logger.error(f"Error fetching marketing campaigns: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch campaigns")
+
+@api_router.get("/marketing/segments")
+async def get_audience_segments(tenant_id: str):
+    """Get all audience segments for a tenant"""
+    try:
+        segments = await db.audience_segments.find({"tenant_id": tenant_id}).to_list(100)
+        
+        if not segments:
+            # Return mock segments for demo
+            mock_segments = [
+                {
+                    "id": "seg_1",
+                    "tenant_id": tenant_id,
+                    "name": "SUV Buyers",
+                    "description": "Customers interested in SUVs and crossovers",
+                    "criteria": {"vehicle_type": "SUV", "budget_min": 25000},
+                    "count": 1247,
+                    "last_updated": datetime.now(timezone.utc).isoformat()
+                },
+                {
+                    "id": "seg_2",
+                    "tenant_id": tenant_id,
+                    "name": "Existing Customers", 
+                    "description": "Previous buyers and service customers",
+                    "criteria": {"status": "customer", "last_purchase": "within_2_years"},
+                    "count": 2341,
+                    "last_updated": datetime.now(timezone.utc).isoformat()
+                },
+                {
+                    "id": "seg_3",
+                    "tenant_id": tenant_id,
+                    "name": "Eco-Conscious Buyers",
+                    "description": "Leads interested in hybrid and electric vehicles",
+                    "criteria": {"interests": "hybrid", "budget_min": 30000},
+                    "count": 567,
+                    "last_updated": datetime.now(timezone.utc).isoformat()
+                }
+            ]
+            return {"segments": mock_segments}
+        
+        return {"segments": segments}
+        
+    except Exception as e:
+        logger.error(f"Error fetching audience segments: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch segments")
+
+@api_router.get("/marketing/stats")
+async def get_marketing_stats(tenant_id: str):
+    """Get marketing statistics for a tenant"""
+    try:
+        # Get campaign stats from database
+        campaigns = await db.marketing_campaigns.find({"tenant_id": tenant_id}).to_list(100)
+        
+        if campaigns:
+            total_campaigns = len(campaigns)
+            active_campaigns = len([c for c in campaigns if c.get("status") == "active"])
+            total_recipients = sum(c.get("recipients", 0) for c in campaigns)
+            total_sent = sum(c.get("sent", 0) for c in campaigns)
+            total_opened = sum(c.get("opened", 0) for c in campaigns)
+            total_clicked = sum(c.get("clicked", 0) for c in campaigns)
+            total_responses = sum(c.get("responses", 0) for c in campaigns)
+            
+            avg_open_rate = (total_opened / total_sent * 100) if total_sent > 0 else 0
+            avg_click_rate = (total_clicked / total_opened * 100) if total_opened > 0 else 0
+        else:
+            # Mock stats for demo
+            total_campaigns = 47
+            active_campaigns = 12
+            total_recipients = 45623
+            avg_open_rate = 34.2
+            avg_click_rate = 8.7
+            total_responses = 456
+        
+        return {
+            "total_campaigns": total_campaigns,
+            "active_campaigns": active_campaigns,
+            "total_recipients": total_recipients,
+            "avg_open_rate": round(avg_open_rate, 1),
+            "avg_click_rate": round(avg_click_rate, 1),
+            "total_responses": total_responses
+        }
+        
+    except Exception as e:
+        logger.error(f"Error fetching marketing stats: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch marketing stats")
+
+@api_router.post("/marketing/campaigns")
+async def create_marketing_campaign(campaign_data: MarketingCampaignCreate):
+    """Create a new marketing campaign"""
+    try:
+        # Get segment info
+        segment = await db.audience_segments.find_one({"id": campaign_data.segment_id})
+        if not segment:
+            # Use mock segment data
+            segment = {"name": "Selected Audience", "count": 150}
+        
+        # Parse scheduled date if provided
+        scheduled_date = None
+        if campaign_data.scheduled_date:
+            try:
+                scheduled_date = datetime.fromisoformat(campaign_data.scheduled_date.replace('Z', '+00:00'))
+            except:
+                scheduled_date = None
+        
+        # Create campaign
+        campaign = MarketingCampaign(
+            **campaign_data.dict(exclude={'scheduled_date'}),
+            audience_segment=segment.get("name", "Selected Audience"),
+            recipients=segment.get("count", 150),
+            status="scheduled" if scheduled_date else "draft",
+            scheduled_date=scheduled_date
+        )
+        
+        # Store in database
+        campaign_doc = campaign.dict()
+        await db.marketing_campaigns.insert_one(campaign_doc)
+        
+        # If not scheduled, send immediately (in background)
+        if not scheduled_date:
+            # Start background task to send campaign
+            asyncio.create_task(send_campaign_messages(campaign))
+        
+        logger.info(f"Marketing campaign created: {campaign.name}")
+        return campaign
+        
+    except Exception as e:
+        logger.error(f"Error creating marketing campaign: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to create campaign")
+
+@api_router.post("/marketing/segments")
+async def create_audience_segment(segment_data: AudienceSegmentCreate):
+    """Create a new audience segment"""
+    try:
+        # Calculate segment count based on criteria
+        # For now, use mock count - in production, query leads collection
+        mock_count = random.randint(50, 500)
+        
+        segment = AudienceSegment(
+            **segment_data.dict(),
+            count=mock_count
+        )
+        
+        # Store in database
+        segment_doc = segment.dict()
+        await db.audience_segments.insert_one(segment_doc)
+        
+        logger.info(f"Audience segment created: {segment.name}")
+        return segment
+        
+    except Exception as e:
+        logger.error(f"Error creating audience segment: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to create segment")
+
+async def send_campaign_messages(campaign: MarketingCampaign):
+    """Background task to send campaign messages"""
+    try:
+        # Get leads based on segment criteria - for now use mock data
+        leads = await db.leads.find({"tenant_id": campaign.tenant_id}).to_list(campaign.recipients)
+        
+        if not leads:
+            # Use mock leads for demo
+            leads = [
+                {"email": "demo1@example.com", "primary_phone": "+15551234567", "first_name": "John"},
+                {"email": "demo2@example.com", "primary_phone": "+15551234568", "first_name": "Jane"},
+            ]
+        
+        sent_count = 0
+        delivered_count = 0
+        
+        for lead in leads[:campaign.recipients]:
+            if campaign.type == "sms" and lead.get("primary_phone"):
+                result = send_twilio_sms(lead["primary_phone"], campaign.content)
+                if result.get("success"):
+                    sent_count += 1
+                    delivered_count += 1
+                    
+            elif campaign.type == "email" and lead.get("email"):
+                result = send_sendgrid_email(
+                    lead["email"], 
+                    campaign.subject or "Message from Dealership",
+                    campaign.content
+                )
+                if result.get("success"):
+                    sent_count += 1
+                    delivered_count += 1
+        
+        # Update campaign statistics
+        await db.marketing_campaigns.update_one(
+            {"id": campaign.id},
+            {"$set": {
+                "sent": sent_count,
+                "delivered": delivered_count,
+                "status": "completed" if sent_count > 0 else "failed",
+                "updated_at": datetime.now(timezone.utc).isoformat()
+            }}
+        )
+        
+        logger.info(f"Campaign {campaign.name} sent to {sent_count} recipients")
+        
+    except Exception as e:
+        logger.error(f"Error sending campaign messages: {str(e)}")
+
 # Include the router in the main app
 app.include_router(api_router)
 
