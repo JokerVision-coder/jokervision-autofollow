@@ -8,14 +8,56 @@ import {
   Users, Mail, Phone, Car, DollarSign, Calendar, Zap,
   ChevronDown, ChevronUp, Save, Play
 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+// Using existing components from App.js structure
+const Card = ({ children, className = "" }) => <div className={`${className}`}>{children}</div>;
+const CardContent = ({ children, className = "" }) => <div className={`${className}`}>{children}</div>;
+const CardHeader = ({ children, className = "" }) => <div className={`${className}`}>{children}</div>;
+const CardTitle = ({ children, className = "" }) => <h3 className={`${className}`}>{children}</h3>;
+const Button = ({ children, className = "", onClick, size = "", variant = "", disabled = false, ...props }) => (
+  <button 
+    className={`px-4 py-2 rounded transition-colors ${className} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+    onClick={onClick}
+    disabled={disabled}
+    {...props}
+  >
+    {children}
+  </button>
+);
+const Input = ({ className = "", ...props }) => (
+  <input className={`px-3 py-2 border rounded ${className}`} {...props} />
+);
+const Textarea = ({ className = "", ...props }) => (
+  <textarea className={`px-3 py-2 border rounded ${className}`} {...props} />
+);
+const Label = ({ children, className = "" }) => <label className={`block mb-1 ${className}`}>{children}</label>;
+const Select = ({ children, value, onValueChange }) => (
+  <select 
+    value={value} 
+    onChange={(e) => onValueChange(e.target.value)}
+    className="px-3 py-2 border rounded w-full"
+  >
+    {children}
+  </select>
+);
+const SelectContent = ({ children }) => <>{children}</>;
+const SelectItem = ({ children, value }) => <option value={value}>{children}</option>;
+const SelectTrigger = ({ children }) => <>{children}</>;
+const SelectValue = ({ placeholder }) => <option value="">{placeholder}</option>;
+const Badge = ({ children, className = "" }) => <span className={`px-2 py-1 rounded text-xs ${className}`}>{children}</span>;
+const Dialog = ({ children, open, onOpenChange }) => {
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => onOpenChange(false)}>
+      <div onClick={(e) => e.stopPropagation()}>
+        {children}
+      </div>
+    </div>
+  );
+};
+const DialogContent = ({ children, className = "" }) => <div className={`bg-white rounded-lg p-6 max-w-md mx-auto ${className}`}>{children}</div>;
+const DialogHeader = ({ children }) => <div className="mb-4">{children}</div>;
+const DialogTitle = ({ children, className = "" }) => <h2 className={`text-xl font-bold ${className}`}>{children}</h2>;
+const DialogTrigger = ({ children, asChild }) => <>{children}</>;
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
