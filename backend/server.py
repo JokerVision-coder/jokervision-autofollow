@@ -3581,6 +3581,252 @@ async def scrape_and_cache_inventory(tenant_id: str):
         
         logger.info("Basic fallback inventory data cached")
 
+# =============================================================================
+# WEBSITE BUILDER API ENDPOINTS
+# =============================================================================
+
+class WebsiteCreate(BaseModel):
+    tenant_id: str
+    name: str
+    description: Optional[str] = None
+    template_id: Optional[str] = None
+    type: str = "landing_page"  # landing_page, funnel, website
+
+class Website(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    tenant_id: str
+    name: str
+    description: Optional[str] = None
+    type: str
+    template_id: Optional[str] = None
+    content: Dict = Field(default_factory=dict)
+    settings: Dict = Field(default_factory=dict)
+    status: str = "draft"  # draft, published, archived
+    views: int = 0
+    leads_captured: int = 0
+    conversion_rate: float = 0.0
+    url_slug: Optional[str] = None
+    preview_image: Optional[str] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    published_at: Optional[datetime] = None
+
+@api_router.get("/websites")
+async def get_websites(tenant_id: str):
+    """Get all websites for a tenant"""
+    try:
+        websites = await db.websites.find({"tenant_id": tenant_id}).to_list(length=None)
+        return {"websites": [Website(**website) for website in websites]}
+    except Exception as e:
+        logger.error(f"Error fetching websites: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch websites")
+
+@api_router.get("/websites/{website_id}")
+async def get_website(website_id: str):
+    """Get a specific website"""
+    try:
+        website = await db.websites.find_one({"id": website_id})
+        if not website:
+            raise HTTPException(status_code=404, detail="Website not found")
+        return Website(**website)
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching website: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch website")
+
+@api_router.post("/websites")
+async def create_website(website_data: WebsiteCreate):
+    """Create a new website"""
+    try:
+        # Generate URL slug from name
+        url_slug = website_data.name.lower().replace(" ", "-").replace("_", "-")
+        
+        # Default content based on template
+        default_content = {
+            "hero": {
+                "title": f"Welcome to {website_data.name}",
+                "subtitle": "Capture more leads with our automotive solutions",
+                "cta_text": "Get Started",
+                "background_image": ""
+            },
+            "features": [
+                {"title": "Quality Vehicles", "description": "Find your perfect car", "icon": "car"},
+                {"title": "Best Prices", "description": "Competitive pricing", "icon": "dollar"},
+                {"title": "Easy Scheduling", "description": "Book online", "icon": "calendar"}
+            ],
+            "lead_form": {
+                "title": "Get Your Quote Today",
+                "fields": ["name", "email", "phone", "vehicle_interest"],
+                "submit_text": "Submit"
+            }
+        }
+        
+        website = Website(
+            **website_data.dict(),
+            url_slug=url_slug,
+            content=default_content
+        )
+        
+        # Store in database
+        website_doc = website.dict()
+        await db.websites.insert_one(website_doc)
+        
+        logger.info(f"Website created: {website.name}")
+        return website
+        
+    except Exception as e:
+        logger.error(f"Error creating website: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to create website")
+
+@api_router.put("/websites/{website_id}")
+async def update_website(website_id: str, website_update: dict):
+    """Update a website"""
+    try:
+        # Update timestamp
+        website_update["updated_at"] = datetime.now(timezone.utc).isoformat()
+        
+        result = await db.websites.update_one(
+            {"id": website_id},
+            {"$set": website_update}
+        )
+        
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Website not found")
+        
+        # Get updated website
+        website = await db.websites.find_one({"id": website_id})
+        return Website(**website)
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating website: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to update website")
+
+@api_router.post("/websites/{website_id}/publish")
+async def publish_website(website_id: str):
+    """Publish a website"""
+    try:
+        update_data = {
+            "status": "published",
+            "published_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }
+        
+        result = await db.websites.update_one(
+            {"id": website_id},
+            {"$set": update_data}
+        )
+        
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Website not found")
+        
+        logger.info(f"Website published: {website_id}")
+        return {"status": "published", "message": "Website published successfully"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error publishing website: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to publish website")
+
+@api_router.delete("/websites/{website_id}")
+async def delete_website(website_id: str):
+    """Delete a website"""
+    try:
+        result = await db.websites.delete_one({"id": website_id})
+        
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Website not found")
+        
+        logger.info(f"Website deleted: {website_id}")
+        return {"status": "deleted", "message": "Website deleted successfully"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting website: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to delete website")
+
+@api_router.get("/website/templates")
+async def get_website_templates():
+    """Get available website templates"""
+    try:
+        templates = [
+            {
+                "id": "auto_landing",
+                "name": "Auto Dealership Landing",
+                "description": "Perfect for showcasing vehicles and capturing leads",
+                "category": "Automotive",
+                "features": ["Hero Section", "Vehicle Showcase", "Lead Form", "Testimonials"],
+                "preview_url": "/templates/auto-landing-preview.jpg"
+            },
+            {
+                "id": "promo_funnel",
+                "name": "Promotional Funnel",
+                "description": "Multi-step funnel for special offers",
+                "category": "Marketing", 
+                "features": ["Multi-Step Form", "Countdown Timer", "Social Proof", "Mobile Optimized"],
+                "preview_url": "/templates/promo-funnel-preview.jpg"
+            },
+            {
+                "id": "service_landing",
+                "name": "Service Department",
+                "description": "Capture service appointments and maintenance leads",
+                "category": "Automotive",
+                "features": ["Service Booking", "Maintenance Reminders", "Contact Forms"],
+                "preview_url": "/templates/service-landing-preview.jpg"
+            }
+        ]
+        
+        return {"templates": templates}
+        
+    except Exception as e:
+        logger.error(f"Error fetching templates: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch templates")
+
+@api_router.post("/websites/{website_id}/capture-lead")
+async def capture_website_lead(website_id: str, lead_data: dict):
+    """Capture a lead from a website form"""
+    try:
+        # Get website info
+        website = await db.websites.find_one({"id": website_id})
+        if not website:
+            raise HTTPException(status_code=404, detail="Website not found")
+        
+        # Create lead from website form
+        lead_create_data = LeadCreate(
+            tenant_id=website["tenant_id"],
+            first_name=lead_data.get("name", "").split(" ")[0] if lead_data.get("name") else "Website",
+            last_name=" ".join(lead_data.get("name", "").split(" ")[1:]) if lead_data.get("name") and len(lead_data.get("name", "").split(" ")) > 1 else "Lead",
+            primary_phone=lead_data.get("phone", ""),
+            email=lead_data.get("email", f"website_{website_id}@lead.com"),
+            vehicle_type=lead_data.get("vehicle_interest", ""),
+            source=f"Website: {website['name']}",
+            notes=f"Lead captured from website: {website['name']} ({website_id})"
+        )
+        
+        # Create lead
+        lead = Lead(**lead_create_data.dict())
+        lead_doc = lead.dict()
+        await db.leads.insert_one(lead_doc)
+        
+        # Update website stats
+        await db.websites.update_one(
+            {"id": website_id},
+            {"$inc": {"leads_captured": 1, "views": 1}}
+        )
+        
+        logger.info(f"Lead captured from website {website_id}: {lead.email}")
+        return {"status": "success", "lead_id": lead.id, "message": "Lead captured successfully"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error capturing website lead: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to capture lead")
+
 @api_router.get("/inventory/vehicles")
 async def search_inventory(
     tenant_id: str, 
