@@ -5666,44 +5666,6 @@ async def get_chrome_extension_stats(tenant_id: str):
 # ADVANCED WEBSITE BUILDER API ENDPOINTS
 # =============================================================================
 
-@api_router.get("/websites")
-async def get_websites(tenant_id: str):
-    """Get all websites for a tenant"""
-    try:
-        websites = await db.websites.find({"tenant_id": tenant_id}).to_list(100)
-        
-        # Clean up MongoDB ObjectId
-        for website in websites:
-            if "_id" in website:
-                del website["_id"]
-        
-        if not websites:
-            # Mock websites for demo
-            mock_websites = [
-                {
-                    "id": "site_1",
-                    "tenant_id": tenant_id,
-                    "name": "Toyota Sales Landing Page",
-                    "url": "https://shottenkirk-toyota-sales.jokervision.app",
-                    "template": "dealership_modern",
-                    "status": "published",
-                    "visits": 2340,
-                    "conversions": 89,
-                    "conversion_rate": 3.8,
-                    "created_at": "2024-01-15T10:00:00Z",
-                    "last_updated": "2024-01-22T14:30:00Z",
-                    "features": ["chat_widget", "lead_forms", "inventory_feed", "reviews_display"],
-                    "seo_score": 85
-                }
-            ]
-            return {"websites": mock_websites}
-        
-        return {"websites": websites}
-        
-    except Exception as e:
-        logger.error(f"Error fetching websites: {str(e)}")
-        raise HTTPException(status_code=500, detail="Failed to fetch websites")
-
 @api_router.get("/website-widgets")
 async def get_website_widgets(tenant_id: str):
     """Get all website widgets for a tenant"""
