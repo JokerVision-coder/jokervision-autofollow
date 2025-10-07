@@ -1830,6 +1830,20 @@ const Navigation = () => {
               <Target className="w-4 h-4 mr-2" />
               Ads Manager
             </Link>
+            <Link 
+              to="/communications" 
+              className="text-glass hover:text-glass-bright font-medium transition-colors duration-200 flex items-center"
+            >
+              <MessageSquare className="w-4 h-4 mr-2" />
+              Communications
+            </Link>
+            <Link 
+              to="/pipeline" 
+              className="text-glass hover:text-glass-bright font-medium transition-colors duration-200 flex items-center"
+            >
+              <TrendingUp className="w-4 h-4 mr-2" />
+              Pipeline
+            </Link>
           </div>
         </div>
       </div>
