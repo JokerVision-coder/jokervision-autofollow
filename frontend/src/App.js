@@ -2015,6 +2015,7 @@ function App() {
           <Route path="/vehicle-wishlist" element={<VehicleWishlist />} />
           <Route path="/ai-bot" element={<SimpleAIBot />} />
           <Route path="/voice-ai" element={<SimpleVoiceAI />} />
+          <Route path="/predictive-analytics" element={<PredictiveAnalytics />} />
         </Routes>
         <Toaster position="top-right" />
       </div>
