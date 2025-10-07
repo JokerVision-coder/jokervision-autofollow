@@ -1907,6 +1907,13 @@ const Navigation = () => {
               AI Toolkit
             </Link>
             <Link 
+              to="/predictive-analytics" 
+              className="text-glass hover:text-glass-bright font-medium transition-colors duration-200 flex items-center"
+            >
+              <Brain className="w-4 h-4 mr-2" />
+              🧠 Predictive AI
+            </Link>
+            <Link 
               to="/subscription" 
               className="text-glass hover:text-glass-bright font-medium transition-colors duration-200 flex items-center"
             >
