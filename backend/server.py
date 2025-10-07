@@ -3582,6 +3582,269 @@ async def scrape_and_cache_inventory(tenant_id: str):
         logger.info("Basic fallback inventory data cached")
 
 # =============================================================================
+# GOOGLE ADS & CRAIGSLIST API ENDPOINTS  
+# =============================================================================
+
+class GoogleAdsCampaignCreate(BaseModel):
+    tenant_id: str
+    name: str
+    type: str  # search, display, video, shopping
+    budget: float
+    targeting: Optional[str] = None
+    keywords: Optional[str] = None
+    description: Optional[str] = None
+
+class GoogleAdsCampaign(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    tenant_id: str
+    name: str
+    type: str
+    budget: float
+    targeting: Optional[str] = None
+    keywords: Optional[str] = None
+    description: Optional[str] = None
+    status: str = "active"  # active, paused, ended
+    spent: float = 0.0
+    clicks: int = 0
+    impressions: int = 0
+    conversions: int = 0
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class CraigslistAd(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    tenant_id: str
+    vehicle_id: Optional[str] = None
+    title: str
+    description: str
+    price: float
+    location: str = "San Antonio, TX"
+    image: Optional[str] = None
+    status: str = "active"  # active, expired, flagged, removed
+    views: int = 0
+    replies: int = 0
+    leads: int = 0
+    craigslist_id: Optional[str] = None
+    posted_date: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    expires_at: Optional[datetime] = None
+    last_renewed: Optional[datetime] = None
+
+# Google Ads Endpoints
+@api_router.get("/google-ads")
+async def get_google_ads(tenant_id: str):
+    """Get all Google Ads for a tenant"""
+    try:
+        ads = await db.google_ads.find({"tenant_id": tenant_id}).to_list(length=None)
+        return {"ads": [GoogleAdsCampaign(**ad) for ad in ads]}
+    except Exception as e:
+        logger.error(f"Error fetching Google Ads: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch Google Ads")
+
+@api_router.get("/google-ads/campaigns")
+async def get_google_ads_campaigns(tenant_id: str):
+    """Get Google Ads campaigns with mock data for demonstration"""
+    try:
+        # Mock campaigns data - in production this would connect to Google Ads API
+        mock_campaigns = [
+            {
+                "id": str(uuid.uuid4()),
+                "tenant_id": tenant_id,
+                "name": "2025 Toyota Camry - Search Campaign",
+                "type": "search",
+                "budget": 75.0,
+                "targeting": "San Antonio, TX + 25 miles",
+                "keywords": "toyota camry, buy camry, camry dealership",
+                "status": "active",
+                "spent": 234.67,
+                "clicks": 156,
+                "impressions": 4520,
+                "conversions": 12,
+                "created_at": datetime.now(timezone.utc).isoformat()
+            },
+            {
+                "id": str(uuid.uuid4()),
+                "tenant_id": tenant_id,
+                "name": "RAV4 Display Campaign",
+                "type": "display", 
+                "budget": 50.0,
+                "targeting": "Auto shoppers, 25-55 years",
+                "keywords": "toyota rav4, suv, family vehicle",
+                "status": "active",
+                "spent": 89.23,
+                "clicks": 67,
+                "impressions": 2340,
+                "conversions": 5,
+                "created_at": datetime.now(timezone.utc).isoformat()
+            },
+            {
+                "id": str(uuid.uuid4()),
+                "tenant_id": tenant_id,
+                "name": "Tacoma Video Campaign",
+                "type": "video",
+                "budget": 100.0,
+                "targeting": "Truck enthusiasts, YouTube",
+                "keywords": "toyota tacoma, pickup truck, trd",
+                "status": "paused",
+                "spent": 45.12,
+                "clicks": 23,
+                "impressions": 1890,
+                "conversions": 2,
+                "created_at": datetime.now(timezone.utc).isoformat()
+            }
+        ]
+        
+        return {"campaigns": mock_campaigns}
+    except Exception as e:
+        logger.error(f"Error fetching Google Ads campaigns: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch campaigns")
+
+@api_router.post("/google-ads/campaigns")
+async def create_google_ads_campaign(campaign_data: GoogleAdsCampaignCreate):
+    """Create a new Google Ads campaign"""
+    try:
+        campaign = GoogleAdsCampaign(**campaign_data.dict())
+        campaign_doc = campaign.dict()
+        await db.google_ads_campaigns.insert_one(campaign_doc)
+        
+        logger.info(f"Google Ads campaign created: {campaign.name}")
+        return campaign
+    except Exception as e:
+        logger.error(f"Error creating Google Ads campaign: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to create campaign")
+
+# Craigslist Endpoints
+@api_router.get("/craigslist-ads")
+async def get_craigslist_ads(tenant_id: str):
+    """Get all Craigslist ads for a tenant"""
+    try:
+        # Mock Craigslist ads data
+        mock_ads = [
+            {
+                "id": str(uuid.uuid4()),
+                "tenant_id": tenant_id,
+                "title": "2025 Toyota Camry XSE - Like New, Low Miles",
+                "description": "Beautiful 2025 Toyota Camry XSE in excellent condition. Only 2,500 miles. Loaded with features including leather seats, navigation, and safety features.",
+                "price": 32995,
+                "location": "San Antonio, TX",
+                "image": "https://vehicle-photos-published.vauto.com/b0/f8/c8/20-9864-4c91-aba8-93c6593252aa/image-1.jpg",
+                "status": "active",
+                "views": 1247,
+                "replies": 23,
+                "leads": 8,
+                "posted_date": datetime.now(timezone.utc).isoformat(),
+                "expires_at": (datetime.now(timezone.utc) + timedelta(days=30)).isoformat()
+            },
+            {
+                "id": str(uuid.uuid4()),
+                "tenant_id": tenant_id, 
+                "title": "2025 Toyota RAV4 XLE Premium - All-Wheel Drive",
+                "description": "Brand new 2025 Toyota RAV4 XLE Premium with AWD. Perfect for families. Great safety ratings and fuel economy.",
+                "price": 38769,
+                "location": "San Antonio, TX",
+                "image": "https://vehicle-photos-published.vauto.com/86/0b/7b/a1-8c61-497b-9432-dbda66c798e6/image-1.jpg",
+                "status": "active",
+                "views": 892,
+                "replies": 15,
+                "leads": 6,
+                "posted_date": (datetime.now(timezone.utc) - timedelta(days=3)).isoformat(),
+                "expires_at": (datetime.now(timezone.utc) + timedelta(days=27)).isoformat()
+            },
+            {
+                "id": str(uuid.uuid4()),
+                "tenant_id": tenant_id,
+                "title": "2025 Toyota Tacoma TRD Sport - Ready for Adventure",
+                "description": "Powerful 2025 Toyota Tacoma TRD Sport. Perfect for work and play. Advanced 4WD system and TRD performance features.",
+                "price": 49699,
+                "location": "San Antonio, TX", 
+                "image": "https://vehicle-photos-published.vauto.com/77/3f/21/08-292c-4a8d-a11e-d32d897f11c9/image-1.jpg",
+                "status": "active",
+                "views": 634,
+                "replies": 19,
+                "leads": 11,
+                "posted_date": (datetime.now(timezone.utc) - timedelta(days=1)).isoformat(),
+                "expires_at": (datetime.now(timezone.utc) + timedelta(days=29)).isoformat()
+            }
+        ]
+        
+        return {"ads": mock_ads}
+    except Exception as e:
+        logger.error(f"Error fetching Craigslist ads: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch Craigslist ads")
+
+@api_router.post("/craigslist-ads/sync-inventory")
+async def sync_inventory_to_craigslist(request_data: dict):
+    """Sync dealership inventory to Craigslist"""
+    try:
+        tenant_id = request_data.get("tenant_id")
+        
+        # Get inventory data
+        cached_inventory = await db.inventory_cache.find_one({"tenant_id": tenant_id})
+        if not cached_inventory:
+            raise HTTPException(status_code=404, detail="No inventory data found")
+        
+        vehicles = cached_inventory.get("vehicles", [])
+        
+        # Create Craigslist ads for vehicles (simulation)
+        ads_created = 0
+        for vehicle in vehicles[:5]:  # Limit to 5 for demonstration
+            ad_data = {
+                "tenant_id": tenant_id,
+                "vehicle_id": vehicle.get("vin"),
+                "title": f"{vehicle.get('year')} {vehicle.get('make')} {vehicle.get('model')} {vehicle.get('trim', '')}".strip(),
+                "description": f"Excellent {vehicle.get('year')} {vehicle.get('make')} {vehicle.get('model')} in {vehicle.get('exterior_color', 'great')} condition. {vehicle.get('description', '')}",
+                "price": vehicle.get("price", 0),
+                "location": "San Antonio, TX",
+                "image": vehicle.get("images", [None])[0],
+                "status": "pending_review"  # Would be posted after review
+            }
+            
+            craigslist_ad = CraigslistAd(**ad_data)
+            ad_doc = craigslist_ad.dict()
+            await db.craigslist_ads.insert_one(ad_doc)
+            ads_created += 1
+        
+        logger.info(f"Craigslist sync initiated: {ads_created} ads created for tenant {tenant_id}")
+        return {
+            "status": "success",
+            "ads_created": ads_created,
+            "message": f"Successfully created {ads_created} Craigslist listings from inventory"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error syncing inventory to Craigslist: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to sync inventory to Craigslist")
+
+@api_router.post("/craigslist-ads/{ad_id}/renew")
+async def renew_craigslist_ad(ad_id: str):
+    """Renew a Craigslist ad"""
+    try:
+        # Update renewal timestamp
+        result = await db.craigslist_ads.update_one(
+            {"id": ad_id},
+            {
+                "$set": {
+                    "last_renewed": datetime.now(timezone.utc).isoformat(),
+                    "expires_at": (datetime.now(timezone.utc) + timedelta(days=30)).isoformat(),
+                    "status": "active"
+                }
+            }
+        )
+        
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Craigslist ad not found")
+        
+        logger.info(f"Craigslist ad renewed: {ad_id}")
+        return {"status": "success", "message": "Ad renewed successfully"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error renewing Craigslist ad: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to renew ad")
+
+# =============================================================================
 # WEBSITE BUILDER API ENDPOINTS
 # =============================================================================
 
