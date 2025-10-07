@@ -651,7 +651,7 @@ const VehicleCard = ({
               
               <div>
                 <div className="font-bold text-glass-bright">{formatPrice(vehicle.price)}</div>
-                <div className="text-sm text-glass-muted">{vehicle.mileage.toLocaleString()} miles</div>
+                <div className="text-sm text-glass-muted">{vehicle.mileage?.toLocaleString() || 0} miles</div>
               </div>
               
               <div>
