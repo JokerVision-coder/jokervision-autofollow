@@ -12,7 +12,10 @@
     "background",
     "tabs",
     "webRequest",
-    "declarativeNetRequest"
+    "declarativeNetRequest",
+    "contextMenus",
+    "notifications",
+    "alarms"
   ],
   
   "host_permissions": [
