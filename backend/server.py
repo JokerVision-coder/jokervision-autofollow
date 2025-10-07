@@ -8631,65 +8631,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# =============================================================================
-# REVOLUTIONARY REAL-TIME WEBSOCKET ENDPOINTS
-# =============================================================================
-
-# WebSocket endpoint temporarily commented out for testing
-# Will implement real-time features in next iteration
-
-@api_router.get("/realtime/stats")
-async def get_realtime_stats():
-    """Get real-time connection statistics"""
-    try:
-        return {
-            "realtime_system": "active",
-            "connection_stats": {
-                "total_connections": 0,
-                "unique_users": 0,
-                "active_topics": [],
-                "uptime": datetime.now(timezone.utc).isoformat()
-            },
-            "capabilities": [
-                "Real-time lead alerts",
-                "Live Voice AI updates", 
-                "Dynamic inventory insights",
-                "AI-powered notifications",
-                "Cross-platform synchronization"
-            ],
-            "topics_available": [
-                "dashboard_updates",
-                "lead_updates", 
-                "voice_ai_updates",
-                "inventory_updates",
-                "ai_alerts"
-            ],
-            "status": "ready_for_websocket_implementation"
-        }
-        
-    except Exception as e:
-        logger.error(f"Error getting realtime stats: {str(e)}")
-        raise HTTPException(status_code=500, detail="Failed to get realtime stats")
-
-@api_router.post("/realtime/trigger-demo")
-async def trigger_realtime_demo():
-    """Trigger demo real-time events for testing"""
-    try:
-        return {
-            "status": "demo_ready",
-            "events_sent": 0,
-            "message": "Real-time demo system ready - WebSocket implementation in progress",
-            "demo_features": [
-                "Real-time lead alerts",
-                "Voice AI completion notifications",
-                "AI-powered market insights",
-                "Dynamic inventory updates"
-            ]
-        }
-        
-    except Exception as e:
-        logger.error(f"Error triggering realtime demo: {str(e)}")
-        raise HTTPException(status_code=500, detail="Failed to trigger demo")
+# Real-time endpoints moved to proper location
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
