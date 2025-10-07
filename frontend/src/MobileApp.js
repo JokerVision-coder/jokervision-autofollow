@@ -28,17 +28,11 @@ const MobileApp = () => {
   const fetchAppData = async () => {
     try {
       setLoading(true);
-      const [statsRes, configRes, notificationsRes] = await Promise.all([
-        axios.get(`${API}/mobile-app/stats?tenant_id=default_dealership`),
-        axios.get(`${API}/mobile-app/config?tenant_id=default_dealership`),
-        axios.get(`${API}/mobile-app/notifications?tenant_id=default_dealership`)
-      ]);
-
-      setAppStats(statsRes.data || {});
-      setAppConfig(configRes.data || {});
-      setPushNotifications(notificationsRes.data.notifications || []);
+      // For now, use mock data directly since backend endpoints are not implemented
+      // TODO: Implement backend endpoints for mobile app management
+      loadMockData();
     } catch (error) {
-      console.error('Error fetching app data:', error);
+      console.error('Error loading app data:', error);
       loadMockData();
     } finally {
       setLoading(false);
