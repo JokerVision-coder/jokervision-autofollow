@@ -19,6 +19,7 @@ from fastapi import BackgroundTasks
 from inventory_scraper import ShottenkilkInventoryScraper
 from ml_models import get_ml_engine
 from ai_inbox_manager import get_ai_inbox_manager
+from workflow_automation import get_workflow_engine, trigger_lead_workflow, trigger_inventory_workflow, trigger_voice_workflow
 # WebSocket manager temporarily disabled for testing
 
 ROOT_DIR = Path(__file__).parent
