@@ -7178,7 +7178,7 @@ def publish_to_tiktok(account: dict, post_data: dict) -> dict:
         return {"success": False, "error": str(e)}
 
 @api_router.get("/social-media/accounts")
-async def get_social_media_accounts(tenant_id: str):
+async def get_tenant_social_media_accounts(tenant_id: str):
     """Get all connected social media accounts for a tenant"""
     try:
         accounts = await db.social_media_accounts.find({"tenant_id": tenant_id}).to_list(100)
