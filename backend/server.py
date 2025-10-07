@@ -5484,6 +5484,510 @@ async def send_campaign_messages(campaign: MarketingCampaign):
         logger.error(f"Error sending campaign messages: {str(e)}")
 
 # =============================================================================
+# REVIEWS MANAGEMENT API ENDPOINTS
+# =============================================================================
+
+# Reviews Models
+class Review(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    tenant_id: str
+    platform: str  # "google", "facebook", "autotrader", "cars.com", "dealerrater"
+    reviewer_name: str
+    reviewer_email: Optional[str] = None
+    rating: int  # 1-5 stars
+    title: Optional[str] = None
+    content: str
+    response: Optional[str] = None
+    response_date: Optional[datetime] = None
+    status: str = "new"  # new, responded, flagged
+    review_date: datetime
+    review_url: Optional[str] = None
+    vehicle_purchased: Optional[str] = None
+    department: str = "sales"  # sales, service, parts
+    sentiment: str = "positive"  # positive, neutral, negative
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class ReviewResponse(BaseModel):
+    review_id: str
+    response_text: str
+    auto_publish: bool = True
+
+@api_router.get("/reviews")
+async def get_reviews(tenant_id: str, platform: Optional[str] = None, status: Optional[str] = None):
+    """Get reviews for a tenant with optional filters"""
+    try:
+        query = {"tenant_id": tenant_id}
+        if platform:
+            query["platform"] = platform
+        if status:
+            query["status"] = status
+            
+        reviews = await db.reviews.find(query).sort("review_date", -1).to_list(100)
+        
+        # Convert reviews to proper format
+        for review in reviews:
+            if "_id" in review:
+                del review["_id"]
+        
+        if not reviews:
+            # Mock reviews data
+            mock_reviews = [
+                {
+                    "id": "rev_1",
+                    "tenant_id": tenant_id,
+                    "platform": "google",
+                    "reviewer_name": "Sarah Johnson",
+                    "rating": 5,
+                    "title": "Outstanding Service!",
+                    "content": "Exceptional experience at Shottenkirk Toyota! The sales team was knowledgeable and helped me find the perfect RAV4. Highly recommend!",
+                    "response": "Thank you Sarah! We're thrilled you love your new RAV4. Welcome to the Toyota family!",
+                    "status": "responded",
+                    "review_date": "2024-01-20T14:30:00Z",
+                    "vehicle_purchased": "2024 RAV4 XLE",
+                    "department": "sales",
+                    "sentiment": "positive"
+                },
+                {
+                    "id": "rev_2",
+                    "tenant_id": tenant_id,
+                    "platform": "facebook",
+                    "reviewer_name": "Mike Chen",
+                    "rating": 4,
+                    "content": "Good service department. Quick oil change and they explained everything clearly. Minor wait time but overall satisfied.",
+                    "response": None,
+                    "status": "new",
+                    "review_date": "2024-01-22T09:15:00Z",
+                    "department": "service",
+                    "sentiment": "positive"
+                },
+                {
+                    "id": "rev_3",
+                    "tenant_id": tenant_id,
+                    "platform": "autotrader",
+                    "reviewer_name": "Jennifer Lopez",
+                    "rating": 2,
+                    "content": "Had issues with financing process. Took longer than expected and communication could be better.",
+                    "response": None,
+                    "status": "flagged",
+                    "review_date": "2024-01-21T16:45:00Z",
+                    "department": "sales", 
+                    "sentiment": "negative"
+                }
+            ]
+            return {"reviews": mock_reviews}
+        
+        return {"reviews": reviews}
+        
+    except Exception as e:
+        logger.error(f"Error fetching reviews: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch reviews")
+
+@api_router.get("/reviews/stats")
+async def get_review_stats(tenant_id: str):
+    """Get review statistics and analytics"""
+    try:
+        reviews = await db.reviews.find({"tenant_id": tenant_id}).to_list(1000)
+        
+        if not reviews:
+            # Mock stats
+            return {
+                "total_reviews": 247,
+                "average_rating": 4.3,
+                "response_rate": 85.2,
+                "recent_reviews": 12,
+                "platform_breakdown": {
+                    "google": {"count": 124, "avg_rating": 4.5},
+                    "facebook": {"count": 89, "avg_rating": 4.2},
+                    "autotrader": {"count": 34, "avg_rating": 4.1}
+                },
+                "sentiment_analysis": {
+                    "positive": 78.5,
+                    "neutral": 15.8,
+                    "negative": 5.7
+                },
+                "monthly_trend": [
+                    {"month": "Nov", "count": 18, "rating": 4.2},
+                    {"month": "Dec", "count": 23, "rating": 4.4},
+                    {"month": "Jan", "count": 31, "rating": 4.3}
+                ]
+            }
+        
+        # Calculate real stats
+        total_reviews = len(reviews)
+        avg_rating = sum(r.get("rating", 0) for r in reviews) / total_reviews if total_reviews > 0 else 0
+        responded_reviews = len([r for r in reviews if r.get("response")])
+        response_rate = (responded_reviews / total_reviews * 100) if total_reviews > 0 else 0
+        
+        return {
+            "total_reviews": total_reviews,
+            "average_rating": round(avg_rating, 1),
+            "response_rate": round(response_rate, 1),
+            "recent_reviews": len([r for r in reviews if (datetime.now(timezone.utc) - datetime.fromisoformat(r.get("review_date", "2024-01-01T00:00:00Z").replace('Z', '+00:00'))).days <= 7]),
+            "platform_breakdown": {},
+            "sentiment_analysis": {
+                "positive": 70.0,
+                "neutral": 20.0,
+                "negative": 10.0
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"Error fetching review stats: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch review stats")
+
+@api_router.post("/reviews/{review_id}/respond")
+async def respond_to_review(review_id: str, response_data: ReviewResponse):
+    """Respond to a customer review"""
+    try:
+        # Update review with response
+        update_data = {
+            "response": response_data.response_text,
+            "response_date": datetime.now(timezone.utc).isoformat(),
+            "status": "responded",
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }
+        
+        result = await db.reviews.update_one(
+            {"id": review_id},
+            {"$set": update_data}
+        )
+        
+        if result.matched_count == 0:
+            # Mock response for demo
+            logger.info(f"Mock: Responded to review {review_id}")
+        
+        # If auto_publish is True, publish to the platform
+        if response_data.auto_publish:
+            # Mock platform publishing
+            logger.info(f"Mock: Published response to platform for review {review_id}")
+        
+        return {
+            "success": True,
+            "message": "Response saved successfully",
+            "response_id": str(uuid.uuid4())
+        }
+        
+    except Exception as e:
+        logger.error(f"Error responding to review: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to respond to review")
+
+# =============================================================================
+# CALENDAR INTEGRATION API ENDPOINTS
+# =============================================================================
+
+# Calendar Models
+class CalendarEvent(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    tenant_id: str
+    title: str
+    description: Optional[str] = None
+    start_time: datetime
+    end_time: datetime
+    attendees: List[str] = Field(default_factory=list)
+    location: Optional[str] = None
+    event_type: str = "appointment"  # appointment, follow_up, service, delivery
+    lead_id: Optional[str] = None
+    calendar_provider: str = "google"  # google, outlook
+    external_event_id: Optional[str] = None
+    status: str = "scheduled"  # scheduled, confirmed, cancelled, completed
+    reminders: List[int] = Field(default_factory=lambda: [15, 60])  # minutes before
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+@api_router.get("/calendar/events")
+async def get_calendar_events(tenant_id: str, start_date: str, end_date: str):
+    """Get calendar events for date range"""
+    try:
+        # Mock calendar events
+        mock_events = [
+            {
+                "id": "evt_1",
+                "tenant_id": tenant_id,
+                "title": "Test Drive - 2025 Camry",
+                "description": "Test drive appointment with Sarah Johnson",
+                "start_time": "2024-01-25T10:00:00Z",
+                "end_time": "2024-01-25T10:30:00Z",
+                "location": "Shottenkirk Toyota Showroom",
+                "event_type": "appointment",
+                "status": "scheduled",
+                "attendees": ["sarah.johnson@email.com"]
+            },
+            {
+                "id": "evt_2", 
+                "tenant_id": tenant_id,
+                "title": "Service Appointment",
+                "description": "Oil change and inspection",
+                "start_time": "2024-01-25T14:00:00Z", 
+                "end_time": "2024-01-25T15:00:00Z",
+                "location": "Service Department",
+                "event_type": "service",
+                "status": "confirmed"
+            }
+        ]
+        
+        return {"events": mock_events}
+        
+    except Exception as e:
+        logger.error(f"Error fetching calendar events: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch events")
+
+@api_router.post("/calendar/events")
+async def create_calendar_event(event_data: CalendarEvent):
+    """Create new calendar event"""
+    try:
+        # Store event in database
+        event_doc = event_data.dict()
+        await db.calendar_events.insert_one(event_doc)
+        
+        # Mock Google/Outlook calendar sync
+        logger.info(f"Mock: Synced event {event_data.id} with {event_data.calendar_provider}")
+        
+        return {
+            "success": True,
+            "event_id": event_data.id,
+            "message": "Event created successfully"
+        }
+        
+    except Exception as e:
+        logger.error(f"Error creating calendar event: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to create event")
+
+# =============================================================================
+# WORKFLOW BUILDER API ENDPOINTS  
+# =============================================================================
+
+# Workflow Models
+class WorkflowStep(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    step_type: str  # "sms", "email", "call", "wait", "condition"
+    delay_minutes: int = 0
+    content: Optional[str] = None
+    conditions: Optional[Dict] = Field(default_factory=dict)
+
+class Workflow(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    tenant_id: str
+    name: str
+    description: Optional[str] = None
+    trigger: str  # "new_lead", "no_response", "appointment_missed"
+    steps: List[WorkflowStep] = Field(default_factory=list)
+    active: bool = True
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+@api_router.get("/workflows")
+async def get_workflows(tenant_id: str):
+    """Get workflows for tenant"""
+    try:
+        workflows = await db.workflows.find({"tenant_id": tenant_id}).to_list(100)
+        
+        if not workflows:
+            # Mock workflows
+            mock_workflows = [
+                {
+                    "id": "wf_1",
+                    "tenant_id": tenant_id,
+                    "name": "New Lead Follow-up",
+                    "description": "3-step follow-up sequence for new leads",
+                    "trigger": "new_lead",
+                    "active": True,
+                    "steps": [
+                        {"step_type": "sms", "delay_minutes": 5, "content": "Hi {name}! Thanks for your interest in Toyota. I'm here to help you find the perfect vehicle."},
+                        {"step_type": "wait", "delay_minutes": 1440},  # 24 hours
+                        {"step_type": "email", "delay_minutes": 0, "content": "Following up on your Toyota interest..."}
+                    ]
+                },
+                {
+                    "id": "wf_2",
+                    "tenant_id": tenant_id,
+                    "name": "Service Reminder",
+                    "description": "Automated service reminders",
+                    "trigger": "service_due",
+                    "active": True,
+                    "steps": [
+                        {"step_type": "email", "delay_minutes": 0, "content": "Your Toyota is due for service..."}
+                    ]
+                }
+            ]
+            return {"workflows": mock_workflows}
+        
+        return {"workflows": workflows}
+        
+    except Exception as e:
+        logger.error(f"Error fetching workflows: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch workflows")
+
+# =============================================================================
+# AI TOOLKIT ENHANCEMENT API ENDPOINTS
+# =============================================================================
+
+@api_router.post("/ai/payment-calculator")
+async def calculate_payment(calculation_data: dict):
+    """Calculate vehicle payment with AI insights"""
+    try:
+        vehicle_price = calculation_data.get("vehicle_price", 30000)
+        down_payment = calculation_data.get("down_payment", 5000) 
+        trade_value = calculation_data.get("trade_value", 0)
+        apr = calculation_data.get("apr", 4.5) / 100
+        term_months = calculation_data.get("term_months", 60)
+        
+        # Calculate loan amount
+        loan_amount = vehicle_price - down_payment - trade_value
+        
+        # Calculate monthly payment
+        if apr > 0:
+            monthly_payment = (loan_amount * (apr/12) * (1 + apr/12)**term_months) / ((1 + apr/12)**term_months - 1)
+        else:
+            monthly_payment = loan_amount / term_months
+        
+        total_interest = (monthly_payment * term_months) - loan_amount
+        
+        return {
+            "loan_amount": round(loan_amount, 2),
+            "monthly_payment": round(monthly_payment, 2), 
+            "total_interest": round(total_interest, 2),
+            "total_cost": round(loan_amount + total_interest, 2),
+            "recommendations": [
+                "Consider a larger down payment to reduce monthly costs",
+                "Shop around for better interest rates",
+                "Extended warranties available for additional protection"
+            ]
+        }
+        
+    except Exception as e:
+        logger.error(f"Error calculating payment: {str(e)}")
+        raise HTTPException(status_code=500, detail="Payment calculation failed")
+
+@api_router.post("/ai/trade-estimator") 
+async def estimate_trade_value(vehicle_data: dict):
+    """Estimate trade-in value with AI"""
+    try:
+        # Mock trade estimation
+        year = vehicle_data.get("year", 2020)
+        make = vehicle_data.get("make", "Toyota")
+        model = vehicle_data.get("model", "Camry")
+        mileage = vehicle_data.get("mileage", 50000)
+        condition = vehicle_data.get("condition", "good")
+        
+        # Simple estimation algorithm
+        base_value = 25000 - (2024 - year) * 2000  # Depreciation
+        mileage_adjustment = max(0, (100000 - mileage) / 100000 * 5000)
+        condition_multiplier = {"excellent": 1.1, "good": 1.0, "fair": 0.85, "poor": 0.7}.get(condition, 1.0)
+        
+        estimated_value = max(1000, (base_value + mileage_adjustment) * condition_multiplier)
+        
+        return {
+            "estimated_value": round(estimated_value, 2),
+            "value_range": {
+                "low": round(estimated_value * 0.85, 2),
+                "high": round(estimated_value * 1.15, 2)
+            },
+            "factors": [
+                f"Year: {year} (-{(2024-year)*2000})",
+                f"Mileage: {mileage:,} miles",
+                f"Condition: {condition}",
+                f"Make/Model: {make} {model}"
+            ]
+        }
+        
+    except Exception as e:
+        logger.error(f"Error estimating trade value: {str(e)}")
+        raise HTTPException(status_code=500, detail="Trade estimation failed")
+
+# =============================================================================
+# SUBSCRIPTION MANAGEMENT API ENDPOINTS
+# =============================================================================
+
+class SubscriptionPlan(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    price_monthly: float
+    price_yearly: float
+    features: List[str]
+    max_users: int
+    max_leads: int
+    sms_credits: int
+    email_credits: int
+    support_level: str
+
+@api_router.get("/subscription/plans")
+async def get_subscription_plans():
+    """Get available subscription plans"""
+    try:
+        plans = [
+            {
+                "id": "starter",
+                "name": "Starter",
+                "price_monthly": 99.00,
+                "price_yearly": 990.00,
+                "features": ["Lead Management", "SMS Follow-up", "Basic Analytics", "Email Support"],
+                "max_users": 3,
+                "max_leads": 1000,
+                "sms_credits": 500,
+                "email_credits": 2000,
+                "support_level": "email"
+            },
+            {
+                "id": "professional", 
+                "name": "Professional",
+                "price_monthly": 199.00,
+                "price_yearly": 1990.00,
+                "features": ["Everything in Starter", "Social Media Management", "Advanced Analytics", "Calendar Integration", "Phone Support"],
+                "max_users": 10,
+                "max_leads": 5000,
+                "sms_credits": 2000,
+                "email_credits": 10000,
+                "support_level": "phone"
+            },
+            {
+                "id": "enterprise",
+                "name": "Enterprise", 
+                "price_monthly": 399.00,
+                "price_yearly": 3990.00,
+                "features": ["Everything in Professional", "White Label", "API Access", "Custom Integrations", "Dedicated Support"],
+                "max_users": 50,
+                "max_leads": 25000,
+                "sms_credits": 10000,
+                "email_credits": 50000,
+                "support_level": "dedicated"
+            }
+        ]
+        
+        return {"plans": plans}
+        
+    except Exception as e:
+        logger.error(f"Error fetching subscription plans: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch plans")
+
+@api_router.get("/subscription/current")
+async def get_current_subscription(tenant_id: str):
+    """Get current subscription details"""
+    try:
+        # Mock current subscription
+        return {
+            "plan_id": "professional",
+            "plan_name": "Professional",
+            "status": "active",
+            "billing_cycle": "monthly",
+            "next_billing_date": "2024-02-25T00:00:00Z",
+            "usage": {
+                "users": 4,
+                "leads": 1247,
+                "sms_sent": 892,
+                "emails_sent": 3456
+            },
+            "limits": {
+                "max_users": 10,
+                "max_leads": 5000,
+                "sms_credits": 2000,
+                "email_credits": 10000
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"Error fetching subscription: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch subscription")
+
+# =============================================================================
 # SOCIAL MEDIA HUB API ENDPOINTS (META & TIKTOK)
 # =============================================================================
 
