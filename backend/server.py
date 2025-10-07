@@ -18,6 +18,7 @@ import random
 from fastapi import BackgroundTasks
 from inventory_scraper import ShottenkilkInventoryScraper
 from ml_models import get_ml_engine
+from ai_inbox_manager import get_ai_inbox_manager
 # WebSocket manager temporarily disabled for testing
 
 ROOT_DIR = Path(__file__).parent
