@@ -1953,6 +1953,13 @@ const Navigation = () => {
               <Bell className="w-4 h-4 mr-2" />
               Vehicle Alerts
             </Link>
+            <Link 
+              to="/ai-bot" 
+              className="text-glass hover:text-glass-bright font-medium transition-colors duration-200 flex items-center"
+            >
+              <Bot className="w-4 h-4 mr-2" />
+              AI Bot System
+            </Link>
           </div>
         </div>
       </div>
