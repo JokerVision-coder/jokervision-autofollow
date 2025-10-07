@@ -43,7 +43,7 @@ const ResponsiveLayout = ({ children, sidebar, header }) => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
       {header}
       <div className="flex">
         {sidebar && (
