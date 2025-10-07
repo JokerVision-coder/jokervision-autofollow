@@ -6,7 +6,8 @@ import {
   Users, MousePointer, TrendingUp, Calendar, Settings, Play, Pause,
   Globe, MapPin, Car, Phone, Mail, Target, Zap, AlertCircle,
   ExternalLink, Copy, Download, Upload, RefreshCw, Clock, Camera,
-  Briefcase, Heart, Share2, Video, Image as ImageIcon, Megaphone
+  Briefcase, Heart, Share2, Video, Image as ImageIcon, Megaphone,
+  MessageSquare
 } from 'lucide-react';
 
 const API = process.env.REACT_APP_BACKEND_URL;
