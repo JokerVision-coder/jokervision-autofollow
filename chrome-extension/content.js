@@ -1,7 +1,7 @@
 // JokerVision AutoDealer Pro - Content Script for Facebook Marketplace
 class MarketplaceContentScript {
     constructor() {
-        this.apiBaseUrl = 'https://joker-dealership.preview.emergentagent.com/api';
+        this.apiBaseUrl = 'https://dealerhub-5.preview.emergentagent.com/api';
         this.currentTenantId = null;
         this.isInitialized = false;
         this.init();
