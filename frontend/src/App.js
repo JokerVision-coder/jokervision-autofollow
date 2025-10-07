@@ -1923,6 +1923,13 @@ const Navigation = () => {
               🤖 AI Inbox
             </Link>
             <Link 
+              to="/workflow-automation" 
+              className="text-glass hover:text-glass-bright font-medium transition-colors duration-200 flex items-center"
+            >
+              <Zap className="w-4 h-4 mr-2" />
+              ⚡ Workflow Automation
+            </Link>
+            <Link 
               to="/subscription" 
               className="text-glass hover:text-glass-bright font-medium transition-colors duration-200 flex items-center"
             >
