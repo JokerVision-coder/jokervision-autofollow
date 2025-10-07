@@ -33,7 +33,7 @@ import MobileApp from './MobileApp';
 import SuperiorInventorySystem from './SuperiorInventorySystem';
 import WalkInTracker from './WalkInTracker';
 import VehicleWishlist from './VehicleWishlist';
-import SuperiorAIBot from './SuperiorAIBot';
+import SimpleAIBot from './SimpleAIBot';
 import { 
   Users, MessageSquare, Calendar, BarChart3, Plus, Send, Bot, Phone, Mail, 
   DollarSign, Briefcase, Clock, Settings, Zap, TrendingUp, PhoneCall, MessageCircle,
