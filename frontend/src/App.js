@@ -1847,6 +1847,13 @@ const Navigation = () => {
               <TrendingUp className="w-4 h-4 mr-2" />
               Pipeline
             </Link>
+            <Link 
+              to="/marketing" 
+              className="text-glass hover:text-glass-bright font-medium transition-colors duration-200 flex items-center"
+            >
+              <Send className="w-4 h-4 mr-2" />
+              Mass Marketing
+            </Link>
           </div>
         </div>
       </div>
