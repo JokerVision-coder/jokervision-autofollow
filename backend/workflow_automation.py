@@ -319,13 +319,18 @@ class WorkflowAutomationEngine:
                     "customer": customer_name,
                     "vehicle": vehicle_interest,
                     "financing_options": [
-                        {"type": "Standard Loan", "apr": "3.9%", "term": "60 months"},
-                        {"type": "Low APR Special", "apr": "1.9%", "term": "48 months"},
-                        {"type": "Extended Term", "apr": "4.9%", "term": "72 months"}
+                        {"type": "Premium 0% APR Special", "apr": "0.0%", "term": "48 months", "qualification": "Tier 1 credit", "monthly_payment": "$625"},
+                        {"type": "Low APR Advantage", "apr": "1.9%", "term": "60 months", "qualification": "Excellent credit", "monthly_payment": "$520"},
+                        {"type": "Flexible Extended Term", "apr": "3.9%", "term": "84 months", "qualification": "Good credit", "monthly_payment": "$410"},
+                        {"type": "Special First-Time Buyer", "apr": "4.9%", "term": "72 months", "qualification": "First-time buyer program", "monthly_payment": "$485"}
                     ],
-                    "pre_approval_amount": "$65000",
-                    "monthly_payment_estimate": "$580-750",
-                    "trade_in_value": "$18000"
+                    "pre_approval_amount": "$75,000 (subject to credit verification)",
+                    "down_payment_options": ["$0 down", "$2,500 down", "$5,000 down for rate reduction"],
+                    "trade_in_value": "$22,500 (guaranteed for 7 days)",
+                    "protection_packages": ["Extended warranty", "Gap insurance", "Tire & wheel protection"],
+                    "dealer_incentives": "$2,000 dealer cash + military/student discounts available",
+                    "same_day_approval": "Credit decision in 15 minutes + funding available today",
+                    "automotive_finance_expertise": "Comprehensive automotive financing with multiple approval tiers and protection options"
                 })
                 
             else:
