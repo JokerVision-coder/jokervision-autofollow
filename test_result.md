@@ -327,7 +327,6 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Social Media Hub API Endpoints"
     - "Social Media Hub Frontend Component"
   stuck_tasks: []
   test_all: false
