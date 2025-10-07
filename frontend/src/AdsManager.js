@@ -587,6 +587,335 @@ const CraigslistAdCard = ({ ad }) => {
   );
 };
 
+// Facebook Ads Section Component
+const FacebookAdsSection = ({ ads, onRefresh }) => {
+  const totalSpent = ads.reduce((sum, ad) => sum + (ad.spent || 0), 0);
+  const totalReach = ads.reduce((sum, ad) => sum + (ad.reach || 0), 0);
+  const totalEngagements = ads.reduce((sum, ad) => sum + (ad.engagements || 0), 0);
+  const totalLeads = ads.reduce((sum, ad) => sum + (ad.leads || 0), 0);
+
+  return (
+    <div className="space-y-6">
+      {/* Facebook Ads Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card className="glass-card">
+          <CardContent className="p-6 text-center">
+            <DollarSign className="w-8 h-8 mx-auto mb-2 neon-green" />
+            <div className="text-2xl font-bold text-glass-bright">${totalSpent.toFixed(2)}</div>
+            <div className="text-sm text-glass-muted">Total Spent</div>
+          </CardContent>
+        </Card>
+        <Card className="glass-card">
+          <CardContent className="p-6 text-center">
+            <Users className="w-8 h-8 mx-auto mb-2 neon-blue" />
+            <div className="text-2xl font-bold neon-blue">{totalReach.toLocaleString()}</div>
+            <div className="text-sm text-glass-muted">Total Reach</div>
+          </CardContent>
+        </Card>
+        <Card className="glass-card">
+          <CardContent className="p-6 text-center">
+            <Heart className="w-8 h-8 mx-auto mb-2 neon-pink" />
+            <div className="text-2xl font-bold neon-pink">{totalEngagements.toLocaleString()}</div>
+            <div className="text-sm text-glass-muted">Engagements</div>
+          </CardContent>
+        </Card>
+        <Card className="glass-card">
+          <CardContent className="p-6 text-center">
+            <Target className="w-8 h-8 mx-auto mb-2 neon-purple" />
+            <div className="text-2xl font-bold neon-purple">{totalLeads}</div>
+            <div className="text-sm text-glass-muted">Leads Generated</div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <SocialMediaCampaigns 
+        ads={ads} 
+        platform="Facebook"
+        onRefresh={onRefresh}
+        platformColor="blue"
+        platformIcon={<Users className="w-5 h-5" />}
+      />
+    </div>
+  );
+};
+
+// Instagram Ads Section Component
+const InstagramAdsSection = ({ ads, onRefresh }) => {
+  const totalSpent = ads.reduce((sum, ad) => sum + (ad.spent || 0), 0);
+  const totalImpressions = ads.reduce((sum, ad) => sum + (ad.impressions || 0), 0);
+  const totalStoryViews = ads.reduce((sum, ad) => sum + (ad.story_views || 0), 0);
+  const totalProfileVisits = ads.reduce((sum, ad) => sum + (ad.profile_visits || 0), 0);
+
+  return (
+    <div className="space-y-6">
+      {/* Instagram Ads Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card className="glass-card">
+          <CardContent className="p-6 text-center">
+            <DollarSign className="w-8 h-8 mx-auto mb-2 neon-green" />
+            <div className="text-2xl font-bold text-glass-bright">${totalSpent.toFixed(2)}</div>
+            <div className="text-sm text-glass-muted">Total Spent</div>
+          </CardContent>
+        </Card>
+        <Card className="glass-card">
+          <CardContent className="p-6 text-center">
+            <Eye className="w-8 h-8 mx-auto mb-2 neon-purple" />
+            <div className="text-2xl font-bold neon-purple">{totalImpressions.toLocaleString()}</div>
+            <div className="text-sm text-glass-muted">Impressions</div>
+          </CardContent>
+        </Card>
+        <Card className="glass-card">
+          <CardContent className="p-6 text-center">
+            <Video className="w-8 h-8 mx-auto mb-2 neon-pink" />
+            <div className="text-2xl font-bold neon-pink">{totalStoryViews.toLocaleString()}</div>
+            <div className="text-sm text-glass-muted">Story Views</div>
+          </CardContent>
+        </Card>
+        <Card className="glass-card">
+          <CardContent className="p-6 text-center">
+            <Users className="w-8 h-8 mx-auto mb-2 neon-orange" />
+            <div className="text-2xl font-bold neon-orange">{totalProfileVisits}</div>
+            <div className="text-sm text-glass-muted">Profile Visits</div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <SocialMediaCampaigns 
+        ads={ads} 
+        platform="Instagram"
+        onRefresh={onRefresh}
+        platformColor="pink"
+        platformIcon={<Camera className="w-5 h-5" />}
+      />
+    </div>
+  );
+};
+
+// TikTok Ads Section Component
+const TikTokAdsSection = ({ ads, onRefresh }) => {
+  const totalSpent = ads.reduce((sum, ad) => sum + (ad.spent || 0), 0);
+  const totalVideoViews = ads.reduce((sum, ad) => sum + (ad.video_views || 0), 0);
+  const totalShares = ads.reduce((sum, ad) => sum + (ad.shares || 0), 0);
+  const totalComments = ads.reduce((sum, ad) => sum + (ad.comments || 0), 0);
+
+  return (
+    <div className="space-y-6">
+      {/* TikTok Ads Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card className="glass-card">
+          <CardContent className="p-6 text-center">
+            <DollarSign className="w-8 h-8 mx-auto mb-2 neon-green" />
+            <div className="text-2xl font-bold text-glass-bright">${totalSpent.toFixed(2)}</div>
+            <div className="text-sm text-glass-muted">Total Spent</div>
+          </CardContent>
+        </Card>
+        <Card className="glass-card">
+          <CardContent className="p-6 text-center">
+            <Play className="w-8 h-8 mx-auto mb-2 neon-red" />
+            <div className="text-2xl font-bold neon-red">{totalVideoViews.toLocaleString()}</div>
+            <div className="text-sm text-glass-muted">Video Views</div>
+          </CardContent>
+        </Card>
+        <Card className="glass-card">
+          <CardContent className="p-6 text-center">
+            <Share2 className="w-8 h-8 mx-auto mb-2 neon-cyan" />
+            <div className="text-2xl font-bold neon-cyan">{totalShares.toLocaleString()}</div>
+            <div className="text-sm text-glass-muted">Shares</div>
+          </CardContent>
+        </Card>
+        <Card className="glass-card">
+          <CardContent className="p-6 text-center">
+            <MessageSquare className="w-8 h-8 mx-auto mb-2 neon-yellow" />
+            <div className="text-2xl font-bold neon-yellow">{totalComments}</div>
+            <div className="text-sm text-glass-muted">Comments</div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <SocialMediaCampaigns 
+        ads={ads} 
+        platform="TikTok"
+        onRefresh={onRefresh}
+        platformColor="black"
+        platformIcon={<Play className="w-5 h-5" />}
+      />
+    </div>
+  );
+};
+
+// LinkedIn Ads Section Component
+const LinkedInAdsSection = ({ ads, onRefresh }) => {
+  const totalSpent = ads.reduce((sum, ad) => sum + (ad.spent || 0), 0);
+  const totalImpressions = ads.reduce((sum, ad) => sum + (ad.impressions || 0), 0);
+  const totalClicks = ads.reduce((sum, ad) => sum + (ad.clicks || 0), 0);
+  const totalLeads = ads.reduce((sum, ad) => sum + (ad.leads || 0), 0);
+
+  return (
+    <div className="space-y-6">
+      {/* LinkedIn Ads Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card className="glass-card">
+          <CardContent className="p-6 text-center">
+            <DollarSign className="w-8 h-8 mx-auto mb-2 neon-green" />
+            <div className="text-2xl font-bold text-glass-bright">${totalSpent.toFixed(2)}</div>
+            <div className="text-sm text-glass-muted">Total Spent</div>
+          </CardContent>
+        </Card>
+        <Card className="glass-card">
+          <CardContent className="p-6 text-center">
+            <Eye className="w-8 h-8 mx-auto mb-2 neon-blue" />
+            <div className="text-2xl font-bold neon-blue">{totalImpressions.toLocaleString()}</div>
+            <div className="text-sm text-glass-muted">Impressions</div>
+          </CardContent>
+        </Card>
+        <Card className="glass-card">
+          <CardContent className="p-6 text-center">
+            <MousePointer className="w-8 h-8 mx-auto mb-2 neon-cyan" />
+            <div className="text-2xl font-bold neon-cyan">{totalClicks.toLocaleString()}</div>
+            <div className="text-sm text-glass-muted">Clicks</div>
+          </CardContent>
+        </Card>
+        <Card className="glass-card">
+          <CardContent className="p-6 text-center">
+            <Users className="w-8 h-8 mx-auto mb-2 neon-purple" />
+            <div className="text-2xl font-bold neon-purple">{totalLeads}</div>
+            <div className="text-sm text-glass-muted">B2B Leads</div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <SocialMediaCampaigns 
+        ads={ads} 
+        platform="LinkedIn"
+        onRefresh={onRefresh}
+        platformColor="blue"
+        platformIcon={<Briefcase className="w-5 h-5" />}
+      />
+    </div>
+  );
+};
+
+// Universal Social Media Campaigns Component
+const SocialMediaCampaigns = ({ ads, platform, onRefresh, platformColor, platformIcon }) => {
+  return (
+    <Card className="glass-card">
+      <CardContent className="p-6">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-xl font-semibold text-glass-bright flex items-center">
+            {platformIcon}
+            <span className="ml-2">{platform} Campaigns</span>
+          </h3>
+          <div className="flex gap-2">
+            <Button onClick={onRefresh} size="sm" variant="outline" className="text-glass-bright">
+              <RefreshCw className="w-4 h-4" />
+            </Button>
+            <Button size="sm" className="btn-neon">
+              <Plus className="w-4 h-4 mr-1" />
+              New Campaign
+            </Button>
+          </div>
+        </div>
+        
+        {ads.length === 0 ? (
+          <div className="text-center py-12">
+            {platformIcon && <div className="w-16 h-16 mx-auto mb-4 text-glass-muted">{platformIcon}</div>}
+            <h4 className="text-lg font-semibold text-glass-bright mb-2">No {platform} Campaigns</h4>
+            <p className="text-glass-muted mb-6">Create your first {platform} campaign to reach potential customers</p>
+            <Button className="btn-neon">
+              <Plus className="w-4 h-4 mr-2" />
+              Create {platform} Campaign
+            </Button>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {ads.map((ad) => (
+              <SocialMediaAdCard key={ad.id} ad={ad} platform={platform} platformColor={platformColor} />
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
+
+// Social Media Ad Card
+const SocialMediaAdCard = ({ ad, platform, platformColor }) => {
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'active': return 'neon-green';
+      case 'paused': return 'neon-orange';
+      case 'completed': return 'text-glass-muted';
+      default: return 'text-glass';
+    }
+  };
+
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString();
+  };
+
+  return (
+    <Card className="glass-card hover:scale-105 transition-transform duration-200">
+      <CardContent className="p-4">
+        <div className="flex gap-4">
+          {/* Ad Preview */}
+          <div className="w-20 h-20 bg-gradient-to-br from-gray-700 to-gray-800 rounded-lg flex items-center justify-center">
+            {ad.image ? (
+              <img src={ad.image} alt={ad.name} className="w-full h-full object-cover rounded-lg" />
+            ) : (
+              <ImageIcon className="w-8 h-8 text-gray-400" />
+            )}
+          </div>
+          
+          {/* Ad Details */}
+          <div className="flex-1">
+            <div className="flex justify-between items-start mb-2">
+              <div>
+                <h4 className="font-semibold text-glass-bright">{ad.name}</h4>
+                <p className="text-sm text-glass-muted">{ad.objective} • {ad.audience}</p>
+              </div>
+              <Badge className={`badge-neon ${getStatusColor(ad.status)}`}>
+                {ad.status?.toUpperCase()}
+              </Badge>
+            </div>
+            
+            <div className="grid grid-cols-4 gap-4 text-sm mb-3">
+              <div>
+                <div className="text-glass-bright font-medium">${ad.spent || 0}</div>
+                <div className="text-glass-muted">Spent</div>
+              </div>
+              <div>
+                <div className="text-glass-bright font-medium">{ad.reach || ad.impressions || 0}</div>
+                <div className="text-glass-muted">{platform === 'LinkedIn' ? 'Impressions' : 'Reach'}</div>
+              </div>
+              <div>
+                <div className="text-glass-bright font-medium">{ad.engagements || ad.clicks || 0}</div>
+                <div className="text-glass-muted">{platform === 'LinkedIn' ? 'Clicks' : 'Engagements'}</div>
+              </div>
+              <div>
+                <div className="text-glass-bright font-medium">{ad.leads || 0}</div>
+                <div className="text-glass-muted">Leads</div>
+              </div>
+            </div>
+            
+            <div className="flex gap-2">
+              <Button size="sm" className="btn-neon flex-1">
+                <BarChart3 className="w-3 h-3 mr-1" />
+                View Stats
+              </Button>
+              <Button size="sm" variant="outline" className="text-glass-bright">
+                <Edit className="w-3 h-3" />
+              </Button>
+              <Button size="sm" variant="outline" className="text-glass-bright">
+                {ad.status === 'active' ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
+              </Button>
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
 // Google Ads Create Form
 const GoogleAdsCreateForm = ({ onClose, onCreate }) => {
   const [formData, setFormData] = useState({
