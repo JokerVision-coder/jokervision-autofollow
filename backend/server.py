@@ -5283,6 +5283,11 @@ async def get_audience_segments(tenant_id: str):
     try:
         segments = await db.audience_segments.find({"tenant_id": tenant_id}).to_list(100)
         
+        # Convert segments to proper format (remove _id ObjectId)
+        for segment in segments:
+            if "_id" in segment:
+                del segment["_id"]
+        
         if not segments:
             # Return mock segments for demo
             mock_segments = [
