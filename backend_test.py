@@ -3841,19 +3841,13 @@ Vehicle Type: sedan"""
         """Test Hashtag Research endpoint - POST /api/organic/hashtag-research"""
         print("\n🏷️ Testing Hashtag Research...")
         
-        # Test data from review request
-        hashtag_data = {
-            "tenant_id": "default",
-            "keywords": ["cars", "automotive"],
-            "platform": "instagram"
-        }
-        
+        # Test data from review request - using query parameters
         success, response = self.run_test(
             "Hashtag Research",
             "POST",
-            "organic/hashtag-research",
+            "organic/hashtag-research?tenant_id=default&platform=instagram",
             200,
-            data=hashtag_data
+            data=["cars", "automotive"]  # keywords as JSON body
         )
         
         if success:
