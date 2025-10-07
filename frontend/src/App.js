@@ -1814,6 +1814,13 @@ const Navigation = () => {
               <Car className="w-4 h-4 mr-2" />
               Inventory
             </Link>
+            <Link 
+              to="/websites" 
+              className="text-glass hover:text-glass-bright font-medium transition-colors duration-200 flex items-center"
+            >
+              <Globe className="w-4 h-4 mr-2" />
+              Websites
+            </Link>
           </div>
         </div>
       </div>
