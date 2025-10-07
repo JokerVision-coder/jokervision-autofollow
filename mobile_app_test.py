@@ -174,25 +174,31 @@ class MobileAppAPITester:
         )
         
         if success:
-            if isinstance(response, list):
-                print(f"   ✅ Retrieved {len(response)} vehicles without tenant_id requirement")
-                if response:
-                    first_vehicle = response[0]
-                    required_fields = ['id', 'make', 'model', 'year', 'price']
-                    missing_fields = [field for field in required_fields if field not in first_vehicle]
-                    
-                    if not missing_fields:
-                        print(f"   ✅ Vehicle structure valid - {first_vehicle.get('year')} {first_vehicle.get('make')} {first_vehicle.get('model')}")
-                        return True
-                    else:
-                        print(f"   ❌ Vehicle missing fields: {missing_fields}")
-                        return False
-                else:
-                    print("   ✅ Empty vehicles list returned (acceptable)")
-                    return True
+            # Handle both direct list and object with vehicles array
+            vehicles_list = response
+            if isinstance(response, dict) and 'vehicles' in response:
+                vehicles_list = response['vehicles']
+                print(f"   ✅ Retrieved {len(vehicles_list)} vehicles without tenant_id requirement")
+            elif isinstance(response, list):
+                print(f"   ✅ Retrieved {len(vehicles_list)} vehicles without tenant_id requirement")
             else:
-                print("   ❌ Response is not a list")
+                print("   ❌ Response is not a list or object with vehicles array")
                 return False
+                
+            if vehicles_list:
+                first_vehicle = vehicles_list[0]
+                required_fields = ['id', 'make', 'model', 'year', 'price']
+                missing_fields = [field for field in required_fields if field not in first_vehicle]
+                
+                if not missing_fields:
+                    print(f"   ✅ Vehicle structure valid - {first_vehicle.get('year')} {first_vehicle.get('make')} {first_vehicle.get('model')}")
+                    return True
+                else:
+                    print(f"   ❌ Vehicle missing fields: {missing_fields}")
+                    return False
+            else:
+                print("   ✅ Empty vehicles list returned (acceptable)")
+                return True
         return False
 
     def test_mobile_voice_realtime_session_post(self):
