@@ -5662,6 +5662,299 @@ async def get_chrome_extension_stats(tenant_id: str):
             "last_activity": datetime.now(timezone.utc).isoformat()
         }
 
+# =============================================================================
+# ADVANCED WEBSITE BUILDER API ENDPOINTS
+# =============================================================================
+
+@api_router.get("/websites")
+async def get_websites(tenant_id: str):
+    """Get all websites for a tenant"""
+    try:
+        websites = await db.websites.find({"tenant_id": tenant_id}).to_list(100)
+        
+        # Clean up MongoDB ObjectId
+        for website in websites:
+            if "_id" in website:
+                del website["_id"]
+        
+        if not websites:
+            # Mock websites for demo
+            mock_websites = [
+                {
+                    "id": "site_1",
+                    "tenant_id": tenant_id,
+                    "name": "Toyota Sales Landing Page",
+                    "url": "https://shottenkirk-toyota-sales.jokervision.app",
+                    "template": "dealership_modern",
+                    "status": "published",
+                    "visits": 2340,
+                    "conversions": 89,
+                    "conversion_rate": 3.8,
+                    "created_at": "2024-01-15T10:00:00Z",
+                    "last_updated": "2024-01-22T14:30:00Z",
+                    "features": ["chat_widget", "lead_forms", "inventory_feed", "reviews_display"],
+                    "seo_score": 85
+                }
+            ]
+            return {"websites": mock_websites}
+        
+        return {"websites": websites}
+        
+    except Exception as e:
+        logger.error(f"Error fetching websites: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch websites")
+
+@api_router.get("/website-widgets")
+async def get_website_widgets(tenant_id: str):
+    """Get all website widgets for a tenant"""
+    try:
+        widgets = await db.website_widgets.find({"tenant_id": tenant_id}).to_list(100)
+        
+        if not widgets:
+            # Mock widgets for demo
+            mock_widgets = [
+                {
+                    "id": "widget_1",
+                    "tenant_id": tenant_id,
+                    "type": "chat_widget",
+                    "name": "Live Chat Assistant",
+                    "status": "active",
+                    "websites": 2,
+                    "conversations": 156,
+                    "leads_generated": 23
+                }
+            ]
+            return {"widgets": mock_widgets}
+        
+        return {"widgets": widgets}
+        
+    except Exception as e:
+        logger.error(f"Error fetching website widgets: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch widgets")
+
+@api_router.get("/website-analytics")
+async def get_website_analytics(tenant_id: str):
+    """Get website analytics for a tenant"""
+    try:
+        # Mock analytics for demo
+        return {
+            "total_websites": 3,
+            "total_visits": 3900,
+            "total_conversions": 156,
+            "avg_conversion_rate": 4.0,
+            "top_performing_page": "Service Department Page",
+            "monthly_growth": 15.2,
+            "seo_avg_score": 85,
+            "active_widgets": 8,
+            "leads_this_month": 234
+        }
+        
+    except Exception as e:
+        logger.error(f"Error fetching website analytics: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch analytics")
+
+# =============================================================================
+# VOICE INTEGRATION API ENDPOINTS
+# =============================================================================
+
+@api_router.get("/voice/calls")
+async def get_voice_calls(tenant_id: str):
+    """Get voice call history for a tenant"""
+    try:
+        calls = await db.voice_calls.find({"tenant_id": tenant_id}).sort("timestamp", -1).to_list(100)
+        
+        if not calls:
+            # Mock calls for demo
+            mock_calls = [
+                {
+                    "id": "call_1",
+                    "tenant_id": tenant_id,
+                    "type": "inbound",
+                    "customer_name": "Sarah Johnson", 
+                    "customer_phone": "+1-555-123-4567",
+                    "duration": "4:32",
+                    "status": "completed",
+                    "ai_summary": "Customer interested in 2024 RAV4. Scheduled test drive for tomorrow at 2 PM.",
+                    "lead_created": True,
+                    "appointment_scheduled": True,
+                    "timestamp": "2024-01-23T14:30:00Z",
+                    "sentiment": "positive",
+                    "keywords": ["RAV4", "financing", "test drive", "trade-in"]
+                }
+            ]
+            return {"calls": mock_calls}
+        
+        return {"calls": calls}
+        
+    except Exception as e:
+        logger.error(f"Error fetching voice calls: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch calls")
+
+@api_router.get("/voice/settings")
+async def get_voice_settings(tenant_id: str):
+    """Get voice integration settings for a tenant"""
+    try:
+        settings = await db.voice_settings.find_one({"tenant_id": tenant_id})
+        
+        if not settings:
+            # Mock settings for demo
+            return {
+                "ai_assistant_enabled": True,
+                "voice_model": "openai_realtime",
+                "twilio_phone_number": "+1-555-DEALER1",
+                "call_recording": True,
+                "ai_transcription": True,
+                "auto_lead_creation": True,
+                "business_hours": {
+                    "start": "09:00",
+                    "end": "18:00",
+                    "timezone": "America/Chicago"
+                },
+                "ai_personality": {
+                    "name": "Alex",
+                    "style": "professional_friendly",
+                    "greeting": "Hello! Thanks for calling Shottenkirk Toyota. How can I help you today?"
+                }
+            }
+        
+        if "_id" in settings:
+            del settings["_id"]
+        
+        return settings
+        
+    except Exception as e:
+        logger.error(f"Error fetching voice settings: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch settings")
+
+@api_router.get("/voice/metrics")
+async def get_voice_metrics(tenant_id: str):
+    """Get voice call metrics for a tenant"""
+    try:
+        # Mock metrics for demo
+        return {
+            "total_calls": 156,
+            "inbound_calls": 89,
+            "outbound_calls": 45,
+            "ai_handled_calls": 22,
+            "avg_call_duration": "4:23",
+            "answer_rate": 87.3,
+            "conversion_rate": 23.5,
+            "appointments_scheduled": 34,
+            "leads_generated": 67,
+            "call_sentiment": {
+                "positive": 68,
+                "neutral": 24,
+                "negative": 8
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"Error fetching voice metrics: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch metrics")
+
+# =============================================================================
+# ADVANCED ANALYTICS API ENDPOINTS
+# =============================================================================
+
+@api_router.get("/analytics/overview")
+async def get_analytics_overview(tenant_id: str, period: str = "30d"):
+    """Get comprehensive analytics overview"""
+    try:
+        # Mock analytics for demo
+        return {
+            "total_revenue": 2847500,
+            "revenue_growth": 18.5,
+            "total_leads": 1247,
+            "leads_growth": 23.2,
+            "conversion_rate": 12.8,
+            "conversion_growth": 5.4,
+            "avg_deal_size": 35750,
+            "deal_size_growth": -2.1,
+            "appointments_scheduled": 234,
+            "appointments_completed": 187,
+            "response_time": "4.2 minutes",
+            "customer_satisfaction": 4.7
+        }
+        
+    except Exception as e:
+        logger.error(f"Error fetching analytics overview: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch analytics")
+
+@api_router.get("/analytics/sales")
+async def get_sales_analytics(tenant_id: str, period: str = "30d"):
+    """Get sales analytics"""
+    try:
+        # Mock sales analytics for demo
+        return {
+            "vehicles_sold": 87,
+            "total_revenue": 2847500,
+            "avg_sale_price": 32730,
+            "financing_rate": 73,
+            "trade_ins": 52,
+            "service_revenue": 147800,
+            "parts_revenue": 89400,
+            "top_salesperson": "Mike Johnson",
+            "top_salesperson_sales": 15
+        }
+        
+    except Exception as e:
+        logger.error(f"Error fetching sales analytics: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch sales analytics")
+
+@api_router.get("/analytics/marketing")
+async def get_marketing_analytics(tenant_id: str, period: str = "30d"):
+    """Get marketing analytics"""
+    try:
+        # Mock marketing analytics for demo
+        return {
+            "total_campaigns": 15,
+            "active_campaigns": 6,
+            "total_spend": 12400,
+            "cost_per_lead": 28.50,
+            "roi": 234,
+            "email_open_rate": 28.4,
+            "email_click_rate": 6.8,
+            "social_followers": 3420,
+            "social_engagement": 8.9,
+            "website_visitors": 4800,
+            "website_conversion": 3.2,
+            "facebook_leads": 89,
+            "google_leads": 156,
+            "organic_leads": 67,
+            "referral_leads": 23
+        }
+        
+    except Exception as e:
+        logger.error(f"Error fetching marketing analytics: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch marketing analytics")
+
+@api_router.get("/analytics/customers")
+async def get_customer_analytics(tenant_id: str, period: str = "30d"):
+    """Get customer analytics"""
+    try:
+        # Mock customer analytics for demo
+        return {
+            "total_customers": 892,
+            "new_customers": 156,
+            "returning_customers": 234,
+            "customer_lifetime_value": 4280,
+            "satisfaction_score": 4.7,
+            "retention_rate": 78,
+            "review_rating": 4.5,
+            "total_reviews": 347,
+            "service_customers": 423,
+            "sales_customers": 469,
+            "top_concerns": [
+                {"issue": "Pricing", "count": 34, "resolved": 29},
+                {"issue": "Availability", "count": 28, "resolved": 25},
+                {"issue": "Financing", "count": 23, "resolved": 21}
+            ]
+        }
+        
+    except Exception as e:
+        logger.error(f"Error fetching customer analytics: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch customer analytics")
+
 @api_router.get("/marketing/campaigns")
 async def get_marketing_campaigns(tenant_id: str):
     """Get all marketing campaigns for a tenant"""
