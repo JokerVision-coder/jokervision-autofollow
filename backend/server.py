@@ -8631,6 +8631,127 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# =============================================================================
+# REVOLUTIONARY REAL-TIME WEBSOCKET ENDPOINTS
+# =============================================================================
+
+@app.websocket("/ws/{connection_id}")
+async def websocket_endpoint(websocket: WebSocket, connection_id: str, user_id: Optional[str] = None):
+    """Revolutionary real-time WebSocket connection for JokerVision AutoFollow"""
+    connection_manager = get_connection_manager()
+    
+    try:
+        # Connect the WebSocket
+        await connection_manager.connect(websocket, connection_id, user_id)
+        logger.info(f"🌐 Real-time connection established: {connection_id}")
+        
+        # Listen for messages
+        while True:
+            try:
+                # Receive message from client
+                data = await websocket.receive_text()
+                message = json.loads(data)
+                
+                # Handle the message
+                await connection_manager.handle_client_message(message, connection_id)
+                
+            except WebSocketDisconnect:
+                logger.info(f"🔌 WebSocket client disconnected: {connection_id}")
+                break
+            except json.JSONDecodeError:
+                logger.error(f"Invalid JSON received from {connection_id}")
+                await connection_manager.send_personal_message({
+                    "type": "error",
+                    "message": "Invalid JSON format"
+                }, connection_id)
+            except Exception as e:
+                logger.error(f"WebSocket message error for {connection_id}: {str(e)}")
+                break
+                
+    except Exception as e:
+        logger.error(f"WebSocket connection error for {connection_id}: {str(e)}")
+    finally:
+        # Disconnect
+        await connection_manager.disconnect(connection_id)
+
+@api_router.get("/realtime/stats")
+async def get_realtime_stats():
+    """Get real-time connection statistics"""
+    try:
+        connection_manager = get_connection_manager()
+        stats = connection_manager.get_connection_stats()
+        
+        return {
+            "realtime_system": "active",
+            "connection_stats": stats,
+            "capabilities": [
+                "Real-time lead alerts",
+                "Live Voice AI updates", 
+                "Dynamic inventory insights",
+                "AI-powered notifications",
+                "Cross-platform synchronization"
+            ],
+            "topics_available": [
+                "dashboard_updates",
+                "lead_updates", 
+                "voice_ai_updates",
+                "inventory_updates",
+                "ai_alerts"
+            ]
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting realtime stats: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to get realtime stats")
+
+@api_router.post("/realtime/trigger-demo")
+async def trigger_realtime_demo():
+    """Trigger demo real-time events for testing"""
+    try:
+        connection_manager = get_connection_manager()
+        
+        # Trigger demo lead update
+        demo_lead = {
+            "name": "Alex Thompson (Demo)",
+            "source": "Voice AI Call",
+            "ai_score": 94,
+            "phone": "+1 (555) 123-9876"
+        }
+        await trigger_real_time_lead_update(demo_lead)
+        
+        # Trigger demo Voice AI completion
+        demo_call = {
+            "duration": "4:23",
+            "satisfaction": 4.9,
+            "lead_quality": "Excellent",
+            "follow_up_required": True,
+            "ai_insights": "Customer ready to purchase 2024 Toyota RAV4 - schedule test drive today"
+        }
+        await trigger_voice_ai_completion(demo_call)
+        
+        # Send AI alert
+        ai_alert = {
+            "type": "ai_alert",
+            "data": {
+                "alert_type": "conversion_opportunity",
+                "message": "Customer browsing patterns indicate immediate purchase intent",
+                "confidence": 96,
+                "action": "Deploy personalized offer within 10 minutes"
+            },
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        }
+        await connection_manager.broadcast_to_topic(ai_alert, "ai_alerts")
+        
+        return {
+            "status": "demo_triggered",
+            "events_sent": 3,
+            "message": "Demo real-time events have been broadcast to all connected clients"
+        }
+        
+    except Exception as e:
+        logger.error(f"Error triggering realtime demo: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to trigger demo")
+
 @app.on_event("shutdown")
 async def shutdown_db_client():
     client.close()
