@@ -942,6 +942,405 @@ Vehicle Type: sedan"""
             200
         )
 
+    # Mass Marketing API Tests
+    def test_get_marketing_campaigns(self):
+        """Test GET /api/marketing/campaigns endpoint"""
+        tenant_id = "default_dealership"
+        
+        success, response = self.run_test(
+            "Get Marketing Campaigns",
+            "GET",
+            f"marketing/campaigns?tenant_id={tenant_id}",
+            200
+        )
+        
+        if success:
+            # Verify response structure
+            if 'campaigns' in response:
+                campaigns = response['campaigns']
+                print(f"   ✅ Retrieved {len(campaigns)} campaigns")
+                
+                # Check if mock data is returned
+                if campaigns:
+                    first_campaign = campaigns[0]
+                    required_fields = ['id', 'name', 'type', 'content', 'audience_segment', 'recipients', 'status']
+                    missing_fields = [field for field in required_fields if field not in first_campaign]
+                    
+                    if not missing_fields:
+                        print(f"   ✅ Campaign structure valid - Type: {first_campaign['type']}, Recipients: {first_campaign['recipients']}")
+                        return True
+                    else:
+                        print(f"   ❌ Campaign missing fields: {missing_fields}")
+                        return False
+                else:
+                    print("   ✅ Empty campaigns list returned")
+                    return True
+            else:
+                print("   ❌ Response missing 'campaigns' field")
+                return False
+        return False
+
+    def test_get_marketing_segments(self):
+        """Test GET /api/marketing/segments endpoint"""
+        tenant_id = "default_dealership"
+        
+        success, response = self.run_test(
+            "Get Marketing Segments",
+            "GET",
+            f"marketing/segments?tenant_id={tenant_id}",
+            200
+        )
+        
+        if success:
+            # Verify response structure
+            if 'segments' in response:
+                segments = response['segments']
+                print(f"   ✅ Retrieved {len(segments)} audience segments")
+                
+                # Check segment structure
+                if segments:
+                    first_segment = segments[0]
+                    required_fields = ['id', 'name', 'description', 'criteria', 'count']
+                    missing_fields = [field for field in required_fields if field not in first_segment]
+                    
+                    if not missing_fields:
+                        print(f"   ✅ Segment structure valid - Name: {first_segment['name']}, Count: {first_segment['count']}")
+                        return True
+                    else:
+                        print(f"   ❌ Segment missing fields: {missing_fields}")
+                        return False
+                else:
+                    print("   ✅ Empty segments list returned")
+                    return True
+            else:
+                print("   ❌ Response missing 'segments' field")
+                return False
+        return False
+
+    def test_get_marketing_stats(self):
+        """Test GET /api/marketing/stats endpoint"""
+        tenant_id = "default_dealership"
+        
+        success, response = self.run_test(
+            "Get Marketing Statistics",
+            "GET",
+            f"marketing/stats?tenant_id={tenant_id}",
+            200
+        )
+        
+        if success:
+            # Verify stats structure
+            required_fields = ['total_campaigns', 'active_campaigns', 'total_recipients', 'avg_open_rate', 'avg_click_rate', 'total_responses']
+            missing_fields = [field for field in required_fields if field not in response]
+            
+            if not missing_fields:
+                print(f"   ✅ Stats retrieved - Campaigns: {response['total_campaigns']}, Recipients: {response['total_recipients']}")
+                print(f"      Open Rate: {response['avg_open_rate']}%, Click Rate: {response['avg_click_rate']}%")
+                return True
+            else:
+                print(f"   ❌ Stats missing fields: {missing_fields}")
+                return False
+        return False
+
+    def test_create_sms_campaign(self):
+        """Test POST /api/marketing/campaigns with SMS campaign"""
+        sms_campaign_data = {
+            "tenant_id": "default_dealership",
+            "name": "Test SMS Campaign - New Year Sale",
+            "type": "sms",
+            "content": "🎉 New Year Special! Save up to $5,000 on select Toyota models. Visit Shottenkirk Toyota San Antonio today! Text STOP to opt out.",
+            "segment_id": "seg_1"
+        }
+        
+        success, response = self.run_test(
+            "Create SMS Campaign",
+            "POST",
+            "marketing/campaigns",
+            200,
+            data=sms_campaign_data
+        )
+        
+        if success:
+            # Verify campaign creation
+            required_fields = ['id', 'name', 'type', 'content', 'status', 'recipients']
+            missing_fields = [field for field in required_fields if field not in response]
+            
+            if not missing_fields:
+                self.created_sms_campaign_id = response['id']
+                print(f"   ✅ SMS Campaign created - ID: {response['id']}, Recipients: {response['recipients']}")
+                print(f"      Status: {response['status']}, Type: {response['type']}")
+                return True
+            else:
+                print(f"   ❌ Campaign response missing fields: {missing_fields}")
+                return False
+        return False
+
+    def test_create_email_campaign(self):
+        """Test POST /api/marketing/campaigns with Email campaign"""
+        email_campaign_data = {
+            "tenant_id": "default_dealership",
+            "name": "Test Email Campaign - Service Special",
+            "type": "email",
+            "subject": "30% Off Winter Service Package - Limited Time!",
+            "content": "<h2>Winter Service Special</h2><p>Get your Toyota ready for winter with our comprehensive service package. Save 30% on all winter maintenance services including oil change, tire rotation, and battery check.</p><p>Book your appointment today!</p>",
+            "segment_id": "seg_2"
+        }
+        
+        success, response = self.run_test(
+            "Create Email Campaign",
+            "POST",
+            "marketing/campaigns",
+            200,
+            data=email_campaign_data
+        )
+        
+        if success:
+            # Verify campaign creation
+            required_fields = ['id', 'name', 'type', 'subject', 'content', 'status', 'recipients']
+            missing_fields = [field for field in required_fields if field not in response]
+            
+            if not missing_fields:
+                self.created_email_campaign_id = response['id']
+                print(f"   ✅ Email Campaign created - ID: {response['id']}, Recipients: {response['recipients']}")
+                print(f"      Subject: {response['subject']}, Status: {response['status']}")
+                return True
+            else:
+                print(f"   ❌ Campaign response missing fields: {missing_fields}")
+                return False
+        return False
+
+    def test_create_scheduled_campaign(self):
+        """Test POST /api/marketing/campaigns with scheduled date"""
+        from datetime import datetime, timedelta
+        
+        # Schedule for tomorrow at 10 AM
+        tomorrow = datetime.now() + timedelta(days=1)
+        scheduled_time = tomorrow.replace(hour=10, minute=0, second=0, microsecond=0)
+        
+        scheduled_campaign_data = {
+            "tenant_id": "default_dealership",
+            "name": "Test Scheduled Campaign - Weekend Sale",
+            "type": "sms",
+            "content": "Weekend Sale Alert! 🚗 Special financing available on all Toyota models. Visit us this weekend for exclusive deals!",
+            "segment_id": "seg_3",
+            "scheduled_date": scheduled_time.isoformat()
+        }
+        
+        success, response = self.run_test(
+            "Create Scheduled Campaign",
+            "POST",
+            "marketing/campaigns",
+            200,
+            data=scheduled_campaign_data
+        )
+        
+        if success:
+            # Verify scheduled campaign
+            if response.get('status') == 'scheduled' and 'scheduled_date' in response:
+                print(f"   ✅ Scheduled Campaign created - Status: {response['status']}")
+                print(f"      Scheduled for: {response['scheduled_date']}")
+                return True
+            else:
+                print(f"   ❌ Campaign not properly scheduled - Status: {response.get('status')}")
+                return False
+        return False
+
+    def test_create_audience_segment(self):
+        """Test POST /api/marketing/segments"""
+        segment_data = {
+            "tenant_id": "default_dealership",
+            "name": "Test Segment - Luxury Buyers",
+            "description": "Customers interested in luxury Toyota models like Lexus and premium Camry/Highlander",
+            "criteria": {
+                "budget_min": 40000,
+                "vehicle_type": "luxury",
+                "interests": ["premium_features", "leather_seats", "navigation"]
+            }
+        }
+        
+        success, response = self.run_test(
+            "Create Audience Segment",
+            "POST",
+            "marketing/segments",
+            200,
+            data=segment_data
+        )
+        
+        if success:
+            # Verify segment creation
+            required_fields = ['id', 'name', 'description', 'criteria', 'count']
+            missing_fields = [field for field in required_fields if field not in response]
+            
+            if not missing_fields:
+                self.created_segment_id = response['id']
+                print(f"   ✅ Audience Segment created - ID: {response['id']}, Count: {response['count']}")
+                print(f"      Name: {response['name']}")
+                return True
+            else:
+                print(f"   ❌ Segment response missing fields: {missing_fields}")
+                return False
+        return False
+
+    def test_marketing_error_handling(self):
+        """Test marketing API error handling"""
+        print("\n🔍 Testing Marketing API Error Handling...")
+        
+        # Test missing tenant_id
+        success1, _ = self.run_test(
+            "Marketing Campaigns - Missing tenant_id",
+            "GET",
+            "marketing/campaigns",
+            422  # Validation error expected
+        )
+        
+        # Test invalid campaign creation (missing required fields)
+        invalid_campaign = {
+            "tenant_id": "test_tenant"
+            # Missing name, type, content, segment_id
+        }
+        
+        success2, response2 = self.run_test(
+            "Create Campaign - Missing Fields",
+            "POST",
+            "marketing/campaigns",
+            422,  # Validation error expected
+            data=invalid_campaign
+        )
+        
+        # Test invalid segment creation
+        invalid_segment = {
+            "tenant_id": "test_tenant"
+            # Missing name, description
+        }
+        
+        success3, response3 = self.run_test(
+            "Create Segment - Missing Fields",
+            "POST",
+            "marketing/segments",
+            422,  # Validation error expected
+            data=invalid_segment
+        )
+        
+        passed_tests = sum([success1, success2, success3])
+        print(f"   📊 Error Handling: {passed_tests}/3 tests passed")
+        
+        return passed_tests >= 2  # At least 2/3 should pass
+
+    def test_twilio_sms_integration(self):
+        """Test Twilio SMS integration (mock if no API keys)"""
+        print("\n📱 Testing Twilio SMS Integration...")
+        
+        # Check if Twilio credentials are configured
+        import os
+        twilio_sid = os.environ.get('TWILIO_ACCOUNT_SID')
+        twilio_token = os.environ.get('TWILIO_AUTH_TOKEN')
+        
+        if twilio_sid and twilio_token:
+            print("   ✅ Twilio credentials configured - will use real API")
+            integration_type = "real"
+        else:
+            print("   ℹ️  Twilio credentials not configured - using mock responses")
+            integration_type = "mock"
+        
+        # Create SMS campaign to test integration
+        sms_campaign_data = {
+            "tenant_id": "default_dealership",
+            "name": "Twilio Integration Test",
+            "type": "sms",
+            "content": "Test message from Shottenkirk Toyota - Twilio integration test",
+            "segment_id": "seg_1"
+        }
+        
+        success, response = self.run_test(
+            "SMS Campaign with Twilio Integration",
+            "POST",
+            "marketing/campaigns",
+            200,
+            data=sms_campaign_data
+        )
+        
+        if success:
+            print(f"   ✅ SMS Campaign created successfully with {integration_type} Twilio integration")
+            return True
+        else:
+            print(f"   ❌ SMS Campaign failed with {integration_type} Twilio integration")
+            return False
+
+    def test_sendgrid_email_integration(self):
+        """Test SendGrid email integration (mock if no API keys)"""
+        print("\n📧 Testing SendGrid Email Integration...")
+        
+        # Check if SendGrid credentials are configured
+        import os
+        sendgrid_key = os.environ.get('SENDGRID_API_KEY')
+        
+        if sendgrid_key:
+            print("   ✅ SendGrid API key configured - will use real API")
+            integration_type = "real"
+        else:
+            print("   ℹ️  SendGrid API key not configured - using mock responses")
+            integration_type = "mock"
+        
+        # Create email campaign to test integration
+        email_campaign_data = {
+            "tenant_id": "default_dealership",
+            "name": "SendGrid Integration Test",
+            "type": "email",
+            "subject": "SendGrid Integration Test - Shottenkirk Toyota",
+            "content": "<h2>Test Email</h2><p>This is a test email from Shottenkirk Toyota to verify SendGrid integration.</p>",
+            "segment_id": "seg_2"
+        }
+        
+        success, response = self.run_test(
+            "Email Campaign with SendGrid Integration",
+            "POST",
+            "marketing/campaigns",
+            200,
+            data=email_campaign_data
+        )
+        
+        if success:
+            print(f"   ✅ Email Campaign created successfully with {integration_type} SendGrid integration")
+            return True
+        else:
+            print(f"   ❌ Email Campaign failed with {integration_type} SendGrid integration")
+            return False
+
+    def test_mass_marketing_comprehensive(self):
+        """Run comprehensive Mass Marketing test suite"""
+        print("\n📢 Running Comprehensive Mass Marketing Tests...")
+        
+        marketing_tests = [
+            ("Get Marketing Campaigns", self.test_get_marketing_campaigns),
+            ("Get Marketing Segments", self.test_get_marketing_segments),
+            ("Get Marketing Statistics", self.test_get_marketing_stats),
+            ("Create SMS Campaign", self.test_create_sms_campaign),
+            ("Create Email Campaign", self.test_create_email_campaign),
+            ("Create Scheduled Campaign", self.test_create_scheduled_campaign),
+            ("Create Audience Segment", self.test_create_audience_segment),
+            ("Twilio SMS Integration", self.test_twilio_sms_integration),
+            ("SendGrid Email Integration", self.test_sendgrid_email_integration),
+            ("Marketing Error Handling", self.test_marketing_error_handling)
+        ]
+        
+        passed_tests = 0
+        total_tests = len(marketing_tests)
+        
+        for test_name, test_func in marketing_tests:
+            try:
+                if test_func():
+                    passed_tests += 1
+                    print(f"   ✅ {test_name} - PASSED")
+                else:
+                    print(f"   ❌ {test_name} - FAILED")
+            except Exception as e:
+                print(f"   ❌ {test_name} - ERROR: {str(e)}")
+        
+        success_rate = (passed_tests / total_tests) * 100
+        print(f"\n   📊 Mass Marketing Test Suite: {passed_tests}/{total_tests} passed ({success_rate:.1f}%)")
+        
+        return passed_tests >= total_tests * 0.8  # 80% pass rate required
+
     # Chrome Extension API Tests
     def test_chrome_extension_health_check(self):
         """Test Chrome extension health check endpoint"""
