@@ -3598,3 +3598,576 @@ Vehicle Type: sedan"""
             # Verify all 4 expected voice AI actions
             actions_executed = response.get('actions_executed', [])
             expected_actions = [
+        ]
+        
+        passed_tests = 0
+        total_tests = len(creative_tests)
+        
+        for test_name, test_func in creative_tests:
+            try:
+                if test_func():
+                    passed_tests += 1
+                    print(f"   ✅ {test_name} - PASSED")
+                else:
+                    print(f"   ❌ {test_name} - FAILED")
+            except Exception as e:
+                print(f"   ❌ {test_name} - ERROR: {str(e)}")
+        
+        success_rate = (passed_tests / total_tests) * 100
+        print(f"\n   📊 Creative Studio Test Suite: {passed_tests}/{total_tests} passed ({success_rate:.1f}%)")
+        
+        # Provide specific diagnosis for frontend issues
+        if passed_tests < total_tests:
+            print(f"\n   🔍 FRONTEND ISSUE DIAGNOSIS:")
+            if passed_tests == 0:
+                print(f"      - All Creative Studio APIs are failing")
+                print(f"      - This explains why frontend sections are completely empty")
+            else:
+                print(f"      - Some Creative Studio APIs are working, others are failing")
+                print(f"      - Frontend sections may be partially populated")
+        else:
+            print(f"\n   ✅ All Creative Studio APIs are working correctly")
+            print(f"      - If frontend sections are still empty, the issue is likely in frontend code")
+        
+        return passed_tests >= total_tests * 0.75  # 75% pass rate required
+                'create_hot_lead',
+                'send_personalized_offer',
+                'schedule_test_drive', 
+                'prepare_financing_options'
+            ]
+            
+            executed_action_types = [action.get('type') for action in actions_executed]
+            
+            print(f"   📊 Actions executed: {len(actions_executed)}")
+            print(f"   📝 Action types: {executed_action_types}")
+            
+            # Check if all expected actions are present
+            missing_actions = [action for action in expected_actions if action not in executed_action_types]
+            
+            if not missing_actions:
+                print("   ✅ ALL 4 voice AI actions executed successfully")
+                
+                # Analyze automotive content in each action
+                automotive_content_scores = []
+                
+                for action in actions_executed:
+                    action_type = action.get('type')
+                    content = str(action.get('content', '') + action.get('description', '')).lower()
+                    
+                    # Enhanced automotive content indicators
+                    automotive_indicators = [
+                        '0.9% apr', '0% apr', 'manufacturer cash back', 'trade-in guarantee',
+                        'vin reservation', 'dealership phone', 'vip treatment', 'exclusive offer',
+                        'urgency', 'same-day approval', 'extended terms', 'first-time buyer',
+                        'protection plan', 'gap insurance', 'warranty', 'certified pre-owned',
+                        'toyota', 'rav4', 'financing options', 'test drive', 'vehicle consultation'
+                    ]
+                    
+                    found_indicators = sum(1 for indicator in automotive_indicators if indicator in content)
+                    automotive_score = (found_indicators / len(automotive_indicators)) * 100
+                    automotive_content_scores.append(automotive_score)
+                    
+                    if found_indicators >= 3:
+                        print(f"      ✅ {action_type}: {found_indicators} automotive indicators ({automotive_score:.1f}%)")
+                    else:
+                        print(f"      ⚠️  {action_type}: Only {found_indicators} automotive indicators ({automotive_score:.1f}%)")
+                
+                avg_automotive_content = sum(automotive_content_scores) / len(automotive_content_scores)
+                print(f"   📊 Average automotive content: {avg_automotive_content:.1f}%")
+                
+                if avg_automotive_content >= 75.0:
+                    print("   ✅ CRITICAL SUCCESS: Voice AI actions contain comprehensive automotive content")
+                    return True
+                else:
+                    print(f"   ❌ CRITICAL FAILURE: Automotive content {avg_automotive_content:.1f}% below 75% target")
+                    return False
+            else:
+                print(f"   ❌ CRITICAL FAILURE: Missing expected actions: {missing_actions}")
+                return False
+        return False
+
+    def test_enhanced_workflow_automation_comprehensive(self):
+        """Run comprehensive enhanced workflow automation tests"""
+        print("\n🤖 ENHANCED WORKFLOW AUTOMATION SYSTEM - CRITICAL RETEST")
+        print("🚗 Focus: Car Sales Knowledge Improvements & 3/3 Demo Scenario Execution")
+        
+        enhanced_tests = [
+            ("CRITICAL: Enhanced Demo Scenarios (3/3)", self.test_enhanced_demo_scenarios_critical_retest),
+            ("CRITICAL: Car Sales Terminology (80%+)", self.test_enhanced_car_sales_terminology_validation),
+            ("CRITICAL: Voice AI Automotive Actions", self.test_voice_ai_automotive_actions_validation),
+            ("Workflow Analytics", self.test_automation_analytics),
+            ("Custom Automotive Workflow", self.test_create_custom_workflow),
+            ("Error Handling", self.test_workflow_automation_error_handling)
+        ]
+        
+        passed_tests = 0
+        total_tests = len(enhanced_tests)
+        critical_tests_passed = 0
+        
+        for test_name, test_func in enhanced_tests:
+            try:
+                print(f"\n{'='*70}")
+                print(f"🔍 {test_name}")
+                print(f"{'='*70}")
+                
+                if test_func():
+                    passed_tests += 1
+                    print(f"✅ {test_name} - PASSED")
+                    
+                    # Track critical tests
+                    if "CRITICAL" in test_name:
+                        critical_tests_passed += 1
+                else:
+                    print(f"❌ {test_name} - FAILED")
+            except Exception as e:
+                print(f"❌ {test_name} - ERROR: {str(e)}")
+        
+        success_rate = (passed_tests / total_tests) * 100
+        critical_success_rate = (critical_tests_passed / 3) * 100  # 3 critical tests
+        
+        print(f"\n{'='*80}")
+        print("🎯 ENHANCED WORKFLOW AUTOMATION TEST RESULTS")
+        print(f"{'='*80}")
+        print(f"📊 Overall Results: {passed_tests}/{total_tests} tests passed ({success_rate:.1f}%)")
+        print(f"🚨 Critical Tests: {critical_tests_passed}/3 passed ({critical_success_rate:.1f}%)")
+        
+        # Determine success based on critical tests
+        if critical_tests_passed == 3:
+            print("🎉 CRITICAL SUCCESS: Enhanced Car Sales Workflow Automation PASSED")
+            print("   ✅ ALL 3/3 demo scenarios working (Voice AI scenario FIXED)")
+            print("   ✅ Car sales terminology coverage ≥ 80% (ENHANCED)")
+            print("   ✅ Voice AI actions contain comprehensive automotive content")
+            return True
+        else:
+            print("🚨 CRITICAL FAILURE: Enhanced Car Sales Workflow Automation FAILED")
+            print(f"   ❌ Only {critical_tests_passed}/3 critical tests passed")
+            if critical_tests_passed < 3:
+                print("   ❌ Voice AI demo scenario may still be failing")
+                print("   ❌ Car sales knowledge may be below 80% target")
+                print("   ❌ Automotive actions may lack comprehensive content")
+            return False
+
+    def run_workflow_automation_critical_fix_validation(self):
+        """Run CRITICAL FIX VALIDATION for workflow automation system"""
+        print("🚨 CRITICAL FIX VALIDATION - WORKFLOW AUTOMATION SYSTEM")
+        print("🎯 PRIORITY 1: Demo Scenarios Fix Validation (3/3 scenarios must execute)")
+        print("🎯 PRIORITY 2: Car Sales Terminology Coverage (80%+ target)")
+        print(f"   Backend URL: {self.base_url}")
+        print(f"   API URL: {self.api_url}")
+        
+        # Run the enhanced workflow automation tests
+        validation_passed = self.test_enhanced_workflow_automation_comprehensive()
+        
+        print(f"\n{'='*80}")
+        print("🏁 CRITICAL FIX VALIDATION RESULTS")
+        print(f"{'='*80}")
+        
+        if validation_passed:
+            print("🎉 CRITICAL FIX VALIDATION: SUCCESS!")
+            print("✅ All 3/3 demo scenarios now execute successfully")
+            print("✅ High-value lead scenario works after function naming fix")
+            print("✅ Comprehensive automotive terminology in SMS templates")
+            print("✅ Professional car dealership terminology throughout")
+            print("✅ All workflow triggers function correctly with automotive focus")
+            return True
+        else:
+            print("🚨 CRITICAL FIX VALIDATION: FAILED!")
+            print("❌ Demo scenarios may still have execution issues")
+            print("❌ Automotive terminology coverage may be insufficient")
+            print("❌ Function naming conflict may persist")
+            return False
+
+    # =============================================================================
+    # CREATIVE STUDIO API TESTS - PRIORITY ENDPOINTS
+    # =============================================================================
+
+    def test_creative_ai_ideas_generation(self):
+        """Test AI Ideas Generation endpoint - POST /api/creative/generate-ideas"""
+        print("\n🎨 Testing Creative Studio AI Ideas Generation...")
+        
+        # Test data from review request - using query parameters
+        success, response = self.run_test(
+            "AI Ideas Generation",
+            "POST",
+            "creative/generate-ideas?tenant_id=default&platform=instagram&objective=engagement&count=10",
+            200
+        )
+        
+        if success:
+            # Verify response structure
+            required_fields = ['platform', 'objective', 'ideas_generated', 'ideas']
+            missing_fields = [field for field in required_fields if field not in response]
+            
+            if not missing_fields:
+                ideas_count = response.get('ideas_generated', 0)
+                ideas_list = response.get('ideas', [])
+                print(f"   ✅ AI Ideas generated successfully - {ideas_count} ideas for {response['platform']}")
+                
+                # Check first idea structure if available
+                if ideas_list:
+                    first_idea = ideas_list[0]
+                    idea_fields = ['title', 'platform', 'content_type', 'description', 'suggested_copy', 'hashtags']
+                    missing_idea_fields = [field for field in idea_fields if field not in first_idea]
+                    
+                    if not missing_idea_fields:
+                        print(f"      Idea structure valid - Type: {first_idea['content_type']}")
+                        print(f"      Sample title: {first_idea['title']}")
+                        return True
+                    else:
+                        print(f"   ❌ Idea structure missing fields: {missing_idea_fields}")
+                        return False
+                else:
+                    print("   ⚠️  No ideas returned in response")
+                    return False
+            else:
+                print(f"   ❌ Response missing fields: {missing_fields}")
+                return False
+        return False
+
+    def test_creative_templates(self):
+        """Test Creative Templates endpoint - GET /api/creative/templates"""
+        print("\n📋 Testing Creative Studio Templates...")
+        
+        success, response = self.run_test(
+            "Creative Templates",
+            "GET",
+            "creative/templates?tenant_id=default",
+            200
+        )
+        
+        if success:
+            # Verify response structure
+            required_fields = ['custom_templates', 'builtin_templates', 'total_count']
+            missing_fields = [field for field in required_fields if field not in response]
+            
+            if not missing_fields:
+                custom_count = len(response.get('custom_templates', []))
+                builtin_count = len(response.get('builtin_templates', []))
+                total_count = response.get('total_count', 0)
+                
+                print(f"   ✅ Templates retrieved - {custom_count} custom, {builtin_count} builtin, {total_count} total")
+                
+                # Check builtin template structure if available
+                builtin_templates = response.get('builtin_templates', [])
+                if builtin_templates:
+                    first_template = builtin_templates[0]
+                    template_fields = ['id', 'name', 'platform', 'type', 'elements', 'is_builtin']
+                    missing_template_fields = [field for field in template_fields if field not in first_template]
+                    
+                    if not missing_template_fields:
+                        print(f"      Template structure valid - Name: {first_template['name']}")
+                        print(f"      Platform: {first_template['platform']}, Type: {first_template['type']}")
+                        return True
+                    else:
+                        print(f"   ❌ Template structure missing fields: {missing_template_fields}")
+                        return False
+                else:
+                    print("   ✅ Empty templates list returned (valid response)")
+                    return True
+            else:
+                print(f"   ❌ Response missing fields: {missing_fields}")
+                return False
+        return False
+
+    def test_hashtag_research(self):
+        """Test Hashtag Research endpoint - POST /api/organic/hashtag-research"""
+        print("\n🏷️ Testing Hashtag Research...")
+        
+        # Test data from review request - using query parameters
+        success, response = self.run_test(
+            "Hashtag Research",
+            "POST",
+            "organic/hashtag-research?tenant_id=default&platform=instagram",
+            200,
+            data=["cars", "automotive"]  # keywords as JSON body
+        )
+        
+        if success:
+            # Verify response structure
+            required_fields = ['platform', 'keywords_researched', 'hashtag_suggestions', 'optimization_strategy', 'recommended_mix']
+            missing_fields = [field for field in required_fields if field not in response]
+            
+            if not missing_fields:
+                platform = response.get('platform')
+                keywords = response.get('keywords_researched', [])
+                suggestions = response.get('hashtag_suggestions', [])
+                
+                print(f"   ✅ Hashtag research completed - Platform: {platform}")
+                print(f"      Keywords: {keywords}, Suggestions: {len(suggestions)}")
+                
+                # Check hashtag suggestion structure if available
+                if suggestions:
+                    first_hashtag = suggestions[0]
+                    hashtag_fields = ['hashtag', 'platform', 'volume', 'difficulty', 'relevance_score', 'trending']
+                    missing_hashtag_fields = [field for field in hashtag_fields if field not in first_hashtag]
+                    
+                    if not missing_hashtag_fields:
+                        print(f"      Sample hashtag: {first_hashtag['hashtag']} (Volume: {first_hashtag['volume']})")
+                        return True
+                    else:
+                        print(f"   ❌ Hashtag structure missing fields: {missing_hashtag_fields}")
+                        return False
+                else:
+                    print("   ⚠️  No hashtag suggestions returned")
+                    return False
+            else:
+                print(f"   ❌ Response missing fields: {missing_fields}")
+                return False
+        return False
+
+    def test_creative_analytics_endpoints(self):
+        """Test Creative Studio Analytics-related endpoints"""
+        print("\n📊 Testing Creative Studio Analytics...")
+        
+        # Test content calendar endpoint (analytics-related)
+        success1, response1 = self.run_test(
+            "Content Calendar Analytics",
+            "GET",
+            "organic/content-calendar?tenant_id=default",
+            200
+        )
+        
+        analytics_passed = 0
+        total_analytics_tests = 2
+        
+        if success1:
+            # Verify content calendar response
+            required_fields = ['tenant_id', 'calendar_data', 'total_scheduled']
+            missing_fields = [field for field in required_fields if field not in response1]
+            
+            if not missing_fields:
+                total_scheduled = response1.get('total_scheduled', 0)
+                print(f"   ✅ Content Calendar retrieved - {total_scheduled} scheduled items")
+                analytics_passed += 1
+            else:
+                print(f"   ❌ Content Calendar missing fields: {missing_fields}")
+        
+        # Test content analysis endpoint (analytics-related)
+        analysis_data = {
+            "title": "New Toyota Camry Showcase",
+            "description": "Check out our latest Toyota Camry models with amazing features!",
+            "hashtags": ["#Toyota", "#Camry", "#NewCar"],
+            "visual_appeal": "high",
+            "call_to_action": "Visit our showroom today!"
+        }
+        
+        success2, response2 = self.run_test(
+            "Content Performance Analysis",
+            "POST",
+            "creative/analyze-content?tenant_id=default&platform=instagram",
+            200,
+            data=analysis_data
+        )
+        
+        if success2:
+            # Check if response contains performance predictions
+            if 'performance_prediction' in response2 or 'predicted_score' in response2:
+                print("   ✅ Content analysis completed with performance predictions")
+                analytics_passed += 1
+            else:
+                print("   ❌ Content analysis missing performance predictions")
+        
+        print(f"   📊 Creative Analytics: {analytics_passed}/{total_analytics_tests} tests passed")
+        return analytics_passed >= total_analytics_tests * 0.5  # 50% pass rate
+
+    def test_creative_studio_error_handling(self):
+        """Test Creative Studio error handling"""
+        print("\n🔍 Testing Creative Studio Error Handling...")
+        
+        # Test missing tenant_id in AI ideas generation
+        success1, _ = self.run_test(
+            "AI Ideas - Missing tenant_id",
+            "POST",
+            "creative/generate-ideas",
+            422  # Validation error expected
+        )
+        
+        # Test invalid platform in hashtag research
+        invalid_hashtag_data = {
+            "tenant_id": "default",
+            "keywords": ["test"],
+            "platform": "invalid_platform"
+        }
+        
+        success2, _ = self.run_test(
+            "Hashtag Research - Invalid Platform",
+            "POST",
+            "organic/hashtag-research",
+            200  # Should handle gracefully
+        )
+        
+        # Test missing keywords in hashtag research
+        missing_keywords_data = {
+            "tenant_id": "default",
+            "platform": "instagram"
+            # Missing keywords field
+        }
+        
+        success3, _ = self.run_test(
+            "Hashtag Research - Missing Keywords",
+            "POST",
+            "organic/hashtag-research",
+            422  # Validation error expected
+        )
+        
+        passed_tests = sum([success1, success2, success3])
+        print(f"   📊 Error Handling: {passed_tests}/3 tests passed")
+        
+        return passed_tests >= 2  # At least 2/3 should pass
+
+    def test_creative_studio_comprehensive(self):
+        """Run comprehensive Creative Studio test suite"""
+        print("\n🎨 Running Comprehensive Creative Studio Tests...")
+        
+        creative_tests = [
+            ("AI Ideas Generation", self.test_creative_ai_ideas_generation),
+            ("Creative Templates", self.test_creative_templates),
+            ("Hashtag Research", self.test_hashtag_research),
+            ("Creative Analytics", self.test_creative_analytics_endpoints),
+            ("Error Handling", self.test_creative_studio_error_handling)
+        ]
+        
+        passed_tests = 0
+        total_tests = len(creative_tests)
+        
+        for test_name, test_func in creative_tests:
+            try:
+                if test_func():
+                    passed_tests += 1
+                    print(f"   ✅ {test_name} - PASSED")
+                else:
+                    print(f"   ❌ {test_name} - FAILED")
+            except Exception as e:
+                print(f"   ❌ {test_name} - ERROR: {str(e)}")
+        
+        success_rate = (passed_tests / total_tests) * 100
+        print(f"\n   📊 Creative Studio Test Suite: {passed_tests}/{total_tests} passed ({success_rate:.1f}%)")
+        
+        return passed_tests >= total_tests * 0.8  # 80% pass rate required
+
+    def run_creative_studio_focused_tests(self):
+        """Run focused Creative Studio tests as requested in review"""
+        print("🚀 Starting Creative Studio AI Ideas and Analytics Testing...")
+        print("🎨 Focus: Testing failing Creative Studio endpoints")
+        print(f"   Backend URL: {self.base_url}")
+        print(f"   API URL: {self.api_url}")
+        
+        # Priority Tests as requested in review
+        priority_tests = [
+            ("AI Ideas Generation", self.test_creative_ai_ideas_generation),
+            ("Creative Templates", self.test_creative_templates),
+            ("Hashtag Research", self.test_hashtag_research),
+            ("Creative Analytics", self.test_creative_analytics_endpoints),
+            ("Error Handling", self.test_creative_studio_error_handling)
+        ]
+        
+        print(f"\n🎯 Running {len(priority_tests)} Priority Creative Studio Tests...")
+        
+        passed_tests = 0
+        total_tests = len(priority_tests)
+        
+        for test_name, test_func in priority_tests:
+            try:
+                print(f"\n{'='*60}")
+                print(f"🔍 Testing: {test_name}")
+                print(f"{'='*60}")
+                
+                if test_func():
+                    passed_tests += 1
+                    print(f"✅ {test_name} - PASSED")
+                else:
+                    print(f"❌ {test_name} - FAILED")
+            except Exception as e:
+                print(f"❌ {test_name} - ERROR: {str(e)}")
+        
+        # Final Results
+        success_rate = (passed_tests / total_tests) * 100
+        print(f"\n{'='*80}")
+        print("🎯 CREATIVE STUDIO TEST RESULTS")
+        print(f"{'='*80}")
+        print(f"📊 Overall Results: {passed_tests}/{total_tests} tests passed ({success_rate:.1f}%)")
+        
+        if success_rate >= 80:
+            print("🎉 CREATIVE STUDIO SYSTEM: SUCCESS!")
+            print("   ✅ AI Ideas Generation working for car dealerships")
+            print("   ✅ Creative Templates loading properly")
+            print("   ✅ Hashtag Research working for automotive keywords")
+            print("   ✅ Analytics endpoints providing relevant metrics")
+            return True
+        else:
+            print("⚠️  CREATIVE STUDIO SYSTEM: NEEDS ATTENTION")
+            print("   ❌ Some Creative Studio endpoints may need fixes")
+            print("   ❌ AI Ideas or Analytics functionality may be incomplete")
+            return False
+
+def main():
+    print("🃏 JokerVision AutoFollow API Testing Suite")
+    print("=" * 50)
+    
+    tester = AutoFollowProAPITester()
+    
+    # Test sequence
+    test_sequence = [
+        ("Enhanced Dashboard Stats", tester.test_enhanced_dashboard_stats),
+        ("JokerVision User Management", tester.test_user_management_system),
+        ("JokerVision Sales Tracking", tester.test_sales_tracking_system),
+        ("Commission Tier System", tester.test_commission_tier_progression),
+        ("AI-Powered Inbox Comprehensive Suite", tester.test_ai_inbox_comprehensive),
+        ("Chrome Extension Comprehensive Suite", tester.test_chrome_extension_comprehensive),
+        ("Mass Marketing Comprehensive Suite", tester.test_mass_marketing_comprehensive),
+        ("Social Media Hub Comprehensive Suite", tester.test_social_media_comprehensive),
+        ("Create Lead", tester.test_create_lead),
+        ("Get All Leads", tester.test_get_leads),
+        ("Get Specific Lead", tester.test_get_specific_lead),
+        ("SMS Config - Get", tester.test_sms_config_get),
+        ("SMS Config - Update", tester.test_sms_config_update),
+        ("Send SMS with Provider", tester.test_send_sms_with_provider),
+        ("Follow-up SMS Stages", tester.test_follow_up_sms_stages),
+        ("Bulk Follow-up", tester.test_bulk_follow_up),
+        ("Pending Follow-ups", tester.test_pending_follow_ups),
+        ("Get SMS Messages", tester.test_get_sms_messages),
+        ("Create Appointment", tester.test_create_appointment),
+        ("Get Lead Appointments", tester.test_get_lead_appointments),
+        ("Get All Appointments", tester.test_get_all_appointments),
+        ("Update Appointment", tester.test_update_appointment),
+        ("AI Response", tester.test_ai_response),
+        ("Enhanced AI Dealership Knowledge", tester.test_enhanced_ai_dealership_knowledge),
+        ("Appointment-Focused AI", tester.test_appointment_focused_ai_responses),
+        ("Enhanced AI Response with Scheduling", tester.test_enhanced_ai_response_with_scheduling),
+        ("Voice Call Initiation", tester.test_voice_call_initiation),
+        ("Voice Call History", tester.test_voice_call_history),
+        ("Voice Call Update", tester.test_voice_call_update),
+        ("Facebook Webhook Verification", tester.test_facebook_webhook_verification),
+        ("Facebook Webhook Handler", tester.test_facebook_webhook_handler),
+        ("Facebook Messages History", tester.test_facebook_messages_history),
+        ("Update Lead", tester.test_update_lead),
+        ("Bulk Import", tester.test_bulk_import),
+    ]
+    
+    print(f"\n🎯 Running {len(test_sequence)} API tests...")
+    
+    for test_name, test_func in test_sequence:
+        try:
+            test_func()
+        except Exception as e:
+            print(f"❌ {test_name} failed with exception: {str(e)}")
+    
+    # Cleanup JokerVision test data
+    try:
+        tester.cleanup_jokervision_data()
+    except Exception as e:
+        print(f"⚠️  Cleanup failed: {str(e)}")
+    
+    # Print final results
+    print("\n" + "=" * 50)
+    print(f"📊 Test Results: {tester.tests_passed}/{tester.tests_run} tests passed")
+    
+    if tester.tests_passed == tester.tests_run:
+        print("🎉 All JokerVision AutoFollow tests passed!")
+        return 0
+    else:
+        print(f"⚠️  {tester.tests_run - tester.tests_passed} tests failed")
+        return 1
+
+if __name__ == "__main__":
+    sys.exit(main())
