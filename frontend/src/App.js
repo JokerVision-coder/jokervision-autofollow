@@ -1871,6 +1871,7 @@ function App() {
           <Route path="/ads" element={<AdsManager />} />
           <Route path="/communications" element={<Communications />} />
           <Route path="/pipeline" element={<SalesPipeline />} />
+          <Route path="/marketing" element={<MassMarketing />} />
         </Routes>
         <Toaster position="top-right" />
       </div>
