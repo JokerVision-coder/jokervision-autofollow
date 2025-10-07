@@ -933,7 +933,7 @@ const AnalyticsTab = ({ summary, marketplaceStats, inventory }) => {
               <div className="flex justify-between items-center">
                 <span className="text-glass-muted">Average Vehicle Price</span>
                 <span className="text-glass-bright font-bold">
-                  ${Math.round(inventory.reduce((sum, v) => sum + v.price, 0) / inventory.length).toLocaleString()}
+                  ${inventory.length > 0 ? Math.round(inventory.reduce((sum, v) => sum + v.price, 0) / inventory.length).toLocaleString() : '0'}
                 </span>
               </div>
               <div className="flex justify-between items-center">
