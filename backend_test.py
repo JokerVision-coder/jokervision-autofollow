@@ -1690,6 +1690,7 @@ def main():
         ("JokerVision Sales Tracking", tester.test_sales_tracking_system),
         ("Commission Tier System", tester.test_commission_tier_progression),
         ("Chrome Extension Comprehensive Suite", tester.test_chrome_extension_comprehensive),
+        ("Mass Marketing Comprehensive Suite", tester.test_mass_marketing_comprehensive),
         ("Create Lead", tester.test_create_lead),
         ("Get All Leads", tester.test_get_leads),
         ("Get Specific Lead", tester.test_get_specific_lead),
