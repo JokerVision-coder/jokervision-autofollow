@@ -6251,6 +6251,308 @@ async def get_workflows(tenant_id: str):
         logger.error(f"Error fetching workflows: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to fetch workflows")
 
+@api_router.post("/workflows")
+async def create_workflow(workflow: Workflow):
+    """Create new workflow"""
+    try:
+        # Store workflow in database
+        workflow_doc = workflow.dict()
+        await db.workflows.insert_one(workflow_doc)
+        
+        logger.info(f"Created workflow: {workflow.name}")
+        return workflow
+        
+    except Exception as e:
+        logger.error(f"Error creating workflow: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to create workflow")
+
+@api_router.post("/workflows/trigger")
+async def trigger_workflow_by_event(trigger_data: dict):
+    """Trigger workflows based on events (like new Facebook leads)"""
+    try:
+        event_type = trigger_data.get("event_type")
+        tenant_id = trigger_data.get("tenant_id")
+        lead_data = trigger_data.get("lead_data", {})
+        
+        # Find workflows that match this trigger
+        workflows = await db.workflows.find({
+            "tenant_id": tenant_id,
+            "trigger": event_type,
+            "active": True
+        }).to_list(100)
+        
+        triggered_workflows = []
+        
+        for workflow in workflows:
+            try:
+                # Execute workflow steps
+                execution_result = await execute_workflow_steps(workflow, lead_data)
+                triggered_workflows.append({
+                    "workflow_id": workflow["id"],
+                    "workflow_name": workflow["name"],
+                    "execution_result": execution_result
+                })
+                
+            except Exception as e:
+                logger.error(f"Error executing workflow {workflow['id']}: {str(e)}")
+                continue
+        
+        return {
+            "success": True,
+            "triggered_workflows": len(triggered_workflows),
+            "workflows": triggered_workflows
+        }
+        
+    except Exception as e:
+        logger.error(f"Error triggering workflows: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to trigger workflows")
+
+async def execute_workflow_steps(workflow: dict, lead_data: dict):
+    """Execute individual workflow steps"""
+    try:
+        steps = workflow.get("steps", [])
+        execution_log = []
+        
+        for step in steps:
+            step_type = step.get("step_type")
+            delay_minutes = step.get("delay_minutes", 0)
+            content = step.get("content", "")
+            
+            # Process content with lead data variables
+            processed_content = process_workflow_content(content, lead_data)
+            
+            if step_type == "sms":
+                if lead_data.get("primary_phone"):
+                    result = send_twilio_sms(lead_data["primary_phone"], processed_content)
+                    execution_log.append({
+                        "step_type": "sms",
+                        "status": "sent" if result.get("success") else "failed",
+                        "recipient": lead_data["primary_phone"],
+                        "delay_applied": delay_minutes
+                    })
+                    
+            elif step_type == "email":
+                if lead_data.get("email"):
+                    result = send_sendgrid_email(
+                        lead_data["email"],
+                        "Follow-up from Dealership",
+                        processed_content
+                    )
+                    execution_log.append({
+                        "step_type": "email", 
+                        "status": "sent" if result.get("success") else "failed",
+                        "recipient": lead_data["email"],
+                        "delay_applied": delay_minutes
+                    })
+                    
+            elif step_type == "create_appointment":
+                # Auto-generate appointment suggestion
+                appointment_result = await auto_generate_appointment(lead_data)
+                execution_log.append({
+                    "step_type": "create_appointment",
+                    "status": "created" if appointment_result.get("success") else "failed",
+                    "appointment_id": appointment_result.get("appointment_id"),
+                    "delay_applied": delay_minutes
+                })
+                
+            elif step_type == "wait":
+                # For immediate execution, we just log the wait
+                execution_log.append({
+                    "step_type": "wait",
+                    "status": "completed", 
+                    "wait_duration": delay_minutes
+                })
+        
+        return {
+            "success": True,
+            "steps_executed": len(execution_log),
+            "execution_log": execution_log
+        }
+        
+    except Exception as e:
+        logger.error(f"Error executing workflow steps: {str(e)}")
+        return {
+            "success": False,
+            "error": str(e)
+        }
+
+def process_workflow_content(content: str, lead_data: dict) -> str:
+    """Process workflow content by replacing variables with lead data"""
+    if not content:
+        return ""
+    
+    # Define variable replacements
+    replacements = {
+        "{name}": lead_data.get("first_name", "Customer"),
+        "{first_name}": lead_data.get("first_name", ""),
+        "{last_name}": lead_data.get("last_name", ""),
+        "{vehicle}": lead_data.get("vehicle_interest", "vehicle"),
+        "{price}": lead_data.get("vehicle_price_range", ""),
+        "{year}": lead_data.get("vehicle_year", ""),
+        "{make}": lead_data.get("vehicle_make", ""),
+        "{phone}": lead_data.get("primary_phone", ""),
+        "{email}": lead_data.get("email", ""),
+        "{dealership}": "Shottenkirk Toyota",
+        "{location}": "San Antonio, TX"
+    }
+    
+    # Replace all variables
+    processed = content
+    for variable, value in replacements.items():
+        processed = processed.replace(variable, str(value))
+    
+    return processed
+
+async def auto_generate_appointment(lead_data: dict):
+    """Automatically generate appointment for high-interest leads"""
+    try:
+        # Check if lead qualifies for auto-appointment generation
+        interest_level = lead_data.get("interest_level", "low")
+        
+        if interest_level == "high":
+            # Generate appointment for next available slot
+            next_slot = get_next_available_appointment_slot()
+            
+            appointment = {
+                "id": str(uuid.uuid4()),
+                "tenant_id": lead_data.get("tenant_id"),
+                "lead_id": lead_data.get("id"),
+                "title": f"Auto-Generated Test Drive - {lead_data.get('vehicle_interest', 'Vehicle')}",
+                "description": "Automatically generated appointment for high-interest Facebook Marketplace lead",
+                "customer_name": f"{lead_data.get('first_name', '')} {lead_data.get('last_name', '')}".strip(),
+                "customer_phone": lead_data.get("primary_phone", ""),
+                "customer_email": lead_data.get("email", ""),
+                "vehicle_interest": lead_data.get("vehicle_interest", ""),
+                "appointment_date": next_slot["date"],
+                "appointment_time": next_slot["time"],
+                "location": "Dealership Showroom",
+                "status": "auto_generated",
+                "source": "facebook_marketplace_auto",
+                "priority": "high",
+                "created_at": datetime.now(timezone.utc).isoformat(),
+                "auto_generated": True
+            }
+            
+            # Store appointment
+            await db.appointments.insert_one(appointment)
+            
+            return {
+                "success": True,
+                "appointment_id": appointment["id"],
+                "appointment_date": next_slot["date"],
+                "appointment_time": next_slot["time"]
+            }
+        
+        return {"success": False, "reason": "Lead does not qualify for auto-appointment"}
+        
+    except Exception as e:
+        logger.error(f"Error auto-generating appointment: {str(e)}")
+        return {"success": False, "error": str(e)}
+
+def get_next_available_appointment_slot():
+    """Get next available appointment slot (mock implementation)"""
+    from datetime import timedelta
+    
+    # Simple logic: next business day at 10 AM
+    tomorrow = datetime.now(timezone.utc) + timedelta(days=1)
+    
+    # Skip weekends
+    while tomorrow.weekday() >= 5:  # 5 = Saturday, 6 = Sunday
+        tomorrow += timedelta(days=1)
+    
+    return {
+        "date": tomorrow.strftime("%Y-%m-%d"),
+        "time": "10:00",
+        "available": True
+    }
+
+# Facebook Marketplace Lead Auto-Response Templates
+FB_LEAD_RESPONSE_TEMPLATES = {
+    "high_interest": """Hi {name}! 
+
+Thanks for your interest in our {vehicle}. I can see you're serious about finding the right car!
+
+I have availability for a test drive as soon as tomorrow at {time}. Would that work for you?
+
+The vehicle is in excellent condition and I'd be happy to go over all the details in person.
+
+Reply YES if tomorrow works, or let me know what time is better for you.
+
+Best regards,
+{dealership} Sales Team
+Text STOP to opt out""",
+    
+    "medium_interest": """Hi {name}!
+
+Thanks for reaching out about the {vehicle}. It's a fantastic vehicle and I'd love to show it to you!
+
+Are you available for a test drive this week? I have several time slots open:
+• Tomorrow at 10 AM or 2 PM
+• Day after at 10 AM, 2 PM, or 4 PM
+
+Just reply with your preferred time and I'll get it scheduled for you.
+
+Looking forward to meeting you!
+
+{dealership} Sales Team
+Text STOP to opt out""",
+    
+    "general": """Hi {name}!
+
+Thank you for your interest in our {vehicle}! I'd be happy to help you with any questions and schedule a test drive.
+
+When would be a good time for you to see the vehicle? I'm available most days between 9 AM and 6 PM.
+
+You can reply to this message or call me directly at the dealership.
+
+Best regards,
+{dealership} Sales Team
+Text STOP to opt out"""
+}
+
+@api_router.post("/facebook-marketplace/auto-respond")
+async def facebook_marketplace_auto_respond(lead_data: dict):
+    """Generate automatic response for Facebook Marketplace leads"""
+    try:
+        interest_level = lead_data.get("interest_level", "general")
+        template_key = interest_level if interest_level in FB_LEAD_RESPONSE_TEMPLATES else "general"
+        
+        # Get appropriate template
+        template = FB_LEAD_RESPONSE_TEMPLATES[template_key]
+        
+        # Process template with lead data
+        response_message = process_workflow_content(template, lead_data)
+        
+        # Add appointment time suggestion for high interest leads
+        if interest_level == "high":
+            next_slot = get_next_available_appointment_slot()
+            response_message = response_message.replace("{time}", f"{next_slot['date']} at {next_slot['time']}")
+        
+        # Send SMS response if phone number available
+        if lead_data.get("primary_phone"):
+            sms_result = send_twilio_sms(lead_data["primary_phone"], response_message)
+            
+            return {
+                "success": True,
+                "response_sent": True,
+                "method": "sms",
+                "recipient": lead_data["primary_phone"],
+                "message": response_message,
+                "provider_result": sms_result
+            }
+        
+        # Fallback: return message for manual sending
+        return {
+            "success": True,
+            "response_sent": False,
+            "message": response_message,
+            "reason": "No phone number available for SMS"
+        }
+        
+    except Exception as e:
+        logger.error(f"Error generating auto-response: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to generate auto-response")
+
 # =============================================================================
 # AI TOOLKIT ENHANCEMENT API ENDPOINTS
 # =============================================================================
