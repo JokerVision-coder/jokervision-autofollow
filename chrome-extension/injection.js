@@ -4,7 +4,7 @@
 
     class FacebookMarketplaceIntegration {
         constructor() {
-            this.apiBaseUrl = 'https://dealership-hub-12.preview.emergentagent.com/api';
+            this.apiBaseUrl = 'https://jokervision-app.preview.emergentagent.com/api';
             this.initialized = false;
             this.observers = [];
             this.init();

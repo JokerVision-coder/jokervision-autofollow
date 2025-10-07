@@ -6,7 +6,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Alert } from 'react-native';
 
-const BACKEND_URL = 'https://dealership-hub-12.preview.emergentagent.com';
+const BACKEND_URL = 'https://jokervision-app.preview.emergentagent.com';
 const VOICE_API_ENDPOINT = `${BACKEND_URL}/api/voice`;
 
 class VoiceAIService {

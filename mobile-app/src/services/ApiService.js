@@ -5,7 +5,7 @@
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const BACKEND_URL = 'https://dealership-hub-12.preview.emergentagent.com';
+const BACKEND_URL = 'https://jokervision-app.preview.emergentagent.com';
 const API_BASE = `${BACKEND_URL}/api`;
 
 class ApiService {
