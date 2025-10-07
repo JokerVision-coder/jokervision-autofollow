@@ -180,17 +180,17 @@ class WorkflowAutomationEngine:
             result = {"action_type": action_type, "status": "completed", "timestamp": datetime.now(timezone.utc)}
             
             if action_type == "send_sms":
-                # Enhanced car sales SMS content with advanced automotive terminology
+                # COMPREHENSIVE AUTOMOTIVE SALES SMS CONTENT - Research-Based Best Practices
                 customer_name = context.get('customer_name', 'Valued Customer')
                 vehicle_interest = context.get('interested_vehicle', 'your vehicle of interest')
                 template = action.get("template", "default")
                 
                 if template == "urgent_followup":
-                    content = f"🚗 {customer_name}! URGENT: {vehicle_interest} available with 0.9% APR financing + $3,000 manufacturer rebate + guaranteed trade-in value! Your credit pre-approval expires today. Call (555) 123-CARS immediately! VIN ready for title transfer!"
+                    content = f"🚗 URGENT: {customer_name}! Your pre-qualified {vehicle_interest} has 0.9% APR financing locked + $4,000 manufacturer cash back + trade-in appraisal $3,500 above KBB + certified warranty + gap insurance + roadside assistance included! VIN reserved expires TODAY. Call dealership direct: (555) 123-CARS. Ref#AUTO2024"
                 elif template == "re_engagement": 
-                    content = f"🔥 {customer_name}, FINAL NOTICE: {vehicle_interest} has 1.9% APR + $4,000 total cash back + extended warranty + gap insurance included! Your financing pre-approval ends Friday. Secure now: (555) 123-CARS"
+                    content = f"🔥 FINAL CALL {customer_name}! {vehicle_interest} pricing: 1.9% APR + $5,000 total incentives + guaranteed trade value + extended powertrain warranty + tire protection + oil changes 24mo + same-day financing approval available! Pre-approval expires EOD Friday. Secure: (555) 123-CARS"
                 else:
-                    content = f"🚙 {customer_name}! Your {vehicle_interest} is RESERVED! We have 2.9% APR, $2,500 dealer cash, certified pre-owned warranty, complimentary oil changes, roadside assistance, and same-day DMV processing ready. Call (555) 123-CARS!"
+                    content = f"✨ {customer_name}! {vehicle_interest} EXCLUSIVE OFFER: 2.9% APR financing + $3,000 dealer cash + manufacturer rebates + certified pre-owned inspection + complimentary maintenance + DMV processing + title transfer + registration fees covered + 30-day exchange policy. Call automotive specialist: (555) 123-CARS"
                 
                 result.update({
                     "message_sent": True,
