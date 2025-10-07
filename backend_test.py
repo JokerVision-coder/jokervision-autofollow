@@ -3000,6 +3000,7 @@ def main():
         ("JokerVision User Management", tester.test_user_management_system),
         ("JokerVision Sales Tracking", tester.test_sales_tracking_system),
         ("Commission Tier System", tester.test_commission_tier_progression),
+        ("AI-Powered Inbox Comprehensive Suite", tester.test_ai_inbox_comprehensive),
         ("Chrome Extension Comprehensive Suite", tester.test_chrome_extension_comprehensive),
         ("Mass Marketing Comprehensive Suite", tester.test_mass_marketing_comprehensive),
         ("Social Media Hub Comprehensive Suite", tester.test_social_media_comprehensive),
