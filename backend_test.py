@@ -4,7 +4,7 @@ import json
 from datetime import datetime
 
 class AutoFollowProAPITester:
-    def __init__(self, base_url="https://dealerflow-suite.preview.emergentagent.com"):
+    def __init__(self, base_url="https://dealership-hub-12.preview.emergentagent.com"):
         self.base_url = base_url
         self.api_url = f"{base_url}/api"
         self.tests_run = 0
