@@ -1390,16 +1390,18 @@ const InventoryManagement = () => {
               </div>
               <div>
                 <Label className="text-glass text-sm">Condition</Label>
-                <Select value={filters.condition} onValueChange={(value) => handleFilterChange('condition', value)}>
-                  <SelectTrigger className="glass-card text-glass filter-dropdown">
-                    <SelectValue placeholder="Any" />
-                  </SelectTrigger>
-                  <SelectContent className="modal-glass filter-dropdown">
-                    <SelectItem value="any" className="text-glass-bright">Any</SelectItem>
-                    <SelectItem value="new" className="text-glass-bright">New</SelectItem>
-                    <SelectItem value="used" className="text-glass-bright">Used</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="dark-select">
+                  <Select value={filters.condition} onValueChange={(value) => handleFilterChange('condition', value)}>
+                    <SelectTrigger className="glass-card text-glass filter-dropdown">
+                      <SelectValue placeholder="Any" />
+                    </SelectTrigger>
+                    <SelectContent className="modal-glass filter-dropdown">
+                      <SelectItem value="any" className="text-glass-bright invisible-fix">Any</SelectItem>
+                      <SelectItem value="new" className="text-glass-bright invisible-fix">New</SelectItem>
+                      <SelectItem value="used" className="text-glass-bright invisible-fix">Used</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
               <div>
                 <Label className="text-glass text-sm">Min Price</Label>
