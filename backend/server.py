@@ -7500,6 +7500,304 @@ async def get_social_media_analytics(tenant_id: str):
         logger.error(f"Error fetching social media analytics: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to fetch analytics")
 
+# Enhanced Inventory Management Models
+class Vehicle(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    tenant_id: str
+    vin: str
+    stock_number: str
+    year: int
+    make: str
+    model: str
+    trim: Optional[str] = None
+    condition: str  # "New", "Used", "Certified Pre-Owned"
+    price: float
+    original_price: Optional[float] = None
+    mileage: int = 0
+    exterior_color: Optional[str] = None
+    interior_color: Optional[str] = None
+    fuel_type: str = "Gasoline"
+    transmission: str = "Automatic"
+    engine: Optional[str] = None
+    features: List[str] = []
+    images: List[str] = []
+    description: Optional[str] = None
+    status: str = "Available"  # "Available", "Marketplace Listed", "Pending Sale", "Sold"
+    marketplace_listed: bool = False
+    leads_count: int = 0
+    views_count: int = 0
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class VehicleCreate(BaseModel):
+    tenant_id: str
+    vin: str
+    stock_number: str
+    year: int
+    make: str
+    model: str
+    trim: Optional[str] = None
+    condition: str
+    price: float
+    original_price: Optional[float] = None
+    mileage: int = 0
+    exterior_color: Optional[str] = None
+    interior_color: Optional[str] = None
+    fuel_type: str = "Gasoline"
+    transmission: str = "Automatic"
+    engine: Optional[str] = None
+    features: List[str] = []
+    images: List[str] = []
+    description: Optional[str] = None
+
+class VehicleUpdate(BaseModel):
+    year: Optional[int] = None
+    make: Optional[str] = None
+    model: Optional[str] = None
+    trim: Optional[str] = None
+    condition: Optional[str] = None
+    price: Optional[float] = None
+    original_price: Optional[float] = None
+    mileage: Optional[int] = None
+    exterior_color: Optional[str] = None
+    interior_color: Optional[str] = None
+    fuel_type: Optional[str] = None
+    transmission: Optional[str] = None
+    engine: Optional[str] = None
+    features: Optional[List[str]] = None
+    images: Optional[List[str]] = None
+    description: Optional[str] = None
+    status: Optional[str] = None
+
+class MarketplaceUpload(BaseModel):
+    vehicle_ids: List[str]
+    tenant_id: str
+    platforms: List[str] = ["facebook"]
+    auto_optimize_description: bool = True
+    include_pricing: bool = True
+
+# Enhanced Inventory Management Routes
+@api_router.get("/inventory/summary")
+async def get_inventory_summary(tenant_id: str = Query(...)):
+    """Get inventory summary statistics"""
+    try:
+        # Get total vehicle counts
+        total_vehicles = await db.vehicles.count_documents({"tenant_id": tenant_id})
+        new_vehicles = await db.vehicles.count_documents({
+            "tenant_id": tenant_id, 
+            "condition": "New"
+        })
+        used_vehicles = await db.vehicles.count_documents({
+            "tenant_id": tenant_id, 
+            "condition": {"$in": ["Used", "Certified Pre-Owned"]}
+        })
+        marketplace_listed = await db.vehicles.count_documents({
+            "tenant_id": tenant_id,
+            "marketplace_listed": True
+        })
+        
+        # Calculate leads generated from inventory
+        vehicles_with_leads = await db.vehicles.find(
+            {"tenant_id": tenant_id},
+            {"leads_count": 1}
+        ).to_list(None)
+        total_leads = sum(v.get("leads_count", 0) for v in vehicles_with_leads)
+        
+        return {
+            "total_vehicles": total_vehicles,
+            "new_vehicles": new_vehicles,
+            "used_vehicles": used_vehicles,
+            "marketplace_listed": marketplace_listed,
+            "leads_generated": total_leads,
+            "dealership": DEALERSHIP_INFO["name"]
+        }
+    except Exception as e:
+        logger.error(f"Error fetching inventory summary: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch inventory summary")
+
+@api_router.get("/inventory/vehicles")
+async def get_vehicles(
+    tenant_id: str = Query(...),
+    make: Optional[str] = None,
+    model: Optional[str] = None,
+    year: Optional[int] = None,
+    condition: Optional[str] = None,
+    price_min: Optional[float] = None,
+    price_max: Optional[float] = None,
+    status: Optional[str] = None,
+    limit: int = Query(50, le=100)
+):
+    """Get filtered inventory vehicles"""
+    try:
+        # Build filter query
+        filter_query = {"tenant_id": tenant_id}
+        
+        if make:
+            filter_query["make"] = {"$regex": make, "$options": "i"}
+        if model:
+            filter_query["model"] = {"$regex": model, "$options": "i"}
+        if year:
+            filter_query["year"] = year
+        if condition and condition != "any":
+            filter_query["condition"] = condition
+        if price_min is not None:
+            filter_query["price"] = {"$gte": price_min}
+        if price_max is not None:
+            if "price" in filter_query:
+                filter_query["price"]["$lte"] = price_max
+            else:
+                filter_query["price"] = {"$lte": price_max}
+        if status and status != "any":
+            filter_query["status"] = status
+        
+        # Get vehicles with pagination
+        vehicles = await db.vehicles.find(filter_query).sort("created_at", -1).limit(limit).to_list(None)
+        
+        # Convert datetime fields
+        result_vehicles = []
+        for vehicle in vehicles:
+            if isinstance(vehicle.get('created_at'), str):
+                vehicle['created_at'] = datetime.fromisoformat(vehicle['created_at'])
+            if isinstance(vehicle.get('updated_at'), str):
+                vehicle['updated_at'] = datetime.fromisoformat(vehicle['updated_at'])
+            result_vehicles.append(Vehicle(**vehicle))
+        
+        return {
+            "vehicles": result_vehicles,
+            "total_count": len(result_vehicles),
+            "filters_applied": {k: v for k, v in filter_query.items() if k != "tenant_id"}
+        }
+        
+    except Exception as e:
+        logger.error(f"Error fetching vehicles: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch vehicles")
+
+@api_router.post("/inventory/vehicles", response_model=Vehicle)
+async def create_vehicle(vehicle_data: VehicleCreate):
+    """Add a new vehicle to inventory"""
+    try:
+        # Check if VIN or stock number already exists
+        existing_vin = await db.vehicles.find_one({
+            "tenant_id": vehicle_data.tenant_id,
+            "vin": vehicle_data.vin
+        })
+        if existing_vin:
+            raise HTTPException(status_code=400, detail="Vehicle with this VIN already exists")
+            
+        existing_stock = await db.vehicles.find_one({
+            "tenant_id": vehicle_data.tenant_id,
+            "stock_number": vehicle_data.stock_number
+        })
+        if existing_stock:
+            raise HTTPException(status_code=400, detail="Vehicle with this stock number already exists")
+        
+        # Create vehicle object
+        vehicle_obj = Vehicle(**vehicle_data.dict())
+        vehicle_doc = vehicle_obj.dict()
+        vehicle_doc['created_at'] = vehicle_doc['created_at'].isoformat()
+        vehicle_doc['updated_at'] = vehicle_doc['updated_at'].isoformat()
+        
+        await db.vehicles.insert_one(vehicle_doc)
+        return vehicle_obj
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error creating vehicle: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to create vehicle")
+
+@api_router.put("/inventory/vehicles/{vehicle_id}", response_model=Vehicle)
+async def update_vehicle(vehicle_id: str, update_data: VehicleUpdate):
+    """Update vehicle information"""
+    try:
+        # Get current vehicle
+        current_vehicle = await db.vehicles.find_one({"id": vehicle_id})
+        if not current_vehicle:
+            raise HTTPException(status_code=404, detail="Vehicle not found")
+        
+        # Prepare update data
+        update_dict = {k: v for k, v in update_data.dict().items() if v is not None}
+        if update_dict:
+            update_dict["updated_at"] = datetime.now(timezone.utc).isoformat()
+            await db.vehicles.update_one({"id": vehicle_id}, {"$set": update_dict})
+        
+        # Get updated vehicle
+        updated_vehicle = await db.vehicles.find_one({"id": vehicle_id})
+        if isinstance(updated_vehicle.get('created_at'), str):
+            updated_vehicle['created_at'] = datetime.fromisoformat(updated_vehicle['created_at'])
+        if isinstance(updated_vehicle.get('updated_at'), str):
+            updated_vehicle['updated_at'] = datetime.fromisoformat(updated_vehicle['updated_at'])
+            
+        return Vehicle(**updated_vehicle)
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating vehicle: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to update vehicle")
+
+@api_router.delete("/inventory/vehicles/{vehicle_id}")
+async def delete_vehicle(vehicle_id: str):
+    """Delete a vehicle from inventory"""
+    try:
+        result = await db.vehicles.delete_one({"id": vehicle_id})
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Vehicle not found")
+        
+        return {"message": "Vehicle deleted successfully", "vehicle_id": vehicle_id}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting vehicle: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to delete vehicle")
+
+@api_router.post("/inventory/sync/{tenant_id}")
+async def sync_inventory(tenant_id: str):
+    """Sync inventory from external sources (like dealership DMS)"""
+    try:
+        # This would typically sync with dealership management systems
+        # For demo purposes, we'll simulate syncing
+        
+        # Use the existing scraper if available
+        scraper = ShottenkilkInventoryScraper()
+        inventory_data = scraper.get_mock_data()
+        
+        synced_count = 0
+        for vehicle_data in inventory_data["vehicles"]:
+            # Check if vehicle already exists
+            existing = await db.vehicles.find_one({
+                "tenant_id": tenant_id,
+                "$or": [
+                    {"vin": vehicle_data["vin"]},
+                    {"stock_number": vehicle_data["stock_number"]}
+                ]
+            })
+            
+            if not existing:
+                # Add tenant_id to vehicle data
+                vehicle_data["tenant_id"] = tenant_id
+                
+                # Create vehicle
+                vehicle_obj = Vehicle(**vehicle_data)
+                vehicle_doc = vehicle_obj.dict()
+                vehicle_doc['created_at'] = vehicle_doc['created_at'].isoformat()
+                vehicle_doc['updated_at'] = vehicle_doc['updated_at'].isoformat()
+                
+                await db.vehicles.insert_one(vehicle_doc)
+                synced_count += 1
+        
+        return {
+            "message": "Inventory sync completed",
+            "synced_vehicles": synced_count,
+            "total_inventory": inventory_data["total_count"],
+            "last_sync": datetime.now(timezone.utc).isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error syncing inventory: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to sync inventory")
+
 # Include the router in the main app
 app.include_router(api_router)
 
