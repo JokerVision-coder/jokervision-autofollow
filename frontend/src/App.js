@@ -1905,6 +1905,27 @@ const Navigation = () => {
               <CreditCard className="w-4 h-4 mr-2" />
               Subscription
             </Link>
+            <Link 
+              to="/advanced-websites" 
+              className="text-glass hover:text-glass-bright font-medium transition-colors duration-200 flex items-center"
+            >
+              <Globe className="w-4 h-4 mr-2" />
+              Advanced Sites
+            </Link>
+            <Link 
+              to="/voice" 
+              className="text-glass hover:text-glass-bright font-medium transition-colors duration-200 flex items-center"
+            >
+              <Phone className="w-4 h-4 mr-2" />
+              Voice AI
+            </Link>
+            <Link 
+              to="/analytics" 
+              className="text-glass hover:text-glass-bright font-medium transition-colors duration-200 flex items-center"
+            >
+              <BarChart className="w-4 h-4 mr-2" />
+              Analytics Pro
+            </Link>
           </div>
         </div>
       </div>
