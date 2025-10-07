@@ -201,11 +201,16 @@ class WorkflowAutomationEngine:
                 })
                 
             elif action_type == "create_calendar_event":
+                customer_name = context.get('customer_name', 'Customer')
+                vehicle_interest = context.get('interested_vehicle', 'Vehicle Inquiry')
                 result.update({
                     "event_created": True,
-                    "event_title": f"Follow-up with {context.get('customer_name', 'Customer')}",
+                    "event_title": f"🚗 Car Sales Priority: {customer_name} - {vehicle_interest}",
                     "scheduled_time": (datetime.now(timezone.utc) + timedelta(hours=2)).isoformat(),
-                    "duration": "30 minutes"
+                    "duration": "30 minutes",
+                    "event_type": "vehicle_sales_consultation", 
+                    "agenda": f"Discuss financing options, trade-in value, test drive scheduling for {vehicle_interest}",
+                    "priority": "high_value_automotive_lead"
                 })
                 
             elif action_type == "notify_sales_manager":
