@@ -21,6 +21,11 @@ import Communications from './Communications';
 import SalesPipeline from './SalesPipeline';
 import MassMarketing from './MassMarketing';
 import SocialMediaHub from './SocialMediaHub';
+import ReviewsManager from './ReviewsManager';
+import CalendarIntegration from './CalendarIntegration';
+import WorkflowBuilder from './WorkflowBuilder';
+import AIToolkit from './AIToolkit';
+import SubscriptionManagement from './SubscriptionManagement';
 import { 
   Users, MessageSquare, Calendar, BarChart3, Plus, Send, Bot, Phone, Mail, 
   DollarSign, Briefcase, Clock, Settings, Zap, TrendingUp, PhoneCall, MessageCircle,
