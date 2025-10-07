@@ -1411,6 +1411,13 @@ const Navigation = () => {
               <Palette className="w-4 h-4 mr-2" />
               Creative Studio
             </Link>
+            <Link 
+              to="/inventory" 
+              className="text-glass hover:text-glass-bright font-medium transition-colors duration-200 flex items-center"
+            >
+              <Car className="w-4 h-4 mr-2" />
+              Inventory
+            </Link>
           </div>
         </div>
       </div>
