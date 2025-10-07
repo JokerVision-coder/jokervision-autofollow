@@ -2172,6 +2172,11 @@ async def get_content_calendar(
 async def research_hashtags(request: dict):
     """Research and suggest optimal hashtags"""
     try:
+        # Extract parameters from request body
+        tenant_id = request.get('tenant_id', 'default')
+        keywords = request.get('keywords', [])
+        platform = request.get('platform', 'instagram')
+        
         hashtag_suggestions = []
         
         # Base automotive hashtags
