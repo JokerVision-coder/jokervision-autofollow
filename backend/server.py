@@ -5453,7 +5453,7 @@ async def chrome_capture_lead(lead_data: ChromeLeadCapture):
         
         # Auto-trigger workflow if enabled
         if lead_data.auto_trigger_workflow:
-            await trigger_lead_workflow(processed_lead)
+            await trigger_local_lead_workflow(processed_lead)
         
         return {
             "success": True,
