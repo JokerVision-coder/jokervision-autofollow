@@ -31,7 +31,7 @@
     "react-native-vision-camera": "^3.6.17",
     "react-native-permissions": "^3.10.1",
     "react-native-contacts": "^7.0.8",
-    "react-native-call-log": "^4.0.0",
+    "react-native-call-detection": "^1.0.4",
     "react-native-send-sms": "^1.0.8",
     "axios": "^1.6.0"
   },
