@@ -40,7 +40,7 @@ import {
   DollarSign, Briefcase, Clock, Settings, Zap, TrendingUp, PhoneCall, MessageCircle,
   Trophy, Target, UserPlus, Trash2, Eye, Edit, Car, Calculator, Palette, 
   Smartphone, Monitor, Tablet, Globe, TrendingDown, Star, Brain, CreditCard,
-  UserX, Bell
+  UserX, Bell, Mic
 } from 'lucide-react';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
