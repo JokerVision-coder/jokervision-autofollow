@@ -4612,7 +4612,7 @@ async def capture_website_lead(website_id: str, lead_data: dict):
 
 @api_router.get("/inventory/vehicles")
 async def search_inventory(
-    tenant_id: str, 
+    tenant_id: Optional[str] = Query(None), 
     make: Optional[str] = None,
     model: Optional[str] = None,
     year: Optional[int] = None,
