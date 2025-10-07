@@ -8,7 +8,8 @@ import {
   Tag, Settings, Play, Pause, ChevronDown, ChevronRight
 } from 'lucide-react';
 
-const API = process.env.REACT_APP_BACKEND_URL;
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const API = `${BACKEND_URL}/api`;
 
 // Simple component definitions
 const Card = ({ children, className = "" }) => <div className={`${className}`}>{children}</div>;
