@@ -1677,6 +1677,416 @@ Vehicle Type: sedan"""
         
         return passed_tests >= total_tests * 0.8  # 80% pass rate required
 
+    # Social Media Hub API Tests
+    def test_get_social_media_accounts(self):
+        """Test GET /api/social-media/accounts endpoint"""
+        tenant_id = "default_dealership"
+        
+        success, response = self.run_test(
+            "Get Social Media Accounts",
+            "GET",
+            f"social-media/accounts?tenant_id={tenant_id}",
+            200
+        )
+        
+        if success:
+            # Verify response structure
+            if 'accounts' in response:
+                accounts = response['accounts']
+                print(f"   ✅ Retrieved {len(accounts)} social media accounts")
+                
+                # Check account structure if accounts exist
+                if accounts:
+                    first_account = accounts[0]
+                    required_fields = ['id', 'tenant_id', 'platform', 'name', 'username', 'followers', 'status']
+                    missing_fields = [field for field in required_fields if field not in first_account]
+                    
+                    if not missing_fields:
+                        print(f"   ✅ Account structure valid - Platform: {first_account['platform']}, Followers: {first_account['followers']}")
+                        return True
+                    else:
+                        print(f"   ❌ Account missing fields: {missing_fields}")
+                        return False
+                else:
+                    print("   ✅ Empty accounts list returned")
+                    return True
+            else:
+                print("   ❌ Response missing 'accounts' field")
+                return False
+        return False
+
+    def test_connect_social_media_account_facebook(self):
+        """Test POST /api/social-media/accounts for Facebook"""
+        facebook_account_data = {
+            "tenant_id": "default_dealership",
+            "platform": "facebook",
+            "auth_code": "mock_facebook_auth_code_12345"
+        }
+        
+        success, response = self.run_test(
+            "Connect Facebook Account",
+            "POST",
+            "social-media/accounts",
+            200,
+            data=facebook_account_data
+        )
+        
+        if success:
+            # Verify account connection
+            required_fields = ['id', 'tenant_id', 'platform', 'name', 'username', 'access_token']
+            missing_fields = [field for field in required_fields if field not in response]
+            
+            if not missing_fields:
+                self.created_facebook_account_id = response['id']
+                print(f"   ✅ Facebook Account connected - ID: {response['id']}, Platform: {response['platform']}")
+                print(f"      Name: {response['name']}, Username: {response['username']}")
+                return True
+            else:
+                print(f"   ❌ Account response missing fields: {missing_fields}")
+                return False
+        return False
+
+    def test_connect_social_media_account_instagram(self):
+        """Test POST /api/social-media/accounts for Instagram"""
+        instagram_account_data = {
+            "tenant_id": "default_dealership",
+            "platform": "instagram",
+            "auth_code": "mock_instagram_auth_code_67890"
+        }
+        
+        success, response = self.run_test(
+            "Connect Instagram Account",
+            "POST",
+            "social-media/accounts",
+            200,
+            data=instagram_account_data
+        )
+        
+        if success:
+            # Verify account connection
+            required_fields = ['id', 'tenant_id', 'platform', 'name', 'username', 'access_token']
+            missing_fields = [field for field in required_fields if field not in response]
+            
+            if not missing_fields:
+                self.created_instagram_account_id = response['id']
+                print(f"   ✅ Instagram Account connected - ID: {response['id']}, Platform: {response['platform']}")
+                print(f"      Name: {response['name']}, Username: {response['username']}")
+                return True
+            else:
+                print(f"   ❌ Account response missing fields: {missing_fields}")
+                return False
+        return False
+
+    def test_connect_social_media_account_tiktok(self):
+        """Test POST /api/social-media/accounts for TikTok"""
+        tiktok_account_data = {
+            "tenant_id": "default_dealership",
+            "platform": "tiktok",
+            "auth_code": "mock_tiktok_auth_code_abcdef"
+        }
+        
+        success, response = self.run_test(
+            "Connect TikTok Account",
+            "POST",
+            "social-media/accounts",
+            200,
+            data=tiktok_account_data
+        )
+        
+        if success:
+            # Verify account connection
+            required_fields = ['id', 'tenant_id', 'platform', 'name', 'username', 'access_token']
+            missing_fields = [field for field in required_fields if field not in response]
+            
+            if not missing_fields:
+                self.created_tiktok_account_id = response['id']
+                print(f"   ✅ TikTok Account connected - ID: {response['id']}, Platform: {response['platform']}")
+                print(f"      Name: {response['name']}, Username: {response['username']}")
+                return True
+            else:
+                print(f"   ❌ Account response missing fields: {missing_fields}")
+                return False
+        return False
+
+    def test_disconnect_social_media_account(self):
+        """Test DELETE /api/social-media/accounts/{account_id}"""
+        # Use a mock account ID for testing
+        mock_account_id = "mock_account_to_delete"
+        
+        success, response = self.run_test(
+            "Disconnect Social Media Account",
+            "DELETE",
+            f"social-media/accounts/{mock_account_id}",
+            404  # Expected since mock account doesn't exist
+        )
+        
+        # For this test, we expect 404 since we're using a mock ID
+        # In a real scenario with actual accounts, we'd expect 200
+        if success:
+            print("   ✅ Account disconnection handled correctly (404 for non-existent account)")
+            return True
+        return False
+
+    def test_get_social_media_posts(self):
+        """Test GET /api/social-media/posts endpoint"""
+        tenant_id = "default_dealership"
+        
+        success, response = self.run_test(
+            "Get Social Media Posts",
+            "GET",
+            f"social-media/posts?tenant_id={tenant_id}&limit=20",
+            200
+        )
+        
+        if success:
+            # Verify response structure
+            if 'posts' in response:
+                posts = response['posts']
+                print(f"   ✅ Retrieved {len(posts)} social media posts")
+                
+                # Check post structure if posts exist
+                if posts:
+                    first_post = posts[0]
+                    required_fields = ['id', 'tenant_id', 'platform', 'content', 'status', 'created_at']
+                    missing_fields = [field for field in required_fields if field not in first_post]
+                    
+                    if not missing_fields:
+                        print(f"   ✅ Post structure valid - Platform: {first_post['platform']}, Status: {first_post['status']}")
+                        print(f"      Content preview: {first_post['content'][:50]}...")
+                        return True
+                    else:
+                        print(f"   ❌ Post missing fields: {missing_fields}")
+                        return False
+                else:
+                    print("   ✅ Empty posts list returned")
+                    return True
+            else:
+                print("   ❌ Response missing 'posts' field")
+                return False
+        return False
+
+    def test_create_multi_platform_post(self):
+        """Test POST /api/social-media/posts for multi-platform posting"""
+        multi_platform_post_data = {
+            "tenant_id": "default_dealership",
+            "platforms": ["facebook", "instagram", "tiktok"],
+            "content": "🚗 New Year Special! Save up to $5,000 on select 2025 Toyota models. Visit Shottenkirk Toyota San Antonio today! #Toyota #NewYear #CarDeals",
+            "media_type": "image",
+            "media_url": "/api/placeholder/400/300"
+        }
+        
+        success, response = self.run_test(
+            "Create Multi-Platform Post",
+            "POST",
+            "social-media/posts",
+            200,
+            data=multi_platform_post_data
+        )
+        
+        if success:
+            # Verify multi-platform post creation
+            if 'posts' in response and 'message' in response:
+                posts = response['posts']
+                message = response['message']
+                
+                if len(posts) == 3:  # Should create posts for all 3 platforms
+                    platforms_created = [post.get('platform') for post in posts]
+                    expected_platforms = ["facebook", "instagram", "tiktok"]
+                    
+                    if all(platform in platforms_created for platform in expected_platforms):
+                        print(f"   ✅ Multi-platform post created successfully")
+                        print(f"      Platforms: {', '.join(platforms_created)}")
+                        print(f"      Message: {message}")
+                        return True
+                    else:
+                        print(f"   ❌ Missing platforms - Expected: {expected_platforms}, Got: {platforms_created}")
+                        return False
+                else:
+                    print(f"   ❌ Expected 3 posts, got {len(posts)}")
+                    return False
+            else:
+                print("   ❌ Response missing 'posts' or 'message' field")
+                return False
+        return False
+
+    def test_create_scheduled_social_media_post(self):
+        """Test POST /api/social-media/posts with scheduling"""
+        from datetime import datetime, timedelta
+        
+        # Schedule for tomorrow at 2 PM
+        tomorrow = datetime.now() + timedelta(days=1)
+        scheduled_time = tomorrow.replace(hour=14, minute=0, second=0, microsecond=0)
+        
+        scheduled_post_data = {
+            "tenant_id": "default_dealership",
+            "platforms": ["facebook", "instagram"],
+            "content": "Weekend Sale Alert! 🚗 Special financing available on all Toyota models. Visit us this weekend for exclusive deals! #WeekendSale #Toyota",
+            "media_type": "video",
+            "media_url": "/api/placeholder/400/400",
+            "scheduled_date": scheduled_time.isoformat()
+        }
+        
+        success, response = self.run_test(
+            "Create Scheduled Social Media Post",
+            "POST",
+            "social-media/posts",
+            200,
+            data=scheduled_post_data
+        )
+        
+        if success:
+            # Verify scheduled post creation
+            if 'posts' in response:
+                posts = response['posts']
+                
+                # Check if posts are scheduled
+                scheduled_posts = [post for post in posts if post.get('status') == 'scheduled']
+                
+                if len(scheduled_posts) == len(posts):
+                    print(f"   ✅ Scheduled posts created successfully")
+                    print(f"      Platforms: {len(posts)} posts scheduled")
+                    print(f"      Scheduled for: {scheduled_time.isoformat()}")
+                    return True
+                else:
+                    print(f"   ❌ Not all posts were scheduled - {len(scheduled_posts)}/{len(posts)}")
+                    return False
+            else:
+                print("   ❌ Response missing 'posts' field")
+                return False
+        return False
+
+    def test_get_social_media_analytics(self):
+        """Test GET /api/social-media/analytics endpoint"""
+        tenant_id = "default_dealership"
+        
+        success, response = self.run_test(
+            "Get Social Media Analytics",
+            "GET",
+            f"social-media/analytics?tenant_id={tenant_id}",
+            200
+        )
+        
+        if success:
+            # Verify analytics structure
+            required_fields = ['total_followers', 'total_posts', 'total_engagement', 'avg_engagement_rate', 'top_performing_platform']
+            missing_fields = [field for field in required_fields if field not in response]
+            
+            if not missing_fields:
+                print(f"   ✅ Analytics retrieved successfully")
+                print(f"      Total Followers: {response['total_followers']:,}")
+                print(f"      Total Posts: {response['total_posts']}")
+                print(f"      Total Engagement: {response['total_engagement']:,}")
+                print(f"      Avg Engagement Rate: {response['avg_engagement_rate']}%")
+                print(f"      Top Platform: {response['top_performing_platform']}")
+                
+                # Check weekly stats if present
+                if 'weekly_stats' in response:
+                    weekly_stats = response['weekly_stats']
+                    print(f"      Weekly Stats Available: {', '.join(weekly_stats.keys())}")
+                
+                return True
+            else:
+                print(f"   ❌ Analytics missing fields: {missing_fields}")
+                return False
+        return False
+
+    def test_social_media_oauth_token_exchange(self):
+        """Test OAuth token exchange functionality (mock)"""
+        print("\n🔐 Testing OAuth Token Exchange...")
+        
+        # Test Facebook OAuth
+        facebook_success = self.test_connect_social_media_account_facebook()
+        
+        # Test Instagram OAuth (uses Facebook login)
+        instagram_success = self.test_connect_social_media_account_instagram()
+        
+        # Test TikTok OAuth
+        tiktok_success = self.test_connect_social_media_account_tiktok()
+        
+        passed_tests = sum([facebook_success, instagram_success, tiktok_success])
+        print(f"   📊 OAuth Token Exchange: {passed_tests}/3 platforms tested")
+        
+        return passed_tests >= 2  # At least 2/3 should pass
+
+    def test_social_media_error_handling(self):
+        """Test social media API error handling"""
+        print("\n🔍 Testing Social Media API Error Handling...")
+        
+        # Test missing tenant_id
+        success1, _ = self.run_test(
+            "Social Media Accounts - Missing tenant_id",
+            "GET",
+            "social-media/accounts",
+            422  # Validation error expected
+        )
+        
+        # Test invalid platform in account creation
+        invalid_account = {
+            "tenant_id": "test_tenant",
+            "platform": "invalid_platform",
+            "auth_code": "test_code"
+        }
+        
+        success2, response2 = self.run_test(
+            "Connect Account - Invalid Platform",
+            "POST",
+            "social-media/accounts",
+            400,  # Bad request expected
+            data=invalid_account
+        )
+        
+        # Test invalid post creation (missing required fields)
+        invalid_post = {
+            "tenant_id": "test_tenant"
+            # Missing platforms, content
+        }
+        
+        success3, response3 = self.run_test(
+            "Create Post - Missing Fields",
+            "POST",
+            "social-media/posts",
+            422,  # Validation error expected
+            data=invalid_post
+        )
+        
+        passed_tests = sum([success1, success2, success3])
+        print(f"   📊 Error Handling: {passed_tests}/3 tests passed")
+        
+        return passed_tests >= 2  # At least 2/3 should pass
+
+    def test_social_media_comprehensive(self):
+        """Run comprehensive Social Media Hub test suite"""
+        print("\n📱 Running Comprehensive Social Media Hub Tests...")
+        
+        social_media_tests = [
+            ("Get Social Media Accounts", self.test_get_social_media_accounts),
+            ("OAuth Token Exchange", self.test_social_media_oauth_token_exchange),
+            ("Disconnect Account", self.test_disconnect_social_media_account),
+            ("Get Social Media Posts", self.test_get_social_media_posts),
+            ("Create Multi-Platform Post", self.test_create_multi_platform_post),
+            ("Create Scheduled Post", self.test_create_scheduled_social_media_post),
+            ("Get Analytics", self.test_get_social_media_analytics),
+            ("Error Handling", self.test_social_media_error_handling)
+        ]
+        
+        passed_tests = 0
+        total_tests = len(social_media_tests)
+        
+        for test_name, test_func in social_media_tests:
+            try:
+                if test_func():
+                    passed_tests += 1
+                    print(f"   ✅ {test_name} - PASSED")
+                else:
+                    print(f"   ❌ {test_name} - FAILED")
+            except Exception as e:
+                print(f"   ❌ {test_name} - ERROR: {str(e)}")
+        
+        success_rate = (passed_tests / total_tests) * 100
+        print(f"\n   📊 Social Media Hub Test Suite: {passed_tests}/{total_tests} passed ({success_rate:.1f}%)")
+        
+        return passed_tests >= total_tests * 0.8  # 80% pass rate required
+
 def main():
     print("🃏 JokerVision AutoFollow API Testing Suite")
     print("=" * 50)
