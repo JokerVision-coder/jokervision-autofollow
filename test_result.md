@@ -651,9 +651,9 @@ end_to_end_workflow_testing:
 
   - task: "Intelligent Workflow Automation System"
     implemented: true
-    working: true
+    working: false
     file: "workflow_automation.py, server.py"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
     needs_retesting: false
     status_history:
