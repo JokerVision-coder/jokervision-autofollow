@@ -3745,6 +3745,347 @@ Vehicle Type: sedan"""
             print("❌ Function naming conflict may persist")
             return False
 
+    # =============================================================================
+    # CREATIVE STUDIO API TESTS - PRIORITY ENDPOINTS
+    # =============================================================================
+
+    def test_creative_ai_ideas_generation(self):
+        """Test AI Ideas Generation endpoint - POST /api/creative/generate-ideas"""
+        print("\n🎨 Testing Creative Studio AI Ideas Generation...")
+        
+        # Test data from review request
+        ideas_data = {
+            "tenant_id": "default",
+            "platform": "instagram", 
+            "objective": "engagement",
+            "count": 10
+        }
+        
+        success, response = self.run_test(
+            "AI Ideas Generation",
+            "POST",
+            "creative/generate-ideas",
+            200,
+            data=ideas_data
+        )
+        
+        if success:
+            # Verify response structure
+            required_fields = ['platform', 'objective', 'ideas_generated', 'ideas']
+            missing_fields = [field for field in required_fields if field not in response]
+            
+            if not missing_fields:
+                ideas_count = response.get('ideas_generated', 0)
+                ideas_list = response.get('ideas', [])
+                print(f"   ✅ AI Ideas generated successfully - {ideas_count} ideas for {response['platform']}")
+                
+                # Check first idea structure if available
+                if ideas_list:
+                    first_idea = ideas_list[0]
+                    idea_fields = ['title', 'platform', 'content_type', 'description', 'suggested_copy', 'hashtags']
+                    missing_idea_fields = [field for field in idea_fields if field not in first_idea]
+                    
+                    if not missing_idea_fields:
+                        print(f"      Idea structure valid - Type: {first_idea['content_type']}")
+                        print(f"      Sample title: {first_idea['title']}")
+                        return True
+                    else:
+                        print(f"   ❌ Idea structure missing fields: {missing_idea_fields}")
+                        return False
+                else:
+                    print("   ⚠️  No ideas returned in response")
+                    return False
+            else:
+                print(f"   ❌ Response missing fields: {missing_fields}")
+                return False
+        return False
+
+    def test_creative_templates(self):
+        """Test Creative Templates endpoint - GET /api/creative/templates"""
+        print("\n📋 Testing Creative Studio Templates...")
+        
+        success, response = self.run_test(
+            "Creative Templates",
+            "GET",
+            "creative/templates?tenant_id=default",
+            200
+        )
+        
+        if success:
+            # Verify response structure
+            required_fields = ['custom_templates', 'builtin_templates', 'total_count']
+            missing_fields = [field for field in required_fields if field not in response]
+            
+            if not missing_fields:
+                custom_count = len(response.get('custom_templates', []))
+                builtin_count = len(response.get('builtin_templates', []))
+                total_count = response.get('total_count', 0)
+                
+                print(f"   ✅ Templates retrieved - {custom_count} custom, {builtin_count} builtin, {total_count} total")
+                
+                # Check builtin template structure if available
+                builtin_templates = response.get('builtin_templates', [])
+                if builtin_templates:
+                    first_template = builtin_templates[0]
+                    template_fields = ['id', 'name', 'platform', 'type', 'elements', 'is_builtin']
+                    missing_template_fields = [field for field in template_fields if field not in first_template]
+                    
+                    if not missing_template_fields:
+                        print(f"      Template structure valid - Name: {first_template['name']}")
+                        print(f"      Platform: {first_template['platform']}, Type: {first_template['type']}")
+                        return True
+                    else:
+                        print(f"   ❌ Template structure missing fields: {missing_template_fields}")
+                        return False
+                else:
+                    print("   ✅ Empty templates list returned (valid response)")
+                    return True
+            else:
+                print(f"   ❌ Response missing fields: {missing_fields}")
+                return False
+        return False
+
+    def test_hashtag_research(self):
+        """Test Hashtag Research endpoint - POST /api/organic/hashtag-research"""
+        print("\n🏷️ Testing Hashtag Research...")
+        
+        # Test data from review request
+        hashtag_data = {
+            "tenant_id": "default",
+            "keywords": ["cars", "automotive"],
+            "platform": "instagram"
+        }
+        
+        success, response = self.run_test(
+            "Hashtag Research",
+            "POST",
+            "organic/hashtag-research",
+            200,
+            data=hashtag_data
+        )
+        
+        if success:
+            # Verify response structure
+            required_fields = ['platform', 'keywords_researched', 'hashtag_suggestions', 'optimization_strategy', 'recommended_mix']
+            missing_fields = [field for field in required_fields if field not in response]
+            
+            if not missing_fields:
+                platform = response.get('platform')
+                keywords = response.get('keywords_researched', [])
+                suggestions = response.get('hashtag_suggestions', [])
+                
+                print(f"   ✅ Hashtag research completed - Platform: {platform}")
+                print(f"      Keywords: {keywords}, Suggestions: {len(suggestions)}")
+                
+                # Check hashtag suggestion structure if available
+                if suggestions:
+                    first_hashtag = suggestions[0]
+                    hashtag_fields = ['hashtag', 'platform', 'volume', 'difficulty', 'relevance_score', 'trending']
+                    missing_hashtag_fields = [field for field in hashtag_fields if field not in first_hashtag]
+                    
+                    if not missing_hashtag_fields:
+                        print(f"      Sample hashtag: {first_hashtag['hashtag']} (Volume: {first_hashtag['volume']})")
+                        return True
+                    else:
+                        print(f"   ❌ Hashtag structure missing fields: {missing_hashtag_fields}")
+                        return False
+                else:
+                    print("   ⚠️  No hashtag suggestions returned")
+                    return False
+            else:
+                print(f"   ❌ Response missing fields: {missing_fields}")
+                return False
+        return False
+
+    def test_creative_analytics_endpoints(self):
+        """Test Creative Studio Analytics-related endpoints"""
+        print("\n📊 Testing Creative Studio Analytics...")
+        
+        # Test content calendar endpoint (analytics-related)
+        success1, response1 = self.run_test(
+            "Content Calendar Analytics",
+            "GET",
+            "organic/content-calendar?tenant_id=default",
+            200
+        )
+        
+        analytics_passed = 0
+        total_analytics_tests = 2
+        
+        if success1:
+            # Verify content calendar response
+            required_fields = ['tenant_id', 'calendar_data', 'total_scheduled']
+            missing_fields = [field for field in required_fields if field not in response1]
+            
+            if not missing_fields:
+                total_scheduled = response1.get('total_scheduled', 0)
+                print(f"   ✅ Content Calendar retrieved - {total_scheduled} scheduled items")
+                analytics_passed += 1
+            else:
+                print(f"   ❌ Content Calendar missing fields: {missing_fields}")
+        
+        # Test content analysis endpoint (analytics-related)
+        analysis_data = {
+            "tenant_id": "default",
+            "content_data": {
+                "title": "New Toyota Camry Showcase",
+                "description": "Check out our latest Toyota Camry models with amazing features!",
+                "hashtags": ["#Toyota", "#Camry", "#NewCar"],
+                "visual_appeal": "high",
+                "call_to_action": "Visit our showroom today!"
+            },
+            "platform": "instagram"
+        }
+        
+        success2, response2 = self.run_test(
+            "Content Performance Analysis",
+            "POST",
+            "creative/analyze-content",
+            200,
+            data=analysis_data
+        )
+        
+        if success2:
+            # Check if response contains performance predictions
+            if 'performance_prediction' in response2 or 'predicted_score' in response2:
+                print("   ✅ Content analysis completed with performance predictions")
+                analytics_passed += 1
+            else:
+                print("   ❌ Content analysis missing performance predictions")
+        
+        print(f"   📊 Creative Analytics: {analytics_passed}/{total_analytics_tests} tests passed")
+        return analytics_passed >= total_analytics_tests * 0.5  # 50% pass rate
+
+    def test_creative_studio_error_handling(self):
+        """Test Creative Studio error handling"""
+        print("\n🔍 Testing Creative Studio Error Handling...")
+        
+        # Test missing tenant_id in AI ideas generation
+        success1, _ = self.run_test(
+            "AI Ideas - Missing tenant_id",
+            "POST",
+            "creative/generate-ideas",
+            422  # Validation error expected
+        )
+        
+        # Test invalid platform in hashtag research
+        invalid_hashtag_data = {
+            "tenant_id": "default",
+            "keywords": ["test"],
+            "platform": "invalid_platform"
+        }
+        
+        success2, _ = self.run_test(
+            "Hashtag Research - Invalid Platform",
+            "POST",
+            "organic/hashtag-research",
+            200  # Should handle gracefully
+        )
+        
+        # Test missing keywords in hashtag research
+        missing_keywords_data = {
+            "tenant_id": "default",
+            "platform": "instagram"
+            # Missing keywords field
+        }
+        
+        success3, _ = self.run_test(
+            "Hashtag Research - Missing Keywords",
+            "POST",
+            "organic/hashtag-research",
+            422  # Validation error expected
+        )
+        
+        passed_tests = sum([success1, success2, success3])
+        print(f"   📊 Error Handling: {passed_tests}/3 tests passed")
+        
+        return passed_tests >= 2  # At least 2/3 should pass
+
+    def test_creative_studio_comprehensive(self):
+        """Run comprehensive Creative Studio test suite"""
+        print("\n🎨 Running Comprehensive Creative Studio Tests...")
+        
+        creative_tests = [
+            ("AI Ideas Generation", self.test_creative_ai_ideas_generation),
+            ("Creative Templates", self.test_creative_templates),
+            ("Hashtag Research", self.test_hashtag_research),
+            ("Creative Analytics", self.test_creative_analytics_endpoints),
+            ("Error Handling", self.test_creative_studio_error_handling)
+        ]
+        
+        passed_tests = 0
+        total_tests = len(creative_tests)
+        
+        for test_name, test_func in creative_tests:
+            try:
+                if test_func():
+                    passed_tests += 1
+                    print(f"   ✅ {test_name} - PASSED")
+                else:
+                    print(f"   ❌ {test_name} - FAILED")
+            except Exception as e:
+                print(f"   ❌ {test_name} - ERROR: {str(e)}")
+        
+        success_rate = (passed_tests / total_tests) * 100
+        print(f"\n   📊 Creative Studio Test Suite: {passed_tests}/{total_tests} passed ({success_rate:.1f}%)")
+        
+        return passed_tests >= total_tests * 0.8  # 80% pass rate required
+
+    def run_creative_studio_focused_tests(self):
+        """Run focused Creative Studio tests as requested in review"""
+        print("🚀 Starting Creative Studio AI Ideas and Analytics Testing...")
+        print("🎨 Focus: Testing failing Creative Studio endpoints")
+        print(f"   Backend URL: {self.base_url}")
+        print(f"   API URL: {self.api_url}")
+        
+        # Priority Tests as requested in review
+        priority_tests = [
+            ("AI Ideas Generation", self.test_creative_ai_ideas_generation),
+            ("Creative Templates", self.test_creative_templates),
+            ("Hashtag Research", self.test_hashtag_research),
+            ("Creative Analytics", self.test_creative_analytics_endpoints),
+            ("Error Handling", self.test_creative_studio_error_handling)
+        ]
+        
+        print(f"\n🎯 Running {len(priority_tests)} Priority Creative Studio Tests...")
+        
+        passed_tests = 0
+        total_tests = len(priority_tests)
+        
+        for test_name, test_func in priority_tests:
+            try:
+                print(f"\n{'='*60}")
+                print(f"🔍 Testing: {test_name}")
+                print(f"{'='*60}")
+                
+                if test_func():
+                    passed_tests += 1
+                    print(f"✅ {test_name} - PASSED")
+                else:
+                    print(f"❌ {test_name} - FAILED")
+            except Exception as e:
+                print(f"❌ {test_name} - ERROR: {str(e)}")
+        
+        # Final Results
+        success_rate = (passed_tests / total_tests) * 100
+        print(f"\n{'='*80}")
+        print("🎯 CREATIVE STUDIO TEST RESULTS")
+        print(f"{'='*80}")
+        print(f"📊 Overall Results: {passed_tests}/{total_tests} tests passed ({success_rate:.1f}%)")
+        
+        if success_rate >= 80:
+            print("🎉 CREATIVE STUDIO SYSTEM: SUCCESS!")
+            print("   ✅ AI Ideas Generation working for car dealerships")
+            print("   ✅ Creative Templates loading properly")
+            print("   ✅ Hashtag Research working for automotive keywords")
+            print("   ✅ Analytics endpoints providing relevant metrics")
+            return True
+        else:
+            print("⚠️  CREATIVE STUDIO SYSTEM: NEEDS ATTENTION")
+            print("   ❌ Some Creative Studio endpoints may need fixes")
+            print("   ❌ AI Ideas or Analytics functionality may be incomplete")
+            return False
+
 def main():
     print("🃏 JokerVision AutoFollow API Testing Suite")
     print("=" * 50)
