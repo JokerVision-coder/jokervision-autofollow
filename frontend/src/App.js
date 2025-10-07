@@ -1927,6 +1927,13 @@ const Navigation = () => {
               <BarChart className="w-4 h-4 mr-2" />
               Analytics Pro
             </Link>
+            <Link 
+              to="/mobile-app" 
+              className="text-glass hover:text-glass-bright font-medium transition-colors duration-200 flex items-center"
+            >
+              <Smartphone className="w-4 h-4 mr-2" />
+              Mobile App
+            </Link>
           </div>
         </div>
       </div>
