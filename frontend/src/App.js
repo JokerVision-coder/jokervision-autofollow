@@ -16,6 +16,7 @@ import { Switch } from './components/ui/switch';
 import { toast, Toaster } from 'sonner';
 import CreativeStudio from './CreativeStudio';
 import WebsiteBuilder from './WebsiteBuilder';
+import AdsManager from './AdsManager';
 import { 
   Users, MessageSquare, Calendar, BarChart3, Plus, Send, Bot, Phone, Mail, 
   DollarSign, Briefcase, Clock, Settings, Zap, TrendingUp, PhoneCall, MessageCircle,
