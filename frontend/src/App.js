@@ -2026,6 +2026,7 @@ function App() {
           <Route path="/voice-ai" element={<SimpleVoiceAI />} />
           <Route path="/predictive-analytics" element={<PredictiveAnalytics />} />
           <Route path="/ai-inbox" element={<AIInbox />} />
+          <Route path="/workflow-automation" element={<WorkflowAutomation />} />
         </Routes>
         <Toaster position="top-right" />
       </div>
