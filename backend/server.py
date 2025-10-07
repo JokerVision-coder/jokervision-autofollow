@@ -2169,7 +2169,7 @@ async def get_content_calendar(
         raise HTTPException(status_code=500, detail="Failed to retrieve content calendar")
 
 @api_router.post("/organic/hashtag-research")
-async def research_hashtags(tenant_id: str, keywords: List[str], platform: str):
+async def research_hashtags(request: dict):
     """Research and suggest optimal hashtags"""
     try:
         hashtag_suggestions = []
