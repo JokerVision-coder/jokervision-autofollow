@@ -1395,7 +1395,7 @@ const InventoryManagement = () => {
                     <SelectValue placeholder="Any" />
                   </SelectTrigger>
                   <SelectContent className="modal-glass">
-                    <SelectItem value="">Any</SelectItem>
+                    <SelectItem value="any">Any</SelectItem>
                     <SelectItem value="new">New</SelectItem>
                     <SelectItem value="used">Used</SelectItem>
                   </SelectContent>
