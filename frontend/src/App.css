@@ -221,6 +221,55 @@ button {
   color: rgba(255, 255, 255, 0.9) !important;
 }
 
+/* Select dropdown content and items */
+[role="option"], 
+.select-item, 
+[data-radix-collection-item] {
+  color: rgba(255, 255, 255, 0.95) !important;
+  background-color: rgba(15, 15, 35, 0.95) !important;
+}
+
+[role="option"]:hover, 
+.select-item:hover, 
+[data-radix-collection-item]:hover {
+  color: rgba(255, 255, 255, 1) !important;
+  background-color: rgba(102, 126, 234, 0.3) !important;
+}
+
+/* Select trigger text */
+[data-radix-select-trigger] {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Select content wrapper */
+[data-radix-select-content] {
+  background-color: rgba(15, 15, 35, 0.98) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Select viewport */
+[data-radix-select-viewport] {
+  background-color: rgba(15, 15, 35, 0.98) !important;
+}
+
+/* Specific filter dropdown styling */
+.filter-dropdown {
+  background-color: rgba(15, 15, 35, 0.95) !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+.filter-dropdown option {
+  background-color: rgba(15, 15, 35, 0.98) !important;
+  color: rgba(255, 255, 255, 0.95) !important;
+}
+
+.filter-dropdown option:hover {
+  background-color: rgba(102, 126, 234, 0.3) !important;
+  color: rgba(255, 255, 255, 1) !important;
+}
+
 /* Ensure all text elements have proper contrast */
 p, span, div {
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
