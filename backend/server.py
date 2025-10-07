@@ -6110,7 +6110,23 @@ async def predict_vehicle_demand(vehicle_data: dict):
         demand_prediction = await ml_engine.predict_inventory_demand(vehicle_data)
         
         return {
-            "vehicle": f"{vehicle_data.get('year', 'N/A')} {vehicle_data.get('make', 'N/A')} {vehicle_data.get('model', 'N/A')}",
+            "vehicle_info": {
+                "year": vehicle_data.get('year', 'N/A'),
+                "make": vehicle_data.get('make', 'N/A'),
+                "model": vehicle_data.get('model', 'N/A'),
+                "price": vehicle_data.get('price', 0),
+                "full_name": f"{vehicle_data.get('year', 'N/A')} {vehicle_data.get('make', 'N/A')} {vehicle_data.get('model', 'N/A')}"
+            },
+            "current_demand": demand_prediction.get('demand_score', 50),
+            "predicted_demand": demand_prediction.get('demand_score', 50),
+            "recommended_inventory": demand_prediction.get('predicted_days_to_sell', 35),
+            "demand_factors": [
+                f"Market category: {demand_prediction.get('market_category', 'Good')}",
+                f"Days to sell: {demand_prediction.get('predicted_days_to_sell', 35)}",
+                "Vehicle age and popularity analysis",
+                "Seasonal buying trends"
+            ],
+            "confidence_score": demand_prediction.get('confidence', 0.85),
             "demand_analysis": demand_prediction,
             "pricing_recommendation": {
                 "current_price": vehicle_data.get('price', 0),
