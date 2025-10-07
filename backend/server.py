@@ -8623,6 +8623,138 @@ async def notify_customer_match(request_id: str, vehicle_id: Optional[str] = Non
         raise HTTPException(status_code=500, detail="Failed to notify customer")
 
 # =============================================================================
+# ADVANCED WORKFLOW AUTOMATION SYSTEM
+# =============================================================================
+
+@api_router.post("/automation/trigger-workflow")
+async def trigger_workflow_automation(workflow_data: dict):
+    """Trigger advanced workflow automation based on conditions"""
+    try:
+        trigger_name = workflow_data.get("trigger", "")
+        trigger_data = workflow_data.get("data", {})
+        
+        if not trigger_name:
+            raise HTTPException(status_code=400, detail="Trigger name is required")
+        
+        workflow_engine = get_workflow_engine()
+        result = await workflow_engine.trigger_workflow(trigger_name, trigger_data)
+        
+        return {
+            "status": "workflow_triggered",
+            "automation": result,
+            "message": f"Workflow automation executed for trigger: {trigger_name}"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error triggering workflow automation: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to trigger workflow")
+
+@api_router.get("/automation/analytics")
+async def get_automation_analytics():
+    """Get workflow automation analytics and performance metrics"""
+    try:
+        workflow_engine = get_workflow_engine()
+        analytics = await workflow_engine.get_workflow_analytics()
+        
+        return {
+            "automation_analytics": analytics,
+            "system_status": "fully_operational",
+            "integration_features": {
+                "ai_inbox_integration": "Automated responses trigger follow-up workflows",
+                "ml_predictions_integration": "Lead scores trigger priority workflows", 
+                "voice_ai_integration": "Call completion triggers personalized actions",
+                "inventory_integration": "Demand forecasting triggers marketing automation",
+                "real_time_triggers": "Instant automation based on customer behavior"
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting automation analytics: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to get analytics")
+
+@api_router.post("/automation/create-workflow")
+async def create_custom_workflow(workflow_data: dict):
+    """Create custom automation workflow"""
+    try:
+        workflow_engine = get_workflow_engine()
+        result = await workflow_engine.create_custom_workflow(workflow_data)
+        
+        return {
+            "status": "workflow_created",
+            "workflow": result,
+            "message": "Custom automation workflow created successfully"
+        }
+        
+    except Exception as e:
+        logger.error(f"Error creating custom workflow: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to create workflow")
+
+@api_router.post("/automation/demo-scenarios")
+async def trigger_demo_automation_scenarios():
+    """Trigger demo automation scenarios to showcase capabilities"""
+    try:
+        results = []
+        
+        # Demo 1: High-value lead automation
+        high_value_lead = {
+            "customer_name": "Jennifer Park",
+            "customer_phone": "+1555987654", 
+            "ai_score": 94,
+            "budget": 45000,
+            "interested_vehicle": "2024 Toyota RAV4",
+            "urgency": "high"
+        }
+        
+        lead_result = await trigger_lead_workflow(high_value_lead)
+        if lead_result:
+            results.append(lead_result)
+        
+        # Demo 2: Hot inventory automation
+        hot_inventory = {
+            "vehicle_info": "2024 Honda CR-V",
+            "demand_score": 95,
+            "days_to_sell": 5,
+            "price": 34900,
+            "interested_customers": ["customer1", "customer2", "customer3"]
+        }
+        
+        inventory_result = await trigger_inventory_workflow(hot_inventory)
+        if inventory_result:
+            results.append(inventory_result)
+        
+        # Demo 3: Voice AI completion automation
+        voice_call_data = {
+            "customer_name": "Michael Rodriguez",
+            "call_satisfaction": 4.8,
+            "purchase_intent": 0.92,
+            "interested_vehicle": "2023 Ford F-150",
+            "call_duration": "6:45",
+            "next_steps": "Schedule test drive"
+        }
+        
+        voice_result = await trigger_voice_workflow(voice_call_data)
+        if voice_result:
+            results.append(voice_result)
+        
+        return {
+            "demo_status": "completed",
+            "scenarios_executed": len(results),
+            "automation_results": results,
+            "message": "Demo automation scenarios executed successfully",
+            "capabilities_demonstrated": [
+                "High-value lead instant response (SMS + Calendar + Manager Alert + Voice AI Call)",
+                "Hot inventory demand response (Website Feature + Social Boost + Customer Alerts)",
+                "Voice AI completion automation (Lead Creation + Personalized Offer + Test Drive)"
+            ]
+        }
+        
+    except Exception as e:
+        logger.error(f"Error triggering demo scenarios: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to trigger demo scenarios")
+
+# =============================================================================
 # REVOLUTIONARY REAL-TIME API ENDPOINTS
 # =============================================================================
 
