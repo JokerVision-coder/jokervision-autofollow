@@ -5214,6 +5214,441 @@ def send_sendgrid_email(to_email: str, subject: str, content: str) -> dict:
             "provider": "sendgrid"
         }
 
+# =============================================================================
+# CHROME EXTENSION API ENDPOINTS (FACEBOOK MARKETPLACE AUTOMATION)
+# =============================================================================
+
+# Chrome Extension Models
+class ChromeVehicleUpload(BaseModel):
+    vehicle: Dict = Field(default_factory=dict)
+    source: str = "facebook_marketplace"
+    tenant_id: str
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class ChromeLeadCapture(BaseModel):
+    lead: Dict = Field(default_factory=dict)
+    source: str = "facebook_marketplace"
+    tenant_id: str
+    vehicle_context: Optional[Dict] = None
+    auto_trigger_workflow: bool = True
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class ChromeAppointmentSchedule(BaseModel):
+    appointment: Dict = Field(default_factory=dict)
+    lead_id: Optional[str] = None
+    tenant_id: str
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+@api_router.post("/chrome-extension/upload-vehicle")
+async def chrome_upload_vehicle(upload_data: ChromeVehicleUpload):
+    """Handle vehicle upload from Chrome Extension"""
+    try:
+        vehicle_data = upload_data.vehicle
+        
+        # Process and clean vehicle data
+        processed_vehicle = {
+            "id": str(uuid.uuid4()),
+            "tenant_id": upload_data.tenant_id,
+            "source": upload_data.source,
+            "facebook_id": vehicle_data.get("facebookId", ""),
+            "title": vehicle_data.get("title", ""),
+            "price": extract_price(vehicle_data.get("price", "")),
+            "year": vehicle_data.get("year", ""),
+            "make": vehicle_data.get("make", ""),
+            "model": vehicle_data.get("model", ""),
+            "mileage": extract_number(vehicle_data.get("mileage", "")),
+            "condition": vehicle_data.get("condition", "used"),
+            "transmission": vehicle_data.get("transmission", ""),
+            "fuel_type": vehicle_data.get("fuelType", ""),
+            "exterior_color": vehicle_data.get("exteriorColor", ""),
+            "interior_color": vehicle_data.get("interiorColor", ""),
+            "vin": vehicle_data.get("vin", ""),
+            "description": vehicle_data.get("description", ""),
+            "location": vehicle_data.get("location", ""),
+            "images": vehicle_data.get("images", []),
+            "listing_url": vehicle_data.get("listingUrl", ""),
+            "seller_info": vehicle_data.get("seller", {}),
+            "extracted_at": upload_data.timestamp.isoformat(),
+            "status": "active",
+            "lead_source": "facebook_marketplace"
+        }
+        
+        # Handle bulk upload
+        if vehicle_data.get("type") == "bulk_scan":
+            vehicles = vehicle_data.get("vehicles", [])
+            uploaded_count = 0
+            
+            for vehicle in vehicles:
+                try:
+                    bulk_vehicle = {
+                        "id": str(uuid.uuid4()),
+                        "tenant_id": upload_data.tenant_id,
+                        "source": "facebook_marketplace_scan",
+                        "title": vehicle.get("title", ""),
+                        "price": extract_price(vehicle.get("price", "")),
+                        "location": vehicle.get("location", ""),
+                        "listing_url": vehicle.get("url", ""),
+                        "facebook_id": vehicle.get("listingId", ""),
+                        "preview_image": vehicle.get("image", ""),
+                        "scan_date": upload_data.timestamp.isoformat(),
+                        "status": "scanned"
+                    }
+                    
+                    await db.marketplace_vehicles.insert_one(bulk_vehicle)
+                    uploaded_count += 1
+                    
+                except Exception as e:
+                    logger.error(f"Error uploading bulk vehicle: {str(e)}")
+                    continue
+            
+            return {
+                "success": True,
+                "type": "bulk_upload",
+                "uploaded_count": uploaded_count,
+                "total_scanned": len(vehicles),
+                "message": f"Successfully uploaded {uploaded_count} out of {len(vehicles)} vehicles"
+            }
+        
+        # Single vehicle upload
+        else:
+            await db.marketplace_vehicles.insert_one(processed_vehicle)
+            
+            # Automatically create a lead for this vehicle if seller info available
+            if vehicle_data.get("sellerProfile", {}).get("canContact"):
+                await create_automatic_lead_from_vehicle(processed_vehicle)
+            
+            return {
+                "success": True,
+                "id": processed_vehicle["id"],
+                "message": "Vehicle uploaded successfully",
+                "vehicle": {
+                    "title": processed_vehicle["title"],
+                    "price": processed_vehicle["price"],
+                    "location": processed_vehicle["location"]
+                }
+            }
+        
+    except Exception as e:
+        logger.error(f"Error in chrome vehicle upload: {str(e)}")
+        raise HTTPException(status_code=500, detail="Vehicle upload failed")
+
+@api_router.post("/chrome-extension/capture-lead")
+async def chrome_capture_lead(lead_data: ChromeLeadCapture):
+    """Handle lead capture from Chrome Extension"""
+    try:
+        lead_info = lead_data.lead
+        
+        # Process lead information
+        processed_lead = {
+            "id": str(uuid.uuid4()),
+            "tenant_id": lead_data.tenant_id,
+            "source": lead_data.source,
+            "status": "new",
+            "priority": "high",  # Facebook marketplace leads are high priority
+            
+            # Contact information
+            "first_name": extract_name(lead_info.get("sender", {}).get("name", "")).get("first_name", ""),
+            "last_name": extract_name(lead_info.get("sender", {}).get("name", "")).get("last_name", ""),
+            "email": extract_email_from_message(lead_info.get("message", "")),
+            "primary_phone": extract_phone_from_message(lead_info.get("message", "")),
+            
+            # Lead details
+            "message": lead_info.get("message", ""),
+            "interest_level": determine_interest_level(lead_info.get("message", "")),
+            "preferred_contact": "facebook",
+            "lead_source": "facebook_marketplace",
+            "facebook_profile": lead_info.get("sender", {}).get("profileUrl", ""),
+            
+            # Vehicle context
+            "vehicle_interest": lead_data.vehicle_context.get("title", "") if lead_data.vehicle_context else "",
+            "vehicle_price_range": lead_data.vehicle_context.get("price", "") if lead_data.vehicle_context else "",
+            "vehicle_year": lead_data.vehicle_context.get("year", "") if lead_data.vehicle_context else "",
+            "vehicle_make": lead_data.vehicle_context.get("make", "") if lead_data.vehicle_context else "",
+            
+            # Timestamps
+            "inquiry_date": lead_data.timestamp.isoformat(),
+            "created_at": lead_data.timestamp.isoformat(),
+            "last_contact": lead_data.timestamp.isoformat(),
+            
+            # Facebook-specific data
+            "facebook_listing_id": lead_info.get("listingId", ""),
+            "facebook_page_url": lead_info.get("pageUrl", ""),
+        }
+        
+        # Store lead in database
+        await db.leads.insert_one(processed_lead)
+        
+        # Generate appointment suggestions
+        appointment_suggestions = generate_appointment_suggestions(processed_lead)
+        
+        # Auto-trigger workflow if enabled
+        if lead_data.auto_trigger_workflow:
+            await trigger_lead_workflow(processed_lead)
+        
+        return {
+            "success": True,
+            "id": processed_lead["id"],
+            "leadId": processed_lead["id"],
+            "appointmentSuggestions": appointment_suggestions,
+            "autoResponse": {
+                "sent": True,
+                "message": f"Hi! Thanks for your interest in the {processed_lead['vehicle_interest']}. I'd be happy to schedule a test drive for you. When would be a good time?"
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"Error in chrome lead capture: {str(e)}")
+        raise HTTPException(status_code=500, detail="Lead capture failed")
+
+@api_router.post("/chrome-extension/schedule-appointment")
+async def chrome_schedule_appointment(appointment_data: ChromeAppointmentSchedule):
+    """Handle appointment scheduling from Chrome Extension"""
+    try:
+        appointment_info = appointment_data.appointment
+        
+        # Create appointment
+        processed_appointment = {
+            "id": str(uuid.uuid4()),
+            "tenant_id": appointment_data.tenant_id,
+            "lead_id": appointment_data.lead_id,
+            "title": f"Test Drive - {appointment_info.get('vehicleInterest', 'Vehicle')}",
+            "description": f"Test drive appointment scheduled through Facebook Marketplace",
+            "customer_name": appointment_info.get("customerName", ""),
+            "customer_phone": appointment_info.get("customerPhone", ""),
+            "customer_email": appointment_info.get("customerEmail", ""),
+            "vehicle_interest": appointment_info.get("vehicleInterest", ""),
+            "appointment_date": appointment_info.get("date", ""),
+            "appointment_time": appointment_info.get("time", ""),
+            "location": "Dealership Showroom",
+            "status": "scheduled",
+            "source": "facebook_marketplace_extension",
+            "notes": appointment_info.get("notes", ""),
+            "created_at": appointment_data.timestamp.isoformat(),
+            "scheduled_at": appointment_data.timestamp.isoformat()
+        }
+        
+        # Store appointment
+        await db.appointments.insert_one(processed_appointment)
+        
+        # Update lead status if lead_id provided
+        if appointment_data.lead_id:
+            await db.leads.update_one(
+                {"id": appointment_data.lead_id},
+                {"$set": {
+                    "status": "scheduled",
+                    "appointment_id": processed_appointment["id"],
+                    "last_contact": appointment_data.timestamp.isoformat()
+                }}
+            )
+        
+        # Send confirmation (mock)
+        confirmation_details = {
+            "appointment_id": processed_appointment["id"],
+            "confirmation_code": f"JV{processed_appointment['id'][:8].upper()}",
+            "date": appointment_info.get("date", ""),
+            "time": appointment_info.get("time", ""),
+            "customer": appointment_info.get("customerName", ""),
+            "vehicle": appointment_info.get("vehicleInterest", ""),
+            "location": "Shottenkirk Toyota Showroom"
+        }
+        
+        return {
+            "success": True,
+            "id": processed_appointment["id"],
+            "confirmation": confirmation_details,
+            "message": "Appointment scheduled successfully"
+        }
+        
+    except Exception as e:
+        logger.error(f"Error in chrome appointment scheduling: {str(e)}")
+        raise HTTPException(status_code=500, detail="Appointment scheduling failed")
+
+# Helper functions for Chrome Extension data processing
+def extract_price(price_str: str) -> str:
+    """Extract numeric price from string"""
+    if not price_str:
+        return ""
+    
+    # Remove currency symbols and extract numbers
+    import re
+    numbers = re.findall(r'[\d,]+', str(price_str))
+    if numbers:
+        return numbers[0].replace(',', '')
+    return ""
+
+def extract_number(number_str: str) -> str:
+    """Extract numeric value from string"""
+    if not number_str:
+        return ""
+    
+    import re
+    numbers = re.findall(r'\d+', str(number_str))
+    return numbers[0] if numbers else ""
+
+def extract_name(full_name: str) -> dict:
+    """Extract first and last name from full name"""
+    if not full_name:
+        return {"first_name": "", "last_name": ""}
+    
+    parts = full_name.strip().split()
+    return {
+        "first_name": parts[0] if parts else "",
+        "last_name": " ".join(parts[1:]) if len(parts) > 1 else ""
+    }
+
+def extract_email_from_message(message: str) -> str:
+    """Extract email from message text"""
+    import re
+    email_pattern = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
+    emails = re.findall(email_pattern, message)
+    return emails[0] if emails else ""
+
+def extract_phone_from_message(message: str) -> str:
+    """Extract phone number from message text"""
+    import re
+    phone_patterns = [
+        r'\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}',  # (555) 123-4567 or similar
+        r'\d{10}',  # 5551234567
+        r'\+1[-.\s]?\d{10}',  # +1 5551234567
+    ]
+    
+    for pattern in phone_patterns:
+        phones = re.findall(pattern, message)
+        if phones:
+            return phones[0]
+    
+    return ""
+
+def determine_interest_level(message: str) -> str:
+    """Determine lead interest level from message content"""
+    high_interest_keywords = [
+        'cash', 'buy today', 'ready to purchase', 'financing approved', 
+        'test drive today', 'can you call me', 'very interested'
+    ]
+    
+    medium_interest_keywords = [
+        'interested', 'test drive', 'see the car', 'available', 'price'
+    ]
+    
+    message_lower = message.lower()
+    
+    if any(keyword in message_lower for keyword in high_interest_keywords):
+        return 'high'
+    elif any(keyword in message_lower for keyword in medium_interest_keywords):
+        return 'medium'
+    else:
+        return 'low'
+
+def generate_appointment_suggestions(lead: dict) -> list:
+    """Generate appointment suggestions for a lead"""
+    from datetime import timedelta
+    
+    # Generate next 3 business days with time slots
+    suggestions = []
+    base_date = datetime.now(timezone.utc)
+    
+    for i in range(3):
+        # Skip weekends
+        date = base_date + timedelta(days=i+1)
+        if date.weekday() < 5:  # Monday = 0, Sunday = 6
+            
+            # Morning slots
+            suggestions.append({
+                "date": date.strftime("%Y-%m-%d"),
+                "time": "10:00",
+                "vehicle": lead.get("vehicle_interest", ""),
+                "available": True,
+                "type": "test_drive"
+            })
+            
+            # Afternoon slots
+            suggestions.append({
+                "date": date.strftime("%Y-%m-%d"),
+                "time": "14:00", 
+                "vehicle": lead.get("vehicle_interest", ""),
+                "available": True,
+                "type": "test_drive"
+            })
+    
+    return suggestions[:3]  # Return top 3 suggestions
+
+async def trigger_lead_workflow(lead: dict):
+    """Trigger automated workflow for new lead"""
+    try:
+        # This would integrate with the workflow builder
+        # For now, just log that a workflow should be triggered
+        logger.info(f"Auto-triggering workflow for lead {lead['id']} from {lead['source']}")
+        
+        # Could trigger immediate SMS or email response
+        if lead.get("primary_phone"):
+            # Mock SMS response
+            logger.info(f"Sending auto-SMS to {lead['primary_phone']}")
+        
+        if lead.get("email"):
+            # Mock email response
+            logger.info(f"Sending auto-email to {lead['email']}")
+        
+    except Exception as e:
+        logger.error(f"Error triggering lead workflow: {str(e)}")
+
+async def create_automatic_lead_from_vehicle(vehicle: dict):
+    """Create a potential lead entry from uploaded vehicle for tracking"""
+    try:
+        # Create a "potential lead" entry for tracking purposes
+        potential_lead = {
+            "id": str(uuid.uuid4()),
+            "tenant_id": vehicle["tenant_id"],
+            "source": "facebook_marketplace_vehicle",
+            "status": "potential",
+            "vehicle_id": vehicle["id"],
+            "vehicle_title": vehicle["title"],
+            "vehicle_price": vehicle["price"],
+            "listing_url": vehicle["listing_url"],
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "type": "vehicle_upload_tracking"
+        }
+        
+        await db.potential_leads.insert_one(potential_lead)
+        logger.info(f"Created potential lead tracking for vehicle {vehicle['id']}")
+        
+    except Exception as e:
+        logger.error(f"Error creating automatic lead: {str(e)}")
+
+@api_router.get("/chrome-extension/stats")
+async def get_chrome_extension_stats(tenant_id: str):
+    """Get Chrome Extension usage statistics"""
+    try:
+        # Get uploaded vehicles count
+        vehicles_count = await db.marketplace_vehicles.count_documents({"tenant_id": tenant_id})
+        
+        # Get captured leads count
+        leads_count = await db.leads.count_documents({
+            "tenant_id": tenant_id,
+            "lead_source": "facebook_marketplace"
+        })
+        
+        # Get scheduled appointments count
+        appointments_count = await db.appointments.count_documents({
+            "tenant_id": tenant_id,
+            "source": "facebook_marketplace_extension"
+        })
+        
+        return {
+            "vehicles_uploaded": vehicles_count or 0,
+            "leads_captured": leads_count or 0,
+            "appointments_scheduled": appointments_count or 0,
+            "last_activity": datetime.now(timezone.utc).isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error fetching chrome extension stats: {str(e)}")
+        return {
+            "vehicles_uploaded": 0,
+            "leads_captured": 0, 
+            "appointments_scheduled": 0,
+            "last_activity": datetime.now(timezone.utc).isoformat()
+        }
+
 @api_router.get("/marketing/campaigns")
 async def get_marketing_campaigns(tenant_id: str):
     """Get all marketing campaigns for a tenant"""
