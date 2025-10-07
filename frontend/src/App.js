@@ -1866,6 +1866,8 @@ function App() {
           <Route path="/inventory" element={<InventoryManagement />} />
           <Route path="/websites" element={<WebsiteBuilder />} />
           <Route path="/ads" element={<AdsManager />} />
+          <Route path="/communications" element={<Communications />} />
+          <Route path="/pipeline" element={<SalesPipeline />} />
         </Routes>
         <Toaster position="top-right" />
       </div>
