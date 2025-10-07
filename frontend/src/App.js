@@ -1850,6 +1850,7 @@ function App() {
           <Route path="/creative" element={<CreativeStudio />} />
           <Route path="/inventory" element={<InventoryManagement />} />
           <Route path="/websites" element={<WebsiteBuilder />} />
+          <Route path="/ads" element={<AdsManager />} />
         </Routes>
         <Toaster position="top-right" />
       </div>
