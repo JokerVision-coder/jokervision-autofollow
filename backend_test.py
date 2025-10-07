@@ -3912,21 +3912,17 @@ Vehicle Type: sedan"""
         
         # Test content analysis endpoint (analytics-related)
         analysis_data = {
-            "tenant_id": "default",
-            "content_data": {
-                "title": "New Toyota Camry Showcase",
-                "description": "Check out our latest Toyota Camry models with amazing features!",
-                "hashtags": ["#Toyota", "#Camry", "#NewCar"],
-                "visual_appeal": "high",
-                "call_to_action": "Visit our showroom today!"
-            },
-            "platform": "instagram"
+            "title": "New Toyota Camry Showcase",
+            "description": "Check out our latest Toyota Camry models with amazing features!",
+            "hashtags": ["#Toyota", "#Camry", "#NewCar"],
+            "visual_appeal": "high",
+            "call_to_action": "Visit our showroom today!"
         }
         
         success2, response2 = self.run_test(
             "Content Performance Analysis",
             "POST",
-            "creative/analyze-content",
+            "creative/analyze-content?tenant_id=default&platform=instagram",
             200,
             data=analysis_data
         )
