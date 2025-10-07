@@ -3753,20 +3753,12 @@ Vehicle Type: sedan"""
         """Test AI Ideas Generation endpoint - POST /api/creative/generate-ideas"""
         print("\n🎨 Testing Creative Studio AI Ideas Generation...")
         
-        # Test data from review request
-        ideas_data = {
-            "tenant_id": "default",
-            "platform": "instagram", 
-            "objective": "engagement",
-            "count": 10
-        }
-        
+        # Test data from review request - using query parameters
         success, response = self.run_test(
             "AI Ideas Generation",
             "POST",
-            "creative/generate-ideas",
-            200,
-            data=ideas_data
+            "creative/generate-ideas?tenant_id=default&platform=instagram&objective=engagement&count=10",
+            200
         )
         
         if success:
