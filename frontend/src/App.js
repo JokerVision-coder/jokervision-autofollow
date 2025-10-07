@@ -1961,6 +1961,13 @@ const Navigation = () => {
               <Bot className="w-4 h-4 mr-2" />
               AI Bot System
             </Link>
+            <Link 
+              to="/voice-ai" 
+              className="text-glass hover:text-glass-bright font-medium transition-colors duration-200 flex items-center"
+            >
+              <Mic className="w-4 h-4 mr-2" />
+              Voice AI
+            </Link>
           </div>
         </div>
       </div>
