@@ -1972,6 +1972,8 @@ function App() {
           <Route path="/voice" element={<VoiceIntegration />} />
           <Route path="/analytics" element={<AdvancedAnalytics />} />
           <Route path="/mobile-app" element={<MobileApp />} />
+          <Route path="/walk-in-tracker" element={<WalkInTracker />} />
+          <Route path="/vehicle-wishlist" element={<VehicleWishlist />} />
         </Routes>
         <Toaster position="top-right" />
       </div>
