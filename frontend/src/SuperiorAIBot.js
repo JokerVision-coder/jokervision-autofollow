@@ -201,6 +201,18 @@ const SuperiorAIBot = () => {
     }
   };
 
+  // Add this function that was missing
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'Hot Lead': return 'bg-red-600 text-white';
+      case 'Scheduled': return 'bg-blue-600 text-white';
+      case 'Converted': return 'bg-green-600 text-white';
+      case 'Nurturing': return 'bg-yellow-600 text-white';
+      case 'Active': return 'bg-purple-600 text-white';
+      default: return 'bg-gray-600 text-white';
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
