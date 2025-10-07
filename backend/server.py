@@ -8675,44 +8675,16 @@ async def get_realtime_stats():
 async def trigger_realtime_demo():
     """Trigger demo real-time events for testing"""
     try:
-        connection_manager = get_connection_manager()
-        
-        # Trigger demo lead update
-        demo_lead = {
-            "name": "Alex Thompson (Demo)",
-            "source": "Voice AI Call",
-            "ai_score": 94,
-            "phone": "+1 (555) 123-9876"
-        }
-        await trigger_real_time_lead_update(demo_lead)
-        
-        # Trigger demo Voice AI completion
-        demo_call = {
-            "duration": "4:23",
-            "satisfaction": 4.9,
-            "lead_quality": "Excellent",
-            "follow_up_required": True,
-            "ai_insights": "Customer ready to purchase 2024 Toyota RAV4 - schedule test drive today"
-        }
-        await trigger_voice_ai_completion(demo_call)
-        
-        # Send AI alert
-        ai_alert = {
-            "type": "ai_alert",
-            "data": {
-                "alert_type": "conversion_opportunity",
-                "message": "Customer browsing patterns indicate immediate purchase intent",
-                "confidence": 96,
-                "action": "Deploy personalized offer within 10 minutes"
-            },
-            "timestamp": datetime.now(timezone.utc).isoformat()
-        }
-        await connection_manager.broadcast_to_topic(ai_alert, "ai_alerts")
-        
         return {
-            "status": "demo_triggered",
-            "events_sent": 3,
-            "message": "Demo real-time events have been broadcast to all connected clients"
+            "status": "demo_ready",
+            "events_sent": 0,
+            "message": "Real-time demo system ready - WebSocket implementation in progress",
+            "demo_features": [
+                "Real-time lead alerts",
+                "Voice AI completion notifications",
+                "AI-powered market insights",
+                "Dynamic inventory updates"
+            ]
         }
         
     except Exception as e:
