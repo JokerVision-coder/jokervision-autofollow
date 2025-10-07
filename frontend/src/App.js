@@ -34,7 +34,7 @@ import SuperiorInventorySystem from './SuperiorInventorySystem';
 import WalkInTracker from './WalkInTracker';
 import VehicleWishlist from './VehicleWishlist';
 import SimpleAIBot from './SimpleAIBot';
-import RevolutionaryVoiceChat from './RevolutionaryVoiceChat';
+import SimpleVoiceAI from './SimpleVoiceAI';
 import { 
   Users, MessageSquare, Calendar, BarChart3, Plus, Send, Bot, Phone, Mail, 
   DollarSign, Briefcase, Clock, Settings, Zap, TrendingUp, PhoneCall, MessageCircle,
