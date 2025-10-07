@@ -1990,6 +1990,7 @@ function App() {
           <Route path="/mobile-app" element={<MobileApp />} />
           <Route path="/walk-in-tracker" element={<WalkInTracker />} />
           <Route path="/vehicle-wishlist" element={<VehicleWishlist />} />
+          <Route path="/ai-bot" element={<SuperiorAIBot />} />
         </Routes>
         <Toaster position="top-right" />
       </div>
