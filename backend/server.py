@@ -5642,8 +5642,8 @@ def generate_appointment_suggestions(lead: dict) -> list:
     
     return suggestions[:3]  # Return top 3 suggestions
 
-async def trigger_lead_workflow(lead: dict):
-    """Trigger automated workflow for new lead"""
+async def trigger_local_lead_workflow(lead: dict):
+    """Trigger local automated workflow for new lead (renamed to avoid conflict)"""
     try:
         # This would integrate with the workflow builder
         # For now, just log that a workflow should be triggered
