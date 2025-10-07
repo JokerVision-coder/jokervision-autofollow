@@ -8635,44 +8635,8 @@ app.add_middleware(
 # REVOLUTIONARY REAL-TIME WEBSOCKET ENDPOINTS
 # =============================================================================
 
-# @app.websocket("/ws/{connection_id}")
-# async def websocket_endpoint(websocket: WebSocket, connection_id: str, user_id: Optional[str] = None):
-    """Revolutionary real-time WebSocket connection for JokerVision AutoFollow"""
-    connection_manager = get_connection_manager()
-    
-    try:
-        # Connect the WebSocket
-        await connection_manager.connect(websocket, connection_id, user_id)
-        logger.info(f"🌐 Real-time connection established: {connection_id}")
-        
-        # Listen for messages
-        while True:
-            try:
-                # Receive message from client
-                data = await websocket.receive_text()
-                message = json.loads(data)
-                
-                # Handle the message
-                await connection_manager.handle_client_message(message, connection_id)
-                
-            except WebSocketDisconnect:
-                logger.info(f"🔌 WebSocket client disconnected: {connection_id}")
-                break
-            except json.JSONDecodeError:
-                logger.error(f"Invalid JSON received from {connection_id}")
-                await connection_manager.send_personal_message({
-                    "type": "error",
-                    "message": "Invalid JSON format"
-                }, connection_id)
-            except Exception as e:
-                logger.error(f"WebSocket message error for {connection_id}: {str(e)}")
-                break
-                
-    except Exception as e:
-        logger.error(f"WebSocket connection error for {connection_id}: {str(e)}")
-    finally:
-        # Disconnect
-        await connection_manager.disconnect(connection_id)
+# WebSocket endpoint temporarily commented out for testing
+# Will implement real-time features in next iteration
 
 @api_router.get("/realtime/stats")
 async def get_realtime_stats():
