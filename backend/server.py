@@ -6257,6 +6257,7 @@ async def create_workflow(workflow: Workflow):
     try:
         # Store workflow in database
         workflow_doc = workflow.dict()
+        workflow_doc['created_at'] = workflow_doc['created_at'].isoformat()
         await db.workflows.insert_one(workflow_doc)
         
         logger.info(f"Created workflow: {workflow.name}")
