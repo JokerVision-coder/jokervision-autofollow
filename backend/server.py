@@ -17,6 +17,7 @@ import asyncio
 import random
 from fastapi import BackgroundTasks
 from inventory_scraper import ShottenkilkInventoryScraper
+from ml_models import get_ml_engine
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
