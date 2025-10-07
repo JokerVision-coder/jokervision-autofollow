@@ -6344,7 +6344,7 @@ async def get_predictive_insights_dashboard(tenant_id: str = Query(None)):
         raise HTTPException(status_code=500, detail="Failed to generate insights")
 
 @api_router.post("/ml/train-models")
-async def train_ml_models(tenant_id: str, background_tasks: BackgroundTasks):
+async def train_ml_models(background_tasks: BackgroundTasks, tenant_id: str = Query(...)):
     """Trigger ML model training with current data"""
     try:
         # Get training data
