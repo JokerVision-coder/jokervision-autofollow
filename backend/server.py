@@ -4074,6 +4074,265 @@ async def get_linkedin_ads(tenant_id: str):
         raise HTTPException(status_code=500, detail="Failed to fetch LinkedIn ads")
 
 # =============================================================================
+# COMMUNICATIONS HUB API ENDPOINTS
+# =============================================================================
+
+class Conversation(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    tenant_id: str
+    contact_id: str
+    channel: str  # sms, email, facebook, instagram, whatsapp, phone, google
+    contact: Dict
+    last_message: Optional[str] = None
+    last_message_time: Optional[datetime] = None
+    unread_count: int = 0
+    status: str = "active"  # active, archived, closed
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class Message(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    conversation_id: str
+    content: str
+    type: str  # inbound, outbound
+    sender: str
+    channel: str
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    read_status: bool = False
+
+@api_router.get("/communications/conversations")
+async def get_conversations(tenant_id: str, channel: str = "all"):
+    """Get conversations for unified inbox"""
+    try:
+        # Mock conversation data for demonstration
+        mock_conversations = [
+            {
+                "id": "conv_1",
+                "tenant_id": tenant_id,
+                "contact": {"name": "Sarah Johnson", "phone": "+1-555-0123"},
+                "channel": "sms",
+                "last_message": "Interested in the 2025 Camry",
+                "last_message_time": datetime.now(timezone.utc).isoformat(),
+                "unread_count": 2,
+                "status": "active"
+            },
+            {
+                "id": "conv_2", 
+                "tenant_id": tenant_id,
+                "contact": {"name": "Mike Rodriguez", "email": "mike@email.com"},
+                "channel": "email",
+                "last_message": "What financing options do you have?",
+                "last_message_time": (datetime.now(timezone.utc) - timedelta(minutes=15)).isoformat(),
+                "unread_count": 0,
+                "status": "active"
+            },
+            {
+                "id": "conv_3",
+                "tenant_id": tenant_id,
+                "contact": {"name": "Facebook User", "phone": "fb_user_123"},
+                "channel": "facebook",
+                "last_message": "Do you have RAV4 in stock?",
+                "last_message_time": (datetime.now(timezone.utc) - timedelta(hours=1)).isoformat(),
+                "unread_count": 1,
+                "status": "active"
+            }
+        ]
+        
+        if channel != "all":
+            mock_conversations = [c for c in mock_conversations if c["channel"] == channel]
+        
+        return {"conversations": mock_conversations}
+    except Exception as e:
+        logger.error(f"Error fetching conversations: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch conversations")
+
+@api_router.get("/communications/conversations/{conversation_id}/messages")
+async def get_conversation_messages(conversation_id: str):
+    """Get messages for a specific conversation"""
+    try:
+        # Mock messages data
+        mock_messages = [
+            {
+                "id": "msg_1",
+                "conversation_id": conversation_id,
+                "content": "Hi, I'm interested in the 2025 Toyota Camry. Do you have any in stock?",
+                "type": "inbound",
+                "sender": "Customer",
+                "channel": "sms",
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "read_status": True
+            },
+            {
+                "id": "msg_2",
+                "conversation_id": conversation_id,
+                "content": "Hello! Yes, we have several 2025 Camry models available. What trim level are you interested in?",
+                "type": "outbound", 
+                "sender": "You",
+                "channel": "sms",
+                "timestamp": (datetime.now(timezone.utc) - timedelta(minutes=2)).isoformat(),
+                "read_status": True
+            }
+        ]
+        return {"messages": mock_messages}
+    except Exception as e:
+        logger.error(f"Error fetching messages: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch messages")
+
+@api_router.post("/communications/conversations/{conversation_id}/messages")
+async def send_message(conversation_id: str, message_data: dict):
+    """Send a message in a conversation"""
+    try:
+        # In production, this would actually send the message via the appropriate channel
+        message = Message(
+            conversation_id=conversation_id,
+            content=message_data["content"],
+            type=message_data["type"],
+            sender="You",
+            channel="sms"  # Would be determined by conversation
+        )
+        
+        # Store message (mock)
+        logger.info(f"Message sent in conversation {conversation_id}: {message_data['content']}")
+        return {"status": "sent", "message_id": message.id}
+    except Exception as e:
+        logger.error(f"Error sending message: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to send message")
+
+# =============================================================================
+# SALES PIPELINE API ENDPOINTS  
+# =============================================================================
+
+class PipelineStage(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    tenant_id: str
+    name: str
+    color: str
+    order: int
+    automation_enabled: bool = False
+    automation_actions: List[str] = Field(default_factory=list)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+@api_router.get("/pipeline/stages")
+async def get_pipeline_stages(tenant_id: str):
+    """Get pipeline stages for a tenant"""
+    try:
+        # Mock pipeline stages
+        mock_stages = [
+            {
+                "id": "new",
+                "tenant_id": tenant_id,
+                "name": "New Leads",
+                "color": "bg-blue-600",
+                "order": 1,
+                "automation_enabled": True,
+                "automation_actions": ["send_welcome_sms", "assign_to_rep"]
+            },
+            {
+                "id": "contacted", 
+                "tenant_id": tenant_id,
+                "name": "Contacted",
+                "color": "bg-yellow-600",
+                "order": 2,
+                "automation_enabled": True,
+                "automation_actions": ["schedule_follow_up"]
+            },
+            {
+                "id": "qualified",
+                "tenant_id": tenant_id,
+                "name": "Qualified",
+                "color": "bg-orange-600",
+                "order": 3,
+                "automation_enabled": True,
+                "automation_actions": ["send_vehicle_info"]
+            },
+            {
+                "id": "appointment",
+                "tenant_id": tenant_id,
+                "name": "Appointment Set",
+                "color": "bg-purple-600", 
+                "order": 4,
+                "automation_enabled": True,
+                "automation_actions": ["send_appointment_reminder"]
+            },
+            {
+                "id": "negotiating",
+                "tenant_id": tenant_id,
+                "name": "Negotiating",
+                "color": "bg-red-600",
+                "order": 5,
+                "automation_enabled": False,
+                "automation_actions": []
+            },
+            {
+                "id": "closed_won",
+                "tenant_id": tenant_id,
+                "name": "Closed Won",
+                "color": "bg-green-600",
+                "order": 6,
+                "automation_enabled": True,
+                "automation_actions": ["send_thank_you", "schedule_delivery"]
+            },
+            {
+                "id": "closed_lost",
+                "tenant_id": tenant_id,
+                "name": "Closed Lost", 
+                "color": "bg-gray-600",
+                "order": 7,
+                "automation_enabled": False,
+                "automation_actions": []
+            }
+        ]
+        return {"stages": mock_stages}
+    except Exception as e:
+        logger.error(f"Error fetching pipeline stages: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch pipeline stages")
+
+@api_router.get("/pipeline/stats")
+async def get_pipeline_stats(tenant_id: str):
+    """Get pipeline statistics"""
+    try:
+        # Mock pipeline stats
+        stats = {
+            "total_leads": 47,
+            "conversion_rate": 24.5,
+            "avg_deal_size": 38500,
+            "pipeline_velocity": 14.2,
+            "monthly_revenue": 425000,
+            "deals_closed": 12
+        }
+        return stats
+    except Exception as e:
+        logger.error(f"Error fetching pipeline stats: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch pipeline stats")
+
+@api_router.post("/pipeline/automation/trigger")
+async def trigger_pipeline_automation(automation_data: dict):
+    """Trigger automation when lead moves to new stage"""
+    try:
+        lead_id = automation_data["lead_id"] 
+        stage_id = automation_data["stage_id"]
+        
+        # Mock automation triggers
+        automations = {
+            "new": ["Send welcome SMS", "Assign to sales rep"],
+            "contacted": ["Schedule 24-hour follow-up"],
+            "qualified": ["Send vehicle information packet"],
+            "appointment": ["Send appointment reminder", "Calendar notification"],
+            "closed_won": ["Send thank you message", "Schedule delivery"]
+        }
+        
+        actions = automations.get(stage_id, [])
+        logger.info(f"Triggered automation for lead {lead_id} in stage {stage_id}: {actions}")
+        
+        return {
+            "status": "success",
+            "actions_triggered": actions,
+            "message": f"Automation triggered for {stage_id} stage"
+        }
+    except Exception as e:
+        logger.error(f"Error triggering automation: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to trigger automation")
+
+# =============================================================================
 # WEBSITE BUILDER API ENDPOINTS
 # =============================================================================
 
