@@ -28,6 +28,16 @@ class JokerVisionBackground {
             return true; // Keep message channel open for async responses
         });
 
+        // Handle context menu clicks for Facebook Marketplace
+        chrome.contextMenus.onClicked.addListener((info, tab) => {
+            this.handleContextMenuClick(info, tab);
+        });
+
+        // Handle notification button clicks for appointment scheduling
+        chrome.notifications.onButtonClicked.addListener((notificationId, buttonIndex) => {
+            this.handleNotificationButtonClick(notificationId, buttonIndex);
+        });
+
         // Handle web requests for API interception
         chrome.webRequest.onBeforeRequest.addListener(
             (details) => this.interceptApiRequests(details),
