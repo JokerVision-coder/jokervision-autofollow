@@ -1855,6 +1855,13 @@ const Navigation = () => {
               <Send className="w-4 h-4 mr-2" />
               Mass Marketing
             </Link>
+            <Link 
+              to="/social" 
+              className="text-glass hover:text-glass-bright font-medium transition-colors duration-200 flex items-center"
+            >
+              <MessageSquare className="w-4 h-4 mr-2" />
+              Social Media
+            </Link>
           </div>
         </div>
       </div>
