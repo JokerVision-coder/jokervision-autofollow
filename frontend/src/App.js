@@ -1999,6 +1999,7 @@ function App() {
           <Route path="/walk-in-tracker" element={<WalkInTracker />} />
           <Route path="/vehicle-wishlist" element={<VehicleWishlist />} />
           <Route path="/ai-bot" element={<SimpleAIBot />} />
+          <Route path="/voice-ai" element={<RevolutionaryVoiceChat />} />
         </Routes>
         <Toaster position="top-right" />
       </div>
