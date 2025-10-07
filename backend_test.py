@@ -2988,6 +2988,305 @@ Vehicle Type: sedan"""
             print("   ❌ Integration issues detected")
             return False
 
+    # =============================================================================
+    # INTELLIGENT WORKFLOW AUTOMATION SYSTEM TESTS
+    # =============================================================================
+
+    def test_automation_analytics(self):
+        """Test GET /api/automation/analytics endpoint"""
+        success, response = self.run_test(
+            "Workflow Automation Analytics",
+            "GET",
+            "automation/analytics",
+            200
+        )
+        
+        if success:
+            # Verify analytics structure
+            required_fields = ['automation_analytics', 'system_status', 'integration_features']
+            missing_fields = [field for field in required_fields if field not in response]
+            
+            if not missing_fields:
+                analytics = response.get('automation_analytics', {})
+                system_status = response.get('system_status')
+                
+                # Check analytics content
+                analytics_fields = ['automation_engine', 'total_workflows', 'success_rate', 'available_triggers']
+                analytics_missing = [field for field in analytics_fields if field not in analytics]
+                
+                if not analytics_missing and system_status == 'fully_operational':
+                    print(f"   ✅ Analytics retrieved - Engine: {analytics.get('automation_engine')}")
+                    print(f"      Total workflows: {analytics.get('total_workflows', 0)}")
+                    print(f"      Success rate: {analytics.get('success_rate', 0)}%")
+                    print(f"      Available triggers: {len(analytics.get('available_triggers', []))}")
+                    return True
+                else:
+                    print(f"   ❌ Analytics missing fields: {analytics_missing}")
+                    return False
+            else:
+                print(f"   ❌ Response missing fields: {missing_fields}")
+                return False
+        return False
+
+    def test_trigger_workflow_lead_score(self):
+        """Test POST /api/automation/trigger-workflow with lead score trigger"""
+        workflow_data = {
+            "trigger": "lead_score_above_85",
+            "data": {
+                "customer_name": "Jennifer Park",
+                "customer_phone": "+1555987654",
+                "ai_score": 94,
+                "budget": 45000,
+                "interested_vehicle": "2024 Toyota RAV4",
+                "urgency": "high"
+            }
+        }
+        
+        success, response = self.run_test(
+            "Trigger Workflow - High Value Lead",
+            "POST",
+            "automation/trigger-workflow",
+            200,
+            data=workflow_data
+        )
+        
+        if success:
+            # Verify workflow execution
+            required_fields = ['status', 'automation', 'message']
+            missing_fields = [field for field in required_fields if field not in response]
+            
+            if not missing_fields and response.get('status') == 'workflow_triggered':
+                automation = response.get('automation', {})
+                workflows_executed = automation.get('workflows_executed', 0)
+                
+                print(f"   ✅ Workflow triggered - Status: {response['status']}")
+                print(f"      Workflows executed: {workflows_executed}")
+                
+                if workflows_executed > 0:
+                    executions = automation.get('executions', [])
+                    if executions:
+                        first_execution = executions[0]
+                        print(f"      First workflow: {first_execution.get('rule_title', 'Unknown')}")
+                        print(f"      Actions executed: {len(first_execution.get('actions', []))}")
+                
+                return True
+            else:
+                print(f"   ❌ Workflow response missing fields: {missing_fields}")
+                return False
+        return False
+
+    def test_trigger_workflow_inventory_demand(self):
+        """Test POST /api/automation/trigger-workflow with inventory demand trigger"""
+        workflow_data = {
+            "trigger": "vehicle_demand_spike",
+            "data": {
+                "vehicle_info": "2024 Honda CR-V",
+                "demand_score": 95,
+                "days_to_sell": 5,
+                "price": 34900,
+                "interested_customers": ["customer1", "customer2", "customer3"]
+            }
+        }
+        
+        success, response = self.run_test(
+            "Trigger Workflow - Hot Inventory",
+            "POST",
+            "automation/trigger-workflow",
+            200,
+            data=workflow_data
+        )
+        
+        if success:
+            if response.get('status') == 'workflow_triggered':
+                automation = response.get('automation', {})
+                workflows_executed = automation.get('workflows_executed', 0)
+                
+                print(f"   ✅ Inventory workflow triggered - Workflows: {workflows_executed}")
+                return True
+            else:
+                print(f"   ❌ Inventory workflow failed - Status: {response.get('status')}")
+                return False
+        return False
+
+    def test_trigger_workflow_voice_completion(self):
+        """Test POST /api/automation/trigger-workflow with voice AI completion"""
+        workflow_data = {
+            "trigger": "voice_call_completed",
+            "data": {
+                "customer_name": "Michael Rodriguez",
+                "call_satisfaction": 4.8,
+                "purchase_intent": 0.92,
+                "interested_vehicle": "2023 Ford F-150",
+                "call_duration": "6:45",
+                "next_steps": "Schedule test drive"
+            }
+        }
+        
+        success, response = self.run_test(
+            "Trigger Workflow - Voice AI Completion",
+            "POST",
+            "automation/trigger-workflow",
+            200,
+            data=workflow_data
+        )
+        
+        if success:
+            if response.get('status') == 'workflow_triggered':
+                automation = response.get('automation', {})
+                workflows_executed = automation.get('workflows_executed', 0)
+                
+                print(f"   ✅ Voice AI workflow triggered - Workflows: {workflows_executed}")
+                return True
+            else:
+                print(f"   ❌ Voice AI workflow failed - Status: {response.get('status')}")
+                return False
+        return False
+
+    def test_create_custom_workflow(self):
+        """Test POST /api/automation/create-workflow"""
+        custom_workflow_data = {
+            "name": "test_custom_workflow",
+            "display_name": "Test Custom Workflow",
+            "trigger": "manual",
+            "conditions": [
+                {"field": "budget", "operator": ">=", "value": 30000}
+            ],
+            "actions": [
+                {"type": "send_sms", "template": "custom_followup", "delay": 0},
+                {"type": "create_calendar_event", "delay": 300}
+            ],
+            "priority": "medium"
+        }
+        
+        success, response = self.run_test(
+            "Create Custom Workflow",
+            "POST",
+            "automation/create-workflow",
+            200,
+            data=custom_workflow_data
+        )
+        
+        if success:
+            # Verify workflow creation
+            required_fields = ['status', 'workflow', 'message']
+            missing_fields = [field for field in required_fields if field not in response]
+            
+            if not missing_fields and response.get('status') == 'workflow_created':
+                workflow = response.get('workflow', {})
+                workflow_name = workflow.get('name', 'Unknown')
+                
+                print(f"   ✅ Custom workflow created - Name: {workflow_name}")
+                print(f"      Trigger: {workflow.get('trigger', 'Unknown')}")
+                print(f"      Actions: {len(workflow.get('actions', []))}")
+                return True
+            else:
+                print(f"   ❌ Custom workflow response missing fields: {missing_fields}")
+                return False
+        return False
+
+    def test_demo_automation_scenarios(self):
+        """Test POST /api/automation/demo-scenarios"""
+        success, response = self.run_test(
+            "Demo Automation Scenarios",
+            "POST",
+            "automation/demo-scenarios",
+            200
+        )
+        
+        if success:
+            # Verify demo execution
+            required_fields = ['demo_status', 'scenarios_executed', 'automation_results', 'capabilities_demonstrated']
+            missing_fields = [field for field in required_fields if field not in response]
+            
+            if not missing_fields and response.get('demo_status') == 'completed':
+                scenarios_executed = response.get('scenarios_executed', 0)
+                automation_results = response.get('automation_results', [])
+                capabilities = response.get('capabilities_demonstrated', [])
+                
+                print(f"   ✅ Demo scenarios completed - Scenarios: {scenarios_executed}")
+                print(f"      Automation results: {len(automation_results)}")
+                print(f"      Capabilities demonstrated: {len(capabilities)}")
+                
+                # Check specific demo scenarios
+                if scenarios_executed >= 3:
+                    print("      ✅ All 3 demo scenarios executed (High-value lead, Hot inventory, Voice AI)")
+                    return True
+                else:
+                    print(f"      ❌ Only {scenarios_executed}/3 demo scenarios executed")
+                    return False
+            else:
+                print(f"   ❌ Demo response missing fields: {missing_fields}")
+                return False
+        return False
+
+    def test_workflow_automation_error_handling(self):
+        """Test workflow automation error handling"""
+        print("\n🔍 Testing Workflow Automation Error Handling...")
+        
+        # Test missing trigger name
+        success1, _ = self.run_test(
+            "Trigger Workflow - Missing Trigger",
+            "POST",
+            "automation/trigger-workflow",
+            400,  # Bad request expected
+            data={"data": {"test": "value"}}
+        )
+        
+        # Test invalid trigger name
+        success2, _ = self.run_test(
+            "Trigger Workflow - Invalid Trigger",
+            "POST",
+            "automation/trigger-workflow",
+            200,  # Should handle gracefully
+            data={"trigger": "invalid_trigger", "data": {"test": "value"}}
+        )
+        
+        # Test empty workflow data for custom workflow
+        success3, _ = self.run_test(
+            "Create Custom Workflow - Empty Data",
+            "POST",
+            "automation/create-workflow",
+            200,  # Should handle gracefully
+            data={}
+        )
+        
+        passed_tests = sum([success1, success2, success3])
+        print(f"   📊 Error Handling: {passed_tests}/3 tests passed")
+        
+        return passed_tests >= 2  # At least 2/3 should pass
+
+    def test_workflow_automation_comprehensive(self):
+        """Run comprehensive Workflow Automation test suite"""
+        print("\n🤖 Running Comprehensive Workflow Automation Tests...")
+        
+        automation_tests = [
+            ("Automation Analytics", self.test_automation_analytics),
+            ("Trigger Workflow - Lead Score", self.test_trigger_workflow_lead_score),
+            ("Trigger Workflow - Inventory Demand", self.test_trigger_workflow_inventory_demand),
+            ("Trigger Workflow - Voice Completion", self.test_trigger_workflow_voice_completion),
+            ("Create Custom Workflow", self.test_create_custom_workflow),
+            ("Demo Automation Scenarios", self.test_demo_automation_scenarios),
+            ("Workflow Error Handling", self.test_workflow_automation_error_handling)
+        ]
+        
+        passed_tests = 0
+        total_tests = len(automation_tests)
+        
+        for test_name, test_func in automation_tests:
+            try:
+                if test_func():
+                    passed_tests += 1
+                    print(f"   ✅ {test_name} - PASSED")
+                else:
+                    print(f"   ❌ {test_name} - FAILED")
+            except Exception as e:
+                print(f"   ❌ {test_name} - ERROR: {str(e)}")
+        
+        success_rate = (passed_tests / total_tests) * 100
+        print(f"\n   📊 Workflow Automation Test Suite: {passed_tests}/{total_tests} passed ({success_rate:.1f}%)")
+        
+        return passed_tests >= total_tests * 0.8  # 80% pass rate required
+
 def main():
     print("🃏 JokerVision AutoFollow API Testing Suite")
     print("=" * 50)
