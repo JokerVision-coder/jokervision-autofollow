@@ -65,6 +65,21 @@ class JokerVisionBackground {
             // Extension updated
             this.showUpdateNotification();
         }
+
+        // Create context menu for Facebook Marketplace
+        chrome.contextMenus.create({
+            id: 'uploadToJokerVision',
+            title: 'Upload to JokerVision AutoFollow',
+            contexts: ['page'],
+            documentUrlPatterns: ['*://www.facebook.com/marketplace/*']
+        });
+
+        chrome.contextMenus.create({
+            id: 'scanInventory',
+            title: 'Scan & Upload Inventory',
+            contexts: ['page'],
+            documentUrlPatterns: ['*://www.facebook.com/marketplace/*']
+        });
     }
 
     async onStartup() {
