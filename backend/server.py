@@ -6215,7 +6215,20 @@ async def get_workflows(tenant_id: str):
     try:
         workflows = await db.workflows.find({"tenant_id": tenant_id}).to_list(100)
         
-        if not workflows:
+        # Clean up MongoDB ObjectId and datetime serialization
+        cleaned_workflows = []
+        for workflow in workflows:
+            # Remove MongoDB ObjectId
+            if '_id' in workflow:
+                del workflow['_id']
+            # Convert datetime strings if needed
+            if isinstance(workflow.get('created_at'), str):
+                pass  # Already a string
+            elif workflow.get('created_at'):
+                workflow['created_at'] = workflow['created_at'].isoformat()
+            cleaned_workflows.append(workflow)
+        
+        if not cleaned_workflows:
             # Mock workflows
             mock_workflows = [
                 {
@@ -6245,7 +6258,7 @@ async def get_workflows(tenant_id: str):
             ]
             return {"workflows": mock_workflows}
         
-        return {"workflows": workflows}
+        return {"workflows": cleaned_workflows}
         
     except Exception as e:
         logger.error(f"Error fetching workflows: {str(e)}")
