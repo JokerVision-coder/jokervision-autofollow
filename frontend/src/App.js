@@ -1822,6 +1822,13 @@ const Navigation = () => {
               <Globe className="w-4 h-4 mr-2" />
               Websites
             </Link>
+            <Link 
+              to="/ads" 
+              className="text-glass hover:text-glass-bright font-medium transition-colors duration-200 flex items-center"
+            >
+              <Target className="w-4 h-4 mr-2" />
+              Ads Manager
+            </Link>
           </div>
         </div>
       </div>
