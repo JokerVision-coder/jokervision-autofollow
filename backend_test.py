@@ -3426,6 +3426,295 @@ Vehicle Type: sedan"""
                 return False
         return False
 
+    # =============================================================================
+    # ENHANCED WORKFLOW AUTOMATION TESTS - CRITICAL RETEST FOR CAR SALES KNOWLEDGE
+    # =============================================================================
+
+    def test_enhanced_demo_scenarios_critical_retest(self):
+        """Test POST /api/automation/demo-scenarios - CRITICAL RETEST for 3/3 execution"""
+        print("\n🚗 CRITICAL RETEST: Enhanced Demo Scenarios (Must execute ALL 3/3)...")
+        
+        success, response = self.run_test(
+            "Enhanced Demo Scenarios - CRITICAL RETEST",
+            "POST",
+            "automation/demo-scenarios",
+            200
+        )
+        
+        if success:
+            # Check if all 3 scenarios executed
+            scenarios_executed = response.get('scenarios_executed', 0)
+            total_scenarios = response.get('total_scenarios', 3)
+            scenarios = response.get('scenarios', [])
+            
+            print(f"   📊 Scenarios executed: {scenarios_executed}/{total_scenarios}")
+            
+            if scenarios_executed == 3:
+                print("   ✅ ALL 3/3 demo scenarios executed successfully - CRITICAL SUCCESS")
+                
+                # Verify Voice AI scenario specifically
+                voice_ai_working = False
+                for scenario in scenarios:
+                    scenario_name = scenario.get('name', '').lower()
+                    if 'voice' in scenario_name and scenario.get('status') == 'executed':
+                        voice_ai_working = True
+                        print("   ✅ Voice AI scenario executed properly - FIXED")
+                        break
+                
+                if voice_ai_working:
+                    return True
+                else:
+                    print("   ❌ Voice AI scenario still not working properly")
+                    return False
+            else:
+                print(f"   ❌ CRITICAL FAILURE: Only {scenarios_executed}/3 scenarios executed")
+                # Show which scenarios failed
+                for scenario in scenarios:
+                    status = scenario.get('status', 'unknown')
+                    name = scenario.get('name', 'Unknown')
+                    print(f"      - {name}: {status}")
+                return False
+        return False
+
+    def test_enhanced_car_sales_terminology_validation(self):
+        """Test workflow SMS content for 80%+ automotive terminology coverage"""
+        print("\n🚗 Testing Enhanced Car Sales Terminology (Target: 80%+ coverage)...")
+        
+        # Test high-value lead trigger to analyze SMS content
+        trigger_data = {
+            "trigger_type": "high_value_lead",
+            "lead_data": {
+                "id": "enhanced_automotive_lead_456",
+                "first_name": "Jennifer",
+                "last_name": "Martinez",
+                "budget": "$50,000-$60,000",
+                "vehicle_interest": "2024 Toyota Highlander Hybrid",
+                "ai_score": 92,
+                "trade_in_vehicle": "2020 Honda Pilot",
+                "financing_interest": True
+            }
+        }
+        
+        success, response = self.run_test(
+            "Enhanced Car Sales Terminology Analysis",
+            "POST",
+            "automation/trigger-workflow",
+            200,
+            data=trigger_data
+        )
+        
+        if success:
+            # Extract SMS content from workflow actions
+            actions_executed = response.get('actions_executed', [])
+            sms_content = ""
+            
+            for action in actions_executed:
+                if action.get('type') == 'send_sms':
+                    sms_content = action.get('content', '')
+                    break
+            
+            if sms_content:
+                print(f"   📝 SMS Content Analysis:")
+                print(f"      Content preview: {sms_content[:200]}...")
+                
+                # Enhanced automotive terminology list
+                automotive_terms = [
+                    # Financing terms
+                    'apr', '0.9% apr', '0% apr', 'financing', 'down payment', 'monthly payment',
+                    'lease', 'cash back', 'manufacturer cash back', 'rebates', 'incentives',
+                    
+                    # Vehicle terms
+                    'vin', 'vin reservation', 'trade-in', 'trade-in guarantee', 'kbb', 'kelley blue book',
+                    'certified pre-owned', 'warranty', 'extended warranty', 'gap insurance',
+                    
+                    # Dealership terms
+                    'dealership', 'dealership phone', 'toyota', 'honda', 'service', 'parts',
+                    'test drive', 'vehicle consultation', 'sales consultation',
+                    
+                    # Sales terms
+                    'msrp', 'invoice', 'protection plan', 'service contract', 'vip treatment',
+                    'exclusive offer', 'same-day approval', 'first-time buyer', 'loyalty bonus',
+                    
+                    # Urgency terms
+                    'limited time', 'expires soon', 'while supplies last', 'this weekend only'
+                ]
+                
+                # Count terms found in SMS content
+                content_lower = sms_content.lower()
+                terms_found = []
+                for term in automotive_terms:
+                    if term in content_lower:
+                        terms_found.append(term)
+                
+                coverage_percentage = (len(terms_found) / len(automotive_terms)) * 100
+                
+                print(f"   📊 Automotive terminology coverage: {coverage_percentage:.1f}%")
+                print(f"   📊 Terms found: {len(terms_found)}/{len(automotive_terms)}")
+                print(f"   📝 Sample terms found: {', '.join(terms_found[:8])}...")
+                
+                if coverage_percentage >= 80.0:
+                    print("   ✅ CRITICAL SUCCESS: Car sales knowledge meets 80%+ target")
+                    return True
+                else:
+                    print(f"   ❌ CRITICAL FAILURE: Coverage {coverage_percentage:.1f}% below 80% target")
+                    print("      Need more automotive terms in SMS templates")
+                    return False
+            else:
+                print("   ❌ No SMS content found in workflow response")
+                return False
+        return False
+
+    def test_voice_ai_automotive_actions_validation(self):
+        """Test voice_call_completed trigger with comprehensive automotive actions"""
+        print("\n🎤 Testing Voice AI Automotive Actions (All 4 actions must execute)...")
+        
+        # Enhanced voice AI demo data
+        voice_trigger_data = {
+            "trigger_type": "voice_call_completed",
+            "voice_data": {
+                "call_id": "enhanced_voice_demo_789",
+                "lead_id": "voice_automotive_lead_123",
+                "call_duration": 480,  # 8 minutes
+                "call_outcome": "highly_interested",
+                "vehicle_discussed": "2024 Toyota RAV4 XLE Premium",
+                "customer_satisfaction": 4.9,
+                "next_steps": "immediate_test_drive",
+                "financing_interest": True,
+                "trade_in_vehicle": "2018 Subaru Outback",
+                "credit_score": 780,
+                "urgency_level": "high"
+            }
+        }
+        
+        success, response = self.run_test(
+            "Voice AI Automotive Actions Validation",
+            "POST",
+            "automation/trigger-workflow",
+            200,
+            data=voice_trigger_data
+        )
+        
+        if success:
+            # Verify all 4 expected voice AI actions
+            actions_executed = response.get('actions_executed', [])
+            expected_actions = [
+                'create_hot_lead',
+                'send_personalized_offer',
+                'schedule_test_drive', 
+                'prepare_financing_options'
+            ]
+            
+            executed_action_types = [action.get('type') for action in actions_executed]
+            
+            print(f"   📊 Actions executed: {len(actions_executed)}")
+            print(f"   📝 Action types: {executed_action_types}")
+            
+            # Check if all expected actions are present
+            missing_actions = [action for action in expected_actions if action not in executed_action_types]
+            
+            if not missing_actions:
+                print("   ✅ ALL 4 voice AI actions executed successfully")
+                
+                # Analyze automotive content in each action
+                automotive_content_scores = []
+                
+                for action in actions_executed:
+                    action_type = action.get('type')
+                    content = str(action.get('content', '') + action.get('description', '')).lower()
+                    
+                    # Enhanced automotive content indicators
+                    automotive_indicators = [
+                        '0.9% apr', '0% apr', 'manufacturer cash back', 'trade-in guarantee',
+                        'vin reservation', 'dealership phone', 'vip treatment', 'exclusive offer',
+                        'urgency', 'same-day approval', 'extended terms', 'first-time buyer',
+                        'protection plan', 'gap insurance', 'warranty', 'certified pre-owned',
+                        'toyota', 'rav4', 'financing options', 'test drive', 'vehicle consultation'
+                    ]
+                    
+                    found_indicators = sum(1 for indicator in automotive_indicators if indicator in content)
+                    automotive_score = (found_indicators / len(automotive_indicators)) * 100
+                    automotive_content_scores.append(automotive_score)
+                    
+                    if found_indicators >= 3:
+                        print(f"      ✅ {action_type}: {found_indicators} automotive indicators ({automotive_score:.1f}%)")
+                    else:
+                        print(f"      ⚠️  {action_type}: Only {found_indicators} automotive indicators ({automotive_score:.1f}%)")
+                
+                avg_automotive_content = sum(automotive_content_scores) / len(automotive_content_scores)
+                print(f"   📊 Average automotive content: {avg_automotive_content:.1f}%")
+                
+                if avg_automotive_content >= 75.0:
+                    print("   ✅ CRITICAL SUCCESS: Voice AI actions contain comprehensive automotive content")
+                    return True
+                else:
+                    print(f"   ❌ CRITICAL FAILURE: Automotive content {avg_automotive_content:.1f}% below 75% target")
+                    return False
+            else:
+                print(f"   ❌ CRITICAL FAILURE: Missing expected actions: {missing_actions}")
+                return False
+        return False
+
+    def test_enhanced_workflow_automation_comprehensive(self):
+        """Run comprehensive enhanced workflow automation tests"""
+        print("\n🤖 ENHANCED WORKFLOW AUTOMATION SYSTEM - CRITICAL RETEST")
+        print("🚗 Focus: Car Sales Knowledge Improvements & 3/3 Demo Scenario Execution")
+        
+        enhanced_tests = [
+            ("CRITICAL: Enhanced Demo Scenarios (3/3)", self.test_enhanced_demo_scenarios_critical_retest),
+            ("CRITICAL: Car Sales Terminology (80%+)", self.test_enhanced_car_sales_terminology_validation),
+            ("CRITICAL: Voice AI Automotive Actions", self.test_voice_ai_automotive_actions_validation),
+            ("Workflow Analytics", self.test_automation_analytics),
+            ("Custom Automotive Workflow", self.test_create_custom_workflow),
+            ("Error Handling", self.test_workflow_automation_error_handling)
+        ]
+        
+        passed_tests = 0
+        total_tests = len(enhanced_tests)
+        critical_tests_passed = 0
+        
+        for test_name, test_func in enhanced_tests:
+            try:
+                print(f"\n{'='*70}")
+                print(f"🔍 {test_name}")
+                print(f"{'='*70}")
+                
+                if test_func():
+                    passed_tests += 1
+                    print(f"✅ {test_name} - PASSED")
+                    
+                    # Track critical tests
+                    if "CRITICAL" in test_name:
+                        critical_tests_passed += 1
+                else:
+                    print(f"❌ {test_name} - FAILED")
+            except Exception as e:
+                print(f"❌ {test_name} - ERROR: {str(e)}")
+        
+        success_rate = (passed_tests / total_tests) * 100
+        critical_success_rate = (critical_tests_passed / 3) * 100  # 3 critical tests
+        
+        print(f"\n{'='*80}")
+        print("🎯 ENHANCED WORKFLOW AUTOMATION TEST RESULTS")
+        print(f"{'='*80}")
+        print(f"📊 Overall Results: {passed_tests}/{total_tests} tests passed ({success_rate:.1f}%)")
+        print(f"🚨 Critical Tests: {critical_tests_passed}/3 passed ({critical_success_rate:.1f}%)")
+        
+        # Determine success based on critical tests
+        if critical_tests_passed == 3:
+            print("🎉 CRITICAL SUCCESS: Enhanced Car Sales Workflow Automation PASSED")
+            print("   ✅ ALL 3/3 demo scenarios working (Voice AI scenario FIXED)")
+            print("   ✅ Car sales terminology coverage ≥ 80% (ENHANCED)")
+            print("   ✅ Voice AI actions contain comprehensive automotive content")
+            return True
+        else:
+            print("🚨 CRITICAL FAILURE: Enhanced Car Sales Workflow Automation FAILED")
+            print(f"   ❌ Only {critical_tests_passed}/3 critical tests passed")
+            if critical_tests_passed < 3:
+                print("   ❌ Voice AI demo scenario may still be failing")
+                print("   ❌ Car sales knowledge may be below 80% target")
+                print("   ❌ Automotive actions may lack comprehensive content")
+            return False
+
 def main():
     print("🃏 JokerVision AutoFollow API Testing Suite")
     print("=" * 50)
