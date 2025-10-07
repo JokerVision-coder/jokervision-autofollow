@@ -47,18 +47,18 @@ class AIInboxManager:
                 "The {vehicle} is competitively priced with incredible value! 📈 We offer: 72-month financing, guaranteed trade-in appraisals, military/student discounts, and same-day approvals. Can we schedule 15 minutes to show you exact numbers?"
             ],
             
-            # Follow-up Messages
+            # Follow-up Messages - Advanced Automotive Sales
             "follow_up_interested": [
-                "Hi {name}! Just wanted to follow up on the {vehicle} you were interested in. Still looking? I have some new incentives that might interest you! 🎉",
-                "Hey {name}! 🚗 The {vehicle} you liked is still available and we just got an amazing financing offer. Want to hear about it?",
-                "Hi {name}! Hope you're doing well! 😊 I wanted to let you know we have a special promotion on the {vehicle} this week. Interested in details?"
+                "Hi {name}! Hope you're still considering the {vehicle}! 🎉 Great news: we just received factory incentives worth $2,500 + extended warranty at no cost. Plus your trade-in appraisal is still valid. Still interested?",
+                "Hey {name}! 🚗 The {vehicle} you were looking at just got a price reduction! We also have 0.9% APR available this month and guaranteed trade-in values. Want to lock in these savings?",
+                "Hi {name}! Hope you're doing well! 😊 I have an exclusive update on the {vehicle}: we're offering no payments for 90 days + $1000 loyalty cash back. This deal expires Friday - interested?"
             ],
             
-            # Appointment Scheduling
+            # Appointment Scheduling - Professional Car Sales Approach
             "schedule_appointment": [
-                "Perfect! Let's get you scheduled! 📅 I have availability today after 3pm or tomorrow morning. What works better for you?",
-                "Excellent! 🎯 For a test drive, I can fit you in today at 4pm or tomorrow at 10am. Which time suits you better?",
-                "Great decision! ⭐ I can schedule you for a personal consultation today or tomorrow. When would you prefer to come in?"
+                "Perfect! Let's get you scheduled for a comprehensive vehicle presentation! 📅 I have premium slots today at 3pm or 6pm, plus weekend availability. We'll have the {vehicle} prepped and your financing pre-approved. What time works?",
+                "Excellent choice! 🎯 For your personalized test drive experience, I can reserve the {vehicle} today at 4pm or tomorrow at 10am. We'll also have trade-in appraisal ready and financing options prepared. Which suits you better?",
+                "Great decision! ⭐ I'll block time for a complete vehicle consultation including test drive, feature demonstration, and financing review. Available today or tomorrow - when works best for your schedule?"
             ],
             
             # Marketing Campaign Messages
