@@ -3845,6 +3845,235 @@ async def renew_craigslist_ad(ad_id: str):
         raise HTTPException(status_code=500, detail="Failed to renew ad")
 
 # =============================================================================
+# SOCIAL MEDIA ADS API ENDPOINTS (Facebook, Instagram, TikTok, LinkedIn)
+# =============================================================================
+
+class SocialMediaAd(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    tenant_id: str
+    platform: str  # facebook, instagram, tiktok, linkedin
+    name: str
+    objective: str  # brand_awareness, traffic, conversions, lead_generation
+    audience: str
+    budget: float
+    status: str = "active"  # active, paused, completed
+    spent: float = 0.0
+    reach: int = 0
+    impressions: int = 0
+    engagements: int = 0
+    clicks: int = 0
+    leads: int = 0
+    video_views: int = 0
+    shares: int = 0
+    comments: int = 0
+    story_views: int = 0
+    profile_visits: int = 0
+    image: Optional[str] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+# Facebook Ads Endpoints
+@api_router.get("/facebook-ads")
+async def get_facebook_ads(tenant_id: str):
+    """Get Facebook ads with mock data"""
+    try:
+        mock_ads = [
+            {
+                "id": str(uuid.uuid4()),
+                "tenant_id": tenant_id,
+                "platform": "facebook",
+                "name": "2025 Toyota Camry Showcase",
+                "objective": "lead_generation",
+                "audience": "Auto shoppers, 25-55, San Antonio area",
+                "budget": 125.0,
+                "status": "active",
+                "spent": 89.45,
+                "reach": 12450,
+                "impressions": 18670,
+                "engagements": 1234,
+                "clicks": 456,
+                "leads": 23,
+                "image": "https://vehicle-photos-published.vauto.com/b0/f8/c8/20-9864-4c91-aba8-93c6593252aa/image-1.jpg",
+                "created_at": datetime.now(timezone.utc).isoformat()
+            },
+            {
+                "id": str(uuid.uuid4()),
+                "tenant_id": tenant_id,
+                "platform": "facebook",
+                "name": "RAV4 Family Safety Campaign",
+                "objective": "brand_awareness",
+                "audience": "Parents with children, 30-50",
+                "budget": 75.0,
+                "status": "active",
+                "spent": 52.30,
+                "reach": 8920,
+                "impressions": 13560,
+                "engagements": 890,
+                "clicks": 234,
+                "leads": 15,
+                "image": "https://vehicle-photos-published.vauto.com/86/0b/7b/a1-8c61-497b-9432-dbda66c798e6/image-1.jpg",
+                "created_at": datetime.now(timezone.utc).isoformat()
+            }
+        ]
+        return {"ads": mock_ads}
+    except Exception as e:
+        logger.error(f"Error fetching Facebook ads: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch Facebook ads")
+
+# Instagram Ads Endpoints
+@api_router.get("/instagram-ads")
+async def get_instagram_ads(tenant_id: str):
+    """Get Instagram ads with mock data"""
+    try:
+        mock_ads = [
+            {
+                "id": str(uuid.uuid4()),
+                "tenant_id": tenant_id,
+                "platform": "instagram",
+                "name": "Tacoma Adventure Stories",
+                "objective": "brand_awareness",
+                "audience": "Outdoor enthusiasts, 25-45",
+                "budget": 100.0,
+                "status": "active",
+                "spent": 78.90,
+                "reach": 15670,
+                "impressions": 23450,
+                "engagements": 2340,
+                "clicks": 567,
+                "leads": 18,
+                "story_views": 8900,
+                "profile_visits": 234,
+                "image": "https://vehicle-photos-published.vauto.com/77/3f/21/08-292c-4a8d-a11e-d32d897f11c9/image-1.jpg",
+                "created_at": datetime.now(timezone.utc).isoformat()
+            },
+            {
+                "id": str(uuid.uuid4()),
+                "tenant_id": tenant_id,
+                "platform": "instagram",
+                "name": "Luxury Tundra Lifestyle",
+                "objective": "traffic",
+                "audience": "Luxury truck buyers, 35-60",
+                "budget": 150.0,
+                "status": "active",
+                "spent": 134.20,
+                "reach": 9870,
+                "impressions": 16780,
+                "engagements": 1560,
+                "clicks": 345,
+                "leads": 12,
+                "story_views": 5670,
+                "profile_visits": 156,
+                "image": "https://vehicle-photos-published.vauto.com/14/a7/54/0e-a81b-46d0-b3dc-4c815c426f1c/image-1.jpg",
+                "created_at": datetime.now(timezone.utc).isoformat()
+            }
+        ]
+        return {"ads": mock_ads}
+    except Exception as e:
+        logger.error(f"Error fetching Instagram ads: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch Instagram ads")
+
+# TikTok Ads Endpoints
+@api_router.get("/tiktok-ads")
+async def get_tiktok_ads(tenant_id: str):
+    """Get TikTok ads with mock data"""
+    try:
+        mock_ads = [
+            {
+                "id": str(uuid.uuid4()),
+                "tenant_id": tenant_id,
+                "platform": "tiktok",
+                "name": "Gen Z Car Buying Experience",
+                "objective": "video_views",
+                "audience": "Car shoppers, 18-35, trending interests",
+                "budget": 200.0,
+                "status": "active",
+                "spent": 167.80,
+                "reach": 45670,
+                "impressions": 89340,
+                "engagements": 8920,
+                "clicks": 1240,
+                "leads": 34,
+                "video_views": 67890,
+                "shares": 890,
+                "comments": 456,
+                "image": "https://vehicle-photos-published.vauto.com/13/e7/0f/5b-6e0d-423f-beb0-47c1e8aeb432/image-1.jpg",
+                "created_at": datetime.now(timezone.utc).isoformat()
+            },
+            {
+                "id": str(uuid.uuid4()),
+                "tenant_id": tenant_id,
+                "platform": "tiktok",
+                "name": "Toyota Challenge Dance",
+                "objective": "brand_awareness",
+                "audience": "Young adults, 16-28, viral content",
+                "budget": 300.0,
+                "status": "paused",
+                "spent": 245.60,
+                "reach": 123400,
+                "impressions": 234560,
+                "engagements": 23400,
+                "clicks": 2340,
+                "leads": 78,
+                "video_views": 189000,
+                "shares": 3400,
+                "comments": 1890,
+                "image": "https://vehicle-photos-published.vauto.com/b0/f8/c8/20-9864-4c91-aba8-93c6593252aa/image-1.jpg",
+                "created_at": datetime.now(timezone.utc).isoformat()
+            }
+        ]
+        return {"ads": mock_ads}
+    except Exception as e:
+        logger.error(f"Error fetching TikTok ads: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch TikTok ads")
+
+# LinkedIn Ads Endpoints
+@api_router.get("/linkedin-ads")
+async def get_linkedin_ads(tenant_id: str):
+    """Get LinkedIn ads with mock data"""
+    try:
+        mock_ads = [
+            {
+                "id": str(uuid.uuid4()),
+                "tenant_id": tenant_id,
+                "platform": "linkedin",
+                "name": "Executive Fleet Solutions",
+                "objective": "lead_generation",
+                "audience": "Business executives, fleet managers",
+                "budget": 250.0,
+                "status": "active",
+                "spent": 189.40,
+                "reach": 5670,
+                "impressions": 12340,
+                "engagements": 456,
+                "clicks": 234,
+                "leads": 19,
+                "image": "https://vehicle-photos-published.vauto.com/9f/b1/36/70-aa0d-4bfa-b5af-8f2aa4b3ccf7/image-1.jpg",
+                "created_at": datetime.now(timezone.utc).isoformat()
+            },
+            {
+                "id": str(uuid.uuid4()),
+                "tenant_id": tenant_id,
+                "platform": "linkedin",
+                "name": "Professional Hybrid Solutions",
+                "objective": "brand_awareness",
+                "audience": "Professionals, eco-conscious buyers",
+                "budget": 150.0,
+                "status": "active",
+                "spent": 98.70,
+                "reach": 3450,
+                "impressions": 8900,
+                "engagements": 290,
+                "clicks": 145,
+                "leads": 11,
+                "image": "https://vehicle-photos-published.vauto.com/04/62/cc/67-97f7-4073-b85c-b55109d98973/image-1.jpg",
+                "created_at": datetime.now(timezone.utc).isoformat()
+            }
+        ]
+        return {"ads": mock_ads}
+    except Exception as e:
+        logger.error(f"Error fetching LinkedIn ads: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch LinkedIn ads")
+
+# =============================================================================
 # WEBSITE BUILDER API ENDPOINTS
 # =============================================================================
 
