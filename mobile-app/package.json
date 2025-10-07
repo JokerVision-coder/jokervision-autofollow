@@ -28,7 +28,7 @@
     "react-native-webrtc": "^111.0.3",
     "react-native-sound": "^0.11.2",
     "react-native-image-picker": "^7.0.3",
-    "react-native-camera": "^4.2.1",
+    "react-native-vision-camera": "^3.6.17",
     "react-native-permissions": "^3.10.1",
     "react-native-contacts": "^7.0.8",
     "react-native-call-log": "^4.0.0",
