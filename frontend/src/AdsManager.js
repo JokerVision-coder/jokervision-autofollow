@@ -145,13 +145,41 @@ const AdsManager = () => {
         </div>
 
         {/* Platform Tabs */}
-        <div className="flex gap-4 mb-6">
+        <div className="flex flex-wrap gap-2 mb-6">
           <Button
             onClick={() => setActiveTab('google_ads')}
             className={`${activeTab === 'google_ads' ? 'bg-blue-600 text-white' : 'text-glass-bright hover:bg-glass'}`}
           >
             <Search className="w-4 h-4 mr-2" />
             Google Ads
+          </Button>
+          <Button
+            onClick={() => setActiveTab('facebook')}
+            className={`${activeTab === 'facebook' ? 'bg-blue-800 text-white' : 'text-glass-bright hover:bg-glass'}`}
+          >
+            <Users className="w-4 h-4 mr-2" />
+            Facebook
+          </Button>
+          <Button
+            onClick={() => setActiveTab('instagram')}
+            className={`${activeTab === 'instagram' ? 'bg-pink-600 text-white' : 'text-glass-bright hover:bg-glass'}`}
+          >
+            <Camera className="w-4 h-4 mr-2" />
+            Instagram
+          </Button>
+          <Button
+            onClick={() => setActiveTab('tiktok')}
+            className={`${activeTab === 'tiktok' ? 'bg-black text-white' : 'text-glass-bright hover:bg-glass'}`}
+          >
+            <Play className="w-4 h-4 mr-2" />
+            TikTok
+          </Button>
+          <Button
+            onClick={() => setActiveTab('linkedin')}
+            className={`${activeTab === 'linkedin' ? 'bg-blue-700 text-white' : 'text-glass-bright hover:bg-glass'}`}
+          >
+            <Briefcase className="w-4 h-4 mr-2" />
+            LinkedIn
           </Button>
           <Button
             onClick={() => setActiveTab('craigslist')}
