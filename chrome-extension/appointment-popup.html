@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schedule Appointment - JokerVision AutoFollow</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        h1 {
+            margin: 0;
+            color: #333;
+            font-size: 24px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+            box-sizing: border-box;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .time-slots {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .time-slot {
+            padding: 10px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .time-slot:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .time-slot.selected {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #666;
+            border: 2px solid #e1e5e9;
+        }
+
+        .btn-secondary:hover {
+            background: #e9ecef;
+        }
+
+        .success-message {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 8px;
+            color: #155724;
+            margin-top: 20px;
+        }
+
+        .error-message {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 8px;
+            color: #721c24;
+            margin-top: 20px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">JV</div>
+            <h1>Schedule Test Drive</h1>
+            <p class="subtitle">Book an appointment with your customer</p>
+        </div>
+
+        <form id="appointmentForm">
+            <div class="form-group">
+                <label for="customerName">Customer Name *</label>
+                <input type="text" id="customerName" name="customerName" required>
+            </div>
+
+            <div class="form-group">
+                <label for="customerPhone">Phone Number *</label>
+                <input type="tel" id="customerPhone" name="customerPhone" required>
+            </div>
+
+            <div class="form-group">
+                <label for="customerEmail">Email Address</label>
+                <input type="email" id="customerEmail" name="customerEmail">
+            </div>
+
+            <div class="form-group">
+                <label for="vehicleInterest">Vehicle of Interest *</label>
+                <input type="text" id="vehicleInterest" name="vehicleInterest" required>
+            </div>
+
+            <div class="form-group">
+                <label for="appointmentDate">Preferred Date *</label>
+                <input type="date" id="appointmentDate" name="appointmentDate" required>
+            </div>
+
+            <div class="form-group">
+                <label>Preferred Time *</label>
+                <div class="time-slots" id="timeSlots">
+                    <div class="time-slot" data-time="09:00">9:00 AM</div>
+                    <div class="time-slot" data-time="10:00">10:00 AM</div>
+                    <div class="time-slot" data-time="11:00">11:00 AM</div>
+                    <div class="time-slot" data-time="14:00">2:00 PM</div>
+                    <div class="time-slot" data-time="15:00">3:00 PM</div>
+                    <div class="time-slot" data-time="16:00">4:00 PM</div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="notes">Additional Notes</label>
+                <textarea id="notes" name="notes" placeholder="Any special requirements or notes..."></textarea>
+            </div>
+
+            <div class="buttons">
+                <button type="button" class="btn btn-secondary" onclick="window.close()">Cancel</button>
+                <button type="submit" class="btn btn-primary">Schedule Appointment</button>
+            </div>
+        </form>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Scheduling your appointment...</p>
+        </div>
+
+        <div class="success-message" id="successMessage">
+            <h3>Appointment Scheduled Successfully!</h3>
+            <p>Your customer will receive a confirmation email shortly.</p>
+        </div>
+
+        <div class="error-message" id="errorMessage">
+            <h3>Scheduling Failed</h3>
+            <p id="errorText">Please try again or contact support.</p>
+        </div>
+    </div>
+
+    <script>
+        // Set minimum date to today
+        document.getElementById('appointmentDate').min = new Date().toISOString().split('T')[0];
+
+        // Handle time slot selection
+        let selectedTime = null;
+        document.querySelectorAll('.time-slot').forEach(slot => {
+            slot.addEventListener('click', function() {
+                document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
+                this.classList.add('selected');
+                selectedTime = this.dataset.time;
+            });
+        });
+
+        // Handle form submission
+        document.getElementById('appointmentForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            if (!selectedTime) {
+                alert('Please select a preferred time slot.');
+                return;
+            }
+
+            const formData = new FormData(this);
+            const appointmentData = {
+                customerName: formData.get('customerName'),
+                customerPhone: formData.get('customerPhone'),
+                customerEmail: formData.get('customerEmail'),
+                vehicleInterest: formData.get('vehicleInterest'),
+                date: formData.get('appointmentDate'),
+                time: selectedTime,
+                notes: formData.get('notes'),
+                source: 'chrome_extension'
+            };
+
+            // Show loading
+            document.getElementById('appointmentForm').style.display = 'none';
+            document.getElementById('loading').style.display = 'block';
+
+            try {
+                // Send message to background script
+                const response = await chrome.runtime.sendMessage({
+                    action: 'scheduleAppointment',
+                    data: appointmentData
+                });
+
+                document.getElementById('loading').style.display = 'none';
+
+                if (response.success) {
+                    document.getElementById('successMessage').style.display = 'block';
+                    setTimeout(() => {
+                        window.close();
+                    }, 3000);
+                } else {
+                    document.getElementById('errorText').textContent = response.error || 'Unknown error occurred';
+                    document.getElementById('errorMessage').style.display = 'block';
+                }
+            } catch (error) {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('errorText').textContent = error.message;
+                document.getElementById('errorMessage').style.display = 'block';
+            }
+        });
+
+        // Auto-populate from URL parameters if available
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('customerName')) {
+            document.getElementById('customerName').value = urlParams.get('customerName');
+        }
+        if (urlParams.get('vehicleInterest')) {
+            document.getElementById('vehicleInterest').value = urlParams.get('vehicleInterest');
+        }
+        if (urlParams.get('customerPhone')) {
+            document.getElementById('customerPhone').value = urlParams.get('customerPhone');
+        }
+        if (urlParams.get('customerEmail')) {
+            document.getElementById('customerEmail').value = urlParams.get('customerEmail');
+        }
+    </script>
+</body>
+</html>
