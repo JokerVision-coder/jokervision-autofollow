@@ -8847,11 +8847,13 @@ async def analyze_conversation(conversation_id: str):
             "conversion_probability": min(context.get("messages_count", 0) * 0.15 + 0.3, 0.95)
         }
         
-        return {
-            "conversation_analysis": insights,
+        # Return insights at root level for frontend compatibility
+        insights.update({
             "ai_system": "JokerVision_Conversation_Intelligence",
             "timestamp": datetime.now(timezone.utc).isoformat()
-        }
+        })
+        
+        return insights
         
     except Exception as e:
         logger.error(f"Error analyzing conversation: {str(e)}")
