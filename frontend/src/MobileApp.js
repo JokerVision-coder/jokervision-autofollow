@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { toast } from 'react-hot-toast';
+import { toast } from 'sonner';
 import { 
   Smartphone, Download, QrCode, Share2, Settings, Users, MessageSquare,
   Bell, Calendar, Phone, Mail, BarChart3, Target, Star, Clock, Zap,
