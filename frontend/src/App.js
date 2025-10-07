@@ -1867,6 +1867,41 @@ const Navigation = () => {
               <MessageSquare className="w-4 h-4 mr-2" />
               Social Media
             </Link>
+            <Link 
+              to="/reviews" 
+              className="text-glass hover:text-glass-bright font-medium transition-colors duration-200 flex items-center"
+            >
+              <Star className="w-4 h-4 mr-2" />
+              Reviews
+            </Link>
+            <Link 
+              to="/calendar" 
+              className="text-glass hover:text-glass-bright font-medium transition-colors duration-200 flex items-center"
+            >
+              <Calendar className="w-4 h-4 mr-2" />
+              Calendar
+            </Link>
+            <Link 
+              to="/workflows" 
+              className="text-glass hover:text-glass-bright font-medium transition-colors duration-200 flex items-center"
+            >
+              <Zap className="w-4 h-4 mr-2" />
+              Workflows
+            </Link>
+            <Link 
+              to="/ai-toolkit" 
+              className="text-glass hover:text-glass-bright font-medium transition-colors duration-200 flex items-center"
+            >
+              <Brain className="w-4 h-4 mr-2" />
+              AI Toolkit
+            </Link>
+            <Link 
+              to="/subscription" 
+              className="text-glass hover:text-glass-bright font-medium transition-colors duration-200 flex items-center"
+            >
+              <CreditCard className="w-4 h-4 mr-2" />
+              Subscription
+            </Link>
           </div>
         </div>
       </div>
