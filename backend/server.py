@@ -10,6 +10,7 @@ from typing import List, Dict, Optional
 import uuid
 from datetime import datetime, timezone, timedelta
 from emergentintegrations.llm.chat import LlmChat, UserMessage
+from emergentintegrations.llm.openai import OpenAIChatRealtime
 import json
 import requests
 import asyncio
