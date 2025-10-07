@@ -19,6 +19,7 @@ import WebsiteBuilder from './WebsiteBuilder';
 import AdsManager from './AdsManager';
 import Communications from './Communications';
 import SalesPipeline from './SalesPipeline';
+import MassMarketing from './MassMarketing';
 import { 
   Users, MessageSquare, Calendar, BarChart3, Plus, Send, Bot, Phone, Mail, 
   DollarSign, Briefcase, Clock, Settings, Zap, TrendingUp, PhoneCall, MessageCircle,
