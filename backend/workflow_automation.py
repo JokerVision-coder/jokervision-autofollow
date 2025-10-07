@@ -317,9 +317,15 @@ class WorkflowAutomationEngine:
                     "customer": customer_name,
                     "vehicle": vehicle_interest,
                     "scheduled_time": (datetime.now(timezone.utc) + timedelta(days=1)).isoformat(),
-                    "duration": "45 minutes",
-                    "location": "Dealership showroom",
-                    "preparation": "Vehicle detailed, keys ready, insurance verification completed"
+                    "duration": "VIP 60-minute automotive experience",
+                    "location": "Premium dealership showroom + test drive route",
+                    "vehicle_preparation": "Professional detailing completed, full fuel tank, all-weather floor mats, window tinting demonstration",
+                    "documentation_ready": ["Registration paperwork", "Insurance verification", "Financing pre-approval", "Trade-in appraisal", "Manufacturer warranty details"],
+                    "sales_specialist_assigned": "Certified automotive consultant with financing expertise",
+                    "test_drive_features": ["Highway performance evaluation", "City driving assessment", "Technology demonstration", "Safety feature explanation"],
+                    "post_drive_services": ["Immediate financing review", "Trade-in final appraisal", "Extended warranty presentation", "Same-day purchase options"],
+                    "dealership_amenities": ["Complimentary refreshments", "WiFi access", "Children's area", "Service lounge availability"],
+                    "automotive_expertise": "Comprehensive test drive experience with full dealership service presentation"
                 })
                 
             elif action_type == "prepare_financing_options":
