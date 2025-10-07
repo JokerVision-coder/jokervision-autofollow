@@ -1937,6 +1937,20 @@ const Navigation = () => {
               <Smartphone className="w-4 h-4 mr-2" />
               Mobile App
             </Link>
+            <Link 
+              to="/walk-in-tracker" 
+              className="text-glass hover:text-glass-bright font-medium transition-colors duration-200 flex items-center"
+            >
+              <UserX className="w-4 h-4 mr-2" />
+              Walk-In Tracker
+            </Link>
+            <Link 
+              to="/vehicle-wishlist" 
+              className="text-glass hover:text-glass-bright font-medium transition-colors duration-200 flex items-center"
+            >
+              <Bell className="w-4 h-4 mr-2" />
+              Vehicle Alerts
+            </Link>
           </div>
         </div>
       </div>
