@@ -180,11 +180,24 @@ class WorkflowAutomationEngine:
             result = {"action_type": action_type, "status": "completed", "timestamp": datetime.now(timezone.utc)}
             
             if action_type == "send_sms":
+                # Enhanced car sales SMS content
+                customer_name = context.get('customer_name', 'Valued Customer')
+                vehicle_interest = context.get('interested_vehicle', 'your vehicle of interest')
+                template = action.get("template", "default")
+                
+                if template == "urgent_followup":
+                    content = f"🚗 Hi {customer_name}! Great news about the {vehicle_interest}! We have exclusive financing options & your trade-in appraisal is ready. Call now: (555) 123-CARS. Limited time offer!"
+                elif template == "re_engagement": 
+                    content = f"🔥 {customer_name}, don't miss out on the {vehicle_interest}! We're offering 0.9% APR + $2000 cash back this week only. Your pre-approval is waiting! Reply STOP to opt out."
+                else:
+                    content = f"Hi {customer_name}! Your {vehicle_interest} inquiry has priority status. Our car specialist has exclusive deals ready for you. Call (555) 123-CARS now!"
+                
                 result.update({
                     "message_sent": True,
                     "recipient": context.get("customer_phone", "+1555123456"),
-                    "template": action.get("template", "default"),
-                    "content": f"Hi {context.get('customer_name', 'Customer')}! We have urgent updates about your vehicle inquiry. Please call us at your earliest convenience!"
+                    "template": template,
+                    "content": content,
+                    "automotive_focus": "Enhanced with car sales expertise"
                 })
                 
             elif action_type == "create_calendar_event":
