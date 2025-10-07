@@ -387,10 +387,11 @@ metadata:
 
 test_plan:
   current_focus:
-    - "v1.0 Release Verification Complete"
-    - "All Major Routes Functional"
-    - "Professional UI/UX Confirmed"
-  stuck_tasks: []
+    - "Voice AI Integration Testing Complete"
+    - "Mobile App API Testing Complete"
+    - "Missing Endpoints Identified"
+  stuck_tasks:
+    - "Mobile App API Endpoints - Missing inventory tenant_id handling and notifications endpoint"
   test_all: true
   test_priority: "high_first"
 
