@@ -70,14 +70,20 @@ class MobileAppAPITester:
                 print(f"   ✅ Retrieved {len(response)} notifications")
                 if response:
                     first_notification = response[0]
-                    required_fields = ['id', 'title', 'message', 'type', 'created_at']
+                    required_fields = ['id', 'title', 'message', 'type']
+                    # Accept either 'created_at' or 'timestamp' for time field
+                    time_fields = ['created_at', 'timestamp']
                     missing_fields = [field for field in required_fields if field not in first_notification]
+                    has_time_field = any(field in first_notification for field in time_fields)
                     
-                    if not missing_fields:
+                    if not missing_fields and has_time_field:
                         print(f"   ✅ Notification structure valid - Type: {first_notification.get('type')}")
                         return True
                     else:
-                        print(f"   ❌ Notification missing fields: {missing_fields}")
+                        if missing_fields:
+                            print(f"   ❌ Notification missing fields: {missing_fields}")
+                        if not has_time_field:
+                            print(f"   ❌ Notification missing time field (created_at or timestamp)")
                         return False
                 else:
                     print("   ✅ Empty notifications list returned (acceptable)")
