@@ -26,25 +26,25 @@ class AIInboxManager:
     def load_ai_templates(self):
         """Load AI response templates and conversation patterns"""
         self.response_templates = {
-            # Initial Contact Responses
+            # Initial Contact Responses - Enhanced Car Sales Knowledge
             "greeting": [
-                "Hi {name}! 👋 Thanks for reaching out! I'm here to help you find the perfect vehicle. What can I assist you with today?",
-                "Hello {name}! 🚗 Great to hear from you! I'd love to help you with your automotive needs. What are you looking for?",
-                "Hi there {name}! ✨ Thanks for contacting us! I'm excited to help you find your next vehicle. How can I assist?"
+                "Hi {name}! 👋 Welcome to [Dealership Name]! I'm your automotive specialist and I'm here to help you find the perfect vehicle with the best financing options. Are you looking for something specific or browsing our inventory?",
+                "Hello {name}! 🚗 Great to hear from you! With over 150 vehicles in stock and 1.9% APR financing available, I'd love to help match you with your ideal car, truck, or SUV. What's your driving style like?",
+                "Hi there {name}! ✨ Thanks for contacting us! I specialize in finding customers the perfect vehicle within their budget. We offer guaranteed trade-in values and same-day approvals. What brings you in today?"
             ],
             
-            # Vehicle Inquiry Responses
+            # Vehicle Inquiry Responses - Enhanced Automotive Expertise
             "vehicle_inquiry": [
-                "Great choice asking about the {vehicle}! 🎯 It's one of our most popular models. Would you like me to check availability and pricing for you?",
-                "The {vehicle} is fantastic! 🌟 I'd love to show you all the features and benefits. When would be a good time for a quick call or visit?",
-                "Perfect timing! The {vehicle} just came in and it's stunning! 🚗 Can I schedule you for a test drive this week?"
+                "Excellent choice with the {vehicle}! 🎯 This model features best-in-class fuel economy, advanced safety tech, and comes with our certified warranty. We have 3 in stock. Would you like specs, pricing, or to schedule a test drive?",
+                "The {vehicle} is a fantastic choice! 🌟 It's equipped with [AWD/FWD], gets 28+ MPG, and has a 5-star safety rating. We're offering $3000 cash back this month plus 0.9% APR. When can you come see it?",
+                "Perfect timing on the {vehicle}! 🚗 Just detailed and ready for viewing. This model holds its value exceptionally well and comes with complimentary maintenance. Can I reserve it for a test drive today?"
             ],
             
-            # Pricing Questions
+            # Pricing Questions - Advanced Financing Knowledge
             "pricing_inquiry": [
-                "I'd be happy to discuss pricing for the {vehicle}! 💰 We have excellent financing options available. What's your preferred budget range?",
-                "Great question! For the {vehicle}, we have competitive pricing and flexible payment options. Would you prefer to chat over the phone to go over details?",
-                "The {vehicle} has amazing value! 📈 Let me get you our best pricing and financing options. When can we schedule a quick 10-minute call?"
+                "I'd be happy to discuss pricing for the {vehicle}! 💰 We're currently offering $2000 cash back + 1.9% APR financing OR 0% for 48 months. Plus, we guarantee to beat any written offer by $500. What's your target monthly payment?",
+                "Great question! The {vehicle} starts at $[price] but with our current incentives, trade-in value, and financing options, your actual cost could be much lower. We also offer lease options from $299/month. Would you prefer to discuss over the phone?",
+                "The {vehicle} is competitively priced with incredible value! 📈 We offer: 72-month financing, guaranteed trade-in appraisals, military/student discounts, and same-day approvals. Can we schedule 15 minutes to show you exact numbers?"
             ],
             
             # Follow-up Messages
