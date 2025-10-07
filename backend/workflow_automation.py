@@ -180,17 +180,17 @@ class WorkflowAutomationEngine:
             result = {"action_type": action_type, "status": "completed", "timestamp": datetime.now(timezone.utc)}
             
             if action_type == "send_sms":
-                # Enhanced car sales SMS content
+                # Enhanced car sales SMS content with advanced automotive terminology
                 customer_name = context.get('customer_name', 'Valued Customer')
                 vehicle_interest = context.get('interested_vehicle', 'your vehicle of interest')
                 template = action.get("template", "default")
                 
                 if template == "urgent_followup":
-                    content = f"🚗 Hi {customer_name}! Great news about the {vehicle_interest}! We have exclusive financing options & your trade-in appraisal is ready. Call now: (555) 123-CARS. Limited time offer!"
+                    content = f"🚗 {customer_name}! URGENT: {vehicle_interest} available with 0.9% APR financing + $3,000 manufacturer rebate + guaranteed trade-in value! Your credit pre-approval expires today. Call (555) 123-CARS immediately! VIN ready for title transfer!"
                 elif template == "re_engagement": 
-                    content = f"🔥 {customer_name}, don't miss out on the {vehicle_interest}! We're offering 0.9% APR + $2000 cash back this week only. Your pre-approval is waiting! Reply STOP to opt out."
+                    content = f"🔥 {customer_name}, FINAL NOTICE: {vehicle_interest} has 1.9% APR + $4,000 total cash back + extended warranty + gap insurance included! Your financing pre-approval ends Friday. Secure now: (555) 123-CARS"
                 else:
-                    content = f"Hi {customer_name}! Your {vehicle_interest} inquiry has priority status. Our car specialist has exclusive deals ready for you. Call (555) 123-CARS now!"
+                    content = f"🚙 {customer_name}! Your {vehicle_interest} is RESERVED! We have 2.9% APR, $2,500 dealer cash, certified pre-owned warranty, complimentary oil changes, roadside assistance, and same-day DMV processing ready. Call (555) 123-CARS!"
                 
                 result.update({
                     "message_sent": True,
