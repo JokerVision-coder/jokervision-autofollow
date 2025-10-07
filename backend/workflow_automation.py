@@ -222,11 +222,15 @@ class WorkflowAutomationEngine:
                 })
                 
             elif action_type == "send_voice_ai_call":
+                customer_name = context.get('customer_name', 'Customer')
+                vehicle_interest = context.get('interested_vehicle', 'your vehicle inquiry')
                 result.update({
                     "voice_call_scheduled": True,
-                    "call_type": "automated_followup",
+                    "call_type": "automotive_sales_followup",
                     "scheduled_time": (datetime.now(timezone.utc) + timedelta(hours=1)).isoformat(),
-                    "voice_ai_script": "personalized_vehicle_inquiry"
+                    "voice_ai_script": "personalized_automotive_consultation",
+                    "call_content": f"Hi {customer_name}, this is an automated call from our dealership regarding {vehicle_interest}. We have exclusive financing at 2.9% APR and your trade-in appraisal is ready. Press 1 to speak with our car specialist or call (555) 123-CARS.",
+                    "automotive_expertise": "Enhanced with car sales knowledge and financing options"
                 })
                 
             elif action_type == "feature_on_website":
