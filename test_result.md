@@ -329,9 +329,13 @@ metadata:
   run_ui: false
 
 test_plan:
-  current_focus: []
-  stuck_tasks: []
-  test_all: false
+  current_focus:
+    - "React Router Configuration Issue"
+    - "Frontend Navigation System"
+    - "Component Loading Issues"
+  stuck_tasks:
+    - "React Router Configuration Issue"
+  test_all: true
   test_priority: "high_first"
 
 frontend_integration_testing:
