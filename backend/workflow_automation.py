@@ -226,12 +226,13 @@ class WorkflowAutomationEngine:
                 vehicle_interest = context.get('interested_vehicle', 'your vehicle inquiry')
                 result.update({
                     "voice_call_scheduled": True,
-                    "call_type": "priority_automotive_sales_consultation",
+                    "call_type": "VIP_automotive_sales_consultation",
                     "scheduled_time": (datetime.now(timezone.utc) + timedelta(hours=1)).isoformat(),
-                    "voice_ai_script": "advanced_automotive_sales_presentation",
-                    "call_content": f"Hello {customer_name}, this is your personal automotive specialist calling about the {vehicle_interest}. GREAT NEWS: We secured 0.9% APR financing, $4,000 manufacturer cash back, extended warranty, gap insurance, and guaranteed trade-in value $2,000 above KBB. Your credit is pre-approved. Press 1 for immediate assistance or call our direct VIP line (555) 123-CARS. This exclusive offer expires in 24 hours.",
-                    "automotive_expertise": "Professional car sales presentation with financing, warranty, trade-in, and urgency tactics",
-                    "dealership_features": ["0.9% APR financing", "Manufacturer rebates", "Extended warranty", "Gap insurance", "Above-market trade values", "VIP customer service"]
+                    "voice_ai_script": "comprehensive_dealership_presentation",
+                    "call_content": f"Hello {customer_name}, this is your dedicated automotive sales specialist regarding the {vehicle_interest}. EXCLUSIVE UPDATE: We've secured 0% APR financing for 60 months, $5,500 total manufacturer incentives, extended powertrain warranty, gap insurance coverage, tire & wheel protection, roadside assistance program, and guaranteed trade-in appraisal $4,000 above current KBB market value. Your financing pre-qualification is approved with same-day funding available. Press 1 to speak with financing department or call our VIP direct line (555) 123-CARS extension 200. This exclusive automotive package expires tomorrow at 5 PM.",
+                    "automotive_expertise": "Expert dealership presentation with comprehensive financing options, protection packages, and trade-in guarantees",
+                    "dealership_services": ["0% APR special financing", "Manufacturer cash rebates", "Extended powertrain coverage", "Gap insurance protection", "Tire & wheel protection", "24/7 roadside assistance", "Above-KBB trade valuations", "Same-day financing decisions", "VIP customer concierge", "Complimentary vehicle delivery"],
+                    "sales_tactics": ["Urgency with expiration", "Exclusive VIP treatment", "Multiple value propositions", "Direct contact options", "Immediate approval messaging"]
                 })
                 
             elif action_type == "feature_on_website":
