@@ -1880,6 +1880,7 @@ function App() {
           <Route path="/communications" element={<Communications />} />
           <Route path="/pipeline" element={<SalesPipeline />} />
           <Route path="/marketing" element={<MassMarketing />} />
+          <Route path="/social" element={<SocialMediaHub />} />
         </Routes>
         <Toaster position="top-right" />
       </div>
