@@ -18,7 +18,7 @@ import random
 from fastapi import BackgroundTasks
 from inventory_scraper import ShottenkilkInventoryScraper
 from ml_models import get_ml_engine
-from websocket_manager import get_connection_manager, trigger_real_time_lead_update, trigger_voice_ai_completion
+# WebSocket manager temporarily disabled for testing
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
