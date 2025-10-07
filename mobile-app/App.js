@@ -30,6 +30,7 @@ import LeadsScreen from './src/screens/LeadsScreen';
 import VoiceAIScreen from './src/screens/VoiceAIScreen';
 import NotificationsScreen from './src/screens/NotificationsScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
+import PredictiveAIScreen from './src/screens/PredictiveAIScreen';
 
 // Import services
 import { initializeVoiceAI } from './src/services/VoiceAIService';
