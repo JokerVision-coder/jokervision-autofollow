@@ -31,6 +31,8 @@ import VoiceIntegration from './VoiceIntegration';
 import AdvancedAnalytics from './AdvancedAnalytics';
 import MobileApp from './MobileApp';
 import SuperiorInventorySystem from './SuperiorInventorySystem';
+import WalkInTracker from './WalkInTracker';
+import VehicleWishlist from './VehicleWishlist';
 import { 
   Users, MessageSquare, Calendar, BarChart3, Plus, Send, Bot, Phone, Mail, 
   DollarSign, Briefcase, Clock, Settings, Zap, TrendingUp, PhoneCall, MessageCircle,
