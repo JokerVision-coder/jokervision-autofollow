@@ -51,16 +51,35 @@ const AdsManager = () => {
   const fetchAdsData = async () => {
     try {
       setLoading(true);
-      if (activeTab === 'google_ads') {
-        const [adsResponse, campaignsResponse] = await Promise.all([
-          axios.get(`${API}/google-ads?tenant_id=default_dealership`),
-          axios.get(`${API}/google-ads/campaigns?tenant_id=default_dealership`)
-        ]);
-        setGoogleAds(adsResponse.data.ads || []);
-        setCampaigns(campaignsResponse.data.campaigns || []);
-      } else {
-        const response = await axios.get(`${API}/craigslist-ads?tenant_id=default_dealership`);
-        setCraigslistAds(response.data.ads || []);
+      switch (activeTab) {
+        case 'google_ads':
+          const [adsResponse, campaignsResponse] = await Promise.all([
+            axios.get(`${API}/google-ads?tenant_id=default_dealership`),
+            axios.get(`${API}/google-ads/campaigns?tenant_id=default_dealership`)
+          ]);
+          setGoogleAds(adsResponse.data.ads || []);
+          setCampaigns(campaignsResponse.data.campaigns || []);
+          break;
+        case 'facebook':
+          const fbResponse = await axios.get(`${API}/facebook-ads?tenant_id=default_dealership`);
+          setFacebookAds(fbResponse.data.ads || []);
+          break;
+        case 'instagram':
+          const igResponse = await axios.get(`${API}/instagram-ads?tenant_id=default_dealership`);
+          setInstagramAds(igResponse.data.ads || []);
+          break;
+        case 'tiktok':
+          const ttResponse = await axios.get(`${API}/tiktok-ads?tenant_id=default_dealership`);
+          setTiktokAds(ttResponse.data.ads || []);
+          break;
+        case 'linkedin':
+          const liResponse = await axios.get(`${API}/linkedin-ads?tenant_id=default_dealership`);
+          setLinkedinAds(liResponse.data.ads || []);
+          break;
+        case 'craigslist':
+          const clResponse = await axios.get(`${API}/craigslist-ads?tenant_id=default_dealership`);
+          setCraigslistAds(clResponse.data.ads || []);
+          break;
       }
     } catch (error) {
       console.error('Error fetching ads:', error);
