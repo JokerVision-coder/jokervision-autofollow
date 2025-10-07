@@ -1915,6 +1915,13 @@ const Navigation = () => {
               🧠 Predictive AI
             </Link>
             <Link 
+              to="/ai-inbox" 
+              className="text-glass hover:text-glass-bright font-medium transition-colors duration-200 flex items-center"
+            >
+              <Bot className="w-4 h-4 mr-2" />
+              🤖 AI Inbox
+            </Link>
+            <Link 
               to="/subscription" 
               className="text-glass hover:text-glass-bright font-medium transition-colors duration-200 flex items-center"
             >
