@@ -69,9 +69,9 @@ class VoiceAIService {
         throw new Error('Voice AI Service not initialized');
       }
 
-      console.log('📞 Starting voice call...');
+      console.log('📞 Starting OpenAI Realtime Voice call...');
 
-      // Get session token from backend
+      // Get session token from backend using the OpenAI Realtime API
       const sessionResponse = await fetch(`${VOICE_API_ENDPOINT}/realtime/session`, {
         method: 'POST',
         headers: {
@@ -81,25 +81,26 @@ class VoiceAIService {
 
       if (sessionResponse.ok) {
         this.sessionData = await sessionResponse.json();
-        console.log('✅ Got session token from backend');
+        console.log('✅ Got OpenAI Realtime session token from backend');
+        
+        // Setup real WebRTC connection for mobile
+        await this.setupMobileVoiceConnection();
       } else {
-        // Use mock session for demo
+        // Fallback to simulated session for demo
+        console.log('⚠️ Backend not available, using simulated voice session');
         this.sessionData = {
           client_secret: { value: 'mock_session_token' },
           expires_at: Date.now() + 3600000,
         };
-        console.log('📱 Using mock session for demo');
+        await this.setupSimulatedVoiceConnection();
       }
-
-      // Simulate WebRTC connection setup
-      await this.setupVoiceConnection();
       
       this.isConnected = true;
       
       // Store call start time
       await AsyncStorage.setItem('currentCallStartTime', Date.now().toString());
       
-      console.log('🎤 Voice call started successfully');
+      console.log('🎤 Revolutionary Voice AI call started successfully');
       return true;
       
     } catch (error) {
