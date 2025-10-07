@@ -30,7 +30,7 @@ import AdvancedWebsiteBuilder from './AdvancedWebsiteBuilder';
 import VoiceIntegration from './VoiceIntegration';
 import AdvancedAnalytics from './AdvancedAnalytics';
 import MobileApp from './MobileApp';
-import EnhancedInventoryManagement from './EnhancedInventoryManagement';
+import SuperiorInventorySystem from './SuperiorInventorySystem';
 import { 
   Users, MessageSquare, Calendar, BarChart3, Plus, Send, Bot, Phone, Mail, 
   DollarSign, Briefcase, Clock, Settings, Zap, TrendingUp, PhoneCall, MessageCircle,
