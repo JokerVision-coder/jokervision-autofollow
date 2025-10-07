@@ -2040,6 +2040,12 @@ async def get_creative_templates(
 async def generate_content_ideas_api(request: dict):
     """Generate AI-powered content ideas"""
     try:
+        # Extract parameters from request body
+        tenant_id = request.get('tenant_id', 'default')
+        platform = request.get('platform', 'instagram')
+        objective = request.get('objective', 'engagement')
+        count = request.get('count', 10)
+        
         # Generate base ideas
         ideas = CreativeEngine.generate_content_ideas(platform, objective)
         
