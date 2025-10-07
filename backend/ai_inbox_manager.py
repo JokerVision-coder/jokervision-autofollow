@@ -61,25 +61,25 @@ class AIInboxManager:
                 "Great decision! ⭐ I'll block time for a complete vehicle consultation including test drive, feature demonstration, and financing review. Available today or tomorrow - when works best for your schedule?"
             ],
             
-            # Marketing Campaign Messages
+            # Marketing Campaign Messages - Advanced Automotive Offers
             "monthly_promotion": [
-                "🔥 SPECIAL OFFER ALERT! Hi {name}, this month only: 0.9% APR financing on select models including the {interested_vehicle}! Limited time - interested?",
-                "💰 Hey {name}! Flash sale happening now: $2,000 cash back on {interested_vehicle} + no payments for 90 days! Want details?",
-                "🎉 {name}, you're getting exclusive access: Pre-owned vehicles under $25K with warranty! Perfect timing for your {interested_vehicle} interest!"
+                "🔥 EXCLUSIVE DEAL ALERT! Hi {name}, this month only: 0.9% APR financing + $3,000 factory cash back on {interested_vehicle}! Plus we guarantee highest trade-in value in the city. Expires in 72 hours - interested?",
+                "💰 Hey {name}! FLASH AUTOMOTIVE SALE: $4,000 total savings on {interested_vehicle} + 0% APR for qualified buyers + complimentary extended warranty worth $2,800! Want to lock this in today?",
+                "🎉 {name}, VIP exclusive access: Certified pre-owned vehicles with lifetime powertrain warranty! Your {interested_vehicle} search just got better - we found 3 perfect matches under $30K!"
             ],
             
-            # Seasonal Campaigns  
+            # Seasonal Campaigns - Car Sales Seasonal Expertise
             "seasonal_spring": [
-                "🌸 Spring into savings, {name}! New inventory just arrived including the {interested_vehicle} you were looking at. Spring sales event - 20% off accessories!",
-                "☀️ Perfect weather for test drives! Hi {name}, the {interested_vehicle} is ready for you to experience. Spring special: extended warranty included!",
-                "🌿 New season, new car? {name}, we have amazing spring offers on the {interested_vehicle}. Plus free maintenance for 2 years!"
+                "🌸 Spring Car Shopping Season is HERE! {name}, perfect timing for the {interested_vehicle}! New model year inventory + spring incentives: $5,000 total savings + 1.9% APR + free all-weather protection package!",
+                "☀️ Convertible weather ahead! Hi {name}, the {interested_vehicle} is detailed and ready for your spring adventures. SPECIAL: Spring sales event with 0% APR for 60 months + $2,000 spring cash bonus!",
+                "🌿 New season, dream car time! {name}, we have incredible spring pricing on {interested_vehicle} inventory: factory rebates + loyalty cash + extended warranty + 2-year complimentary maintenance package!"
             ],
             
-            # Re-engagement Messages
+            # Re-engagement Messages - Professional Automotive Follow-up
             "win_back": [
-                "Hi {name}, we miss you! 💙 Still interested in the {interested_vehicle}? We've got new inventory and better pricing. Give us another chance!",
-                "Hey {name}! 🎯 Remember when you were looking at the {interested_vehicle}? We just got the exact model with your preferred features!",
-                "Hi {name}! We haven't heard from you in a while. 😊 The {interested_vehicle} market has some great opportunities right now. Interested in updates?"
+                "Hi {name}, your automotive specialist here! 💙 Still considering the {interested_vehicle}? GREAT NEWS: new model year pricing is 15% lower + we have 5 financing options including 0% APR. Let's revisit your perfect car match!",
+                "Hey {name}! 🎯 Remember your {interested_vehicle} search? We found the EXACT model with your preferred options + color! Plus current market conditions give you $4,000 more buying power. Ready to see it?",
+                "Hi {name}! Market update for your {interested_vehicle} interest! 😊 Current incentives are the BEST of the year: $6,000 combined savings + guaranteed trade value + same-day financing approval. Perfect timing to reconnect!"
             ]
         }
     
