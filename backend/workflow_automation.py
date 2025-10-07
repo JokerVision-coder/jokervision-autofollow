@@ -287,11 +287,15 @@ class WorkflowAutomationEngine:
                     "personalized_offer_sent": True,
                     "recipient": customer_name,
                     "vehicle": vehicle_interest,
-                    "offer_type": "exclusive_automotive_deal",
-                    "discount": "$3000 cash back + 1.9% APR financing",
-                    "trade_in_bonus": "$2000 above market value",
-                    "expires": "48 hours",
-                    "delivery_channels": ["SMS", "Email", "Phone Call"]
+                    "offer_type": "VIP_automotive_sales_package",
+                    "financing_offer": "0.9% APR for 72 months + no payments for 90 days",
+                    "manufacturer_incentives": "$4,000 factory cash back + $1,500 loyalty bonus",
+                    "trade_in_guarantee": "$3,500 above KBB market value + instant appraisal",
+                    "warranty_package": "Extended powertrain warranty + gap insurance + roadside assistance",
+                    "additional_perks": ["Free oil changes for 2 years", "Window tinting", "Paint protection", "Lifetime car washes"],
+                    "expires": "This offer expires in 24 hours - VIN reserved",
+                    "delivery_channels": ["Priority SMS", "Personal email", "VIP phone call", "Certified mail"],
+                    "automotive_expertise": "Professional car sales offer with multiple incentive layers"
                 })
                 
             elif action_type == "schedule_test_drive":
