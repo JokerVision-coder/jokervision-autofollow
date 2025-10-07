@@ -191,20 +191,57 @@ const AdsManager = () => {
           </Button>
         </div>
 
-        {activeTab === 'google_ads' ? (
-          <GoogleAdsSection 
-            ads={googleAds} 
-            campaigns={campaigns}
-            onCreateCampaign={createGoogleAdsCampaign}
-            onRefresh={fetchAdsData}
-          />
-        ) : (
-          <CraigslistSection 
-            ads={craigslistAds}
-            onSyncInventory={syncInventoryToCraigslist}
-            onRefresh={fetchAdsData}
-          />
-        )}
+        {(() => {
+          switch (activeTab) {
+            case 'google_ads':
+              return (
+                <GoogleAdsSection 
+                  ads={googleAds} 
+                  campaigns={campaigns}
+                  onCreateCampaign={createGoogleAdsCampaign}
+                  onRefresh={fetchAdsData}
+                />
+              );
+            case 'facebook':
+              return (
+                <FacebookAdsSection 
+                  ads={facebookAds}
+                  onRefresh={fetchAdsData}
+                />
+              );
+            case 'instagram':
+              return (
+                <InstagramAdsSection 
+                  ads={instagramAds}
+                  onRefresh={fetchAdsData}
+                />
+              );
+            case 'tiktok':
+              return (
+                <TikTokAdsSection 
+                  ads={tiktokAds}
+                  onRefresh={fetchAdsData}
+                />
+              );
+            case 'linkedin':
+              return (
+                <LinkedInAdsSection 
+                  ads={linkedinAds}
+                  onRefresh={fetchAdsData}
+                />
+              );
+            case 'craigslist':
+              return (
+                <CraigslistSection 
+                  ads={craigslistAds}
+                  onSyncInventory={syncInventoryToCraigslist}
+                  onRefresh={fetchAdsData}
+                />
+              );
+            default:
+              return null;
+          }
+        })()}
       </div>
     </div>
   );
