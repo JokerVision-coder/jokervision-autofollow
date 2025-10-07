@@ -6237,6 +6237,34 @@ async def predict_sales_performance(
         ml_engine = await get_ml_engine()
         performance_prediction = await ml_engine.predict_sales_performance(salesperson_data)
         
+        # Add enhanced ML fields for integration
+        performance_prediction["current_performance"] = {
+            "score": int(performance_score),
+            "conversion_rate": salesperson_data.get('conversion_rate', 0.16),
+            "avg_deal_size": salesperson_data.get('avg_deal_size', 28000),
+            "response_time": salesperson_data.get('avg_response_time', 3.5),
+            "voice_ai_usage": salesperson_data.get('voice_ai_usage_rate', 0.0)
+        }
+        
+        performance_prediction["predicted_performance"] = {
+            "next_month_score": min(int(performance_score * 1.05), 100),
+            "projected_conversion": round(salesperson_data.get('conversion_rate', 0.16) * 1.1, 3),
+            "growth_trajectory": "Upward" if performance_score >= 70 else "Stable"
+        }
+        
+        performance_prediction["growth_forecast"] = {
+            "revenue_growth": "+15%" if performance_score >= 80 else "+8%" if performance_score >= 60 else "+3%",
+            "lead_efficiency": "+12%" if performance_score >= 75 else "+5%",
+            "customer_satisfaction": "+18%" if salesperson_data.get('voice_ai_usage_rate', 0) > 0.5 else "+8%"
+        }
+        
+        performance_prediction["performance_factors"] = [
+            f"Conversion rate: {salesperson_data.get('conversion_rate', 0.16):.1%}",
+            f"Voice AI usage: {salesperson_data.get('voice_ai_usage_rate', 0.0):.1%}",
+            f"Response time: {salesperson_data.get('avg_response_time', 3.5)} hours",
+            f"Deal size: ${salesperson_data.get('avg_deal_size', 28000):,}"
+        ]
+        
         # Add coaching recommendations
         performance_prediction["coaching_plan"] = {
             "focus_areas": performance_prediction.get("improvement_areas", []),
