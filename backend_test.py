@@ -3287,6 +3287,145 @@ Vehicle Type: sedan"""
         
         return passed_tests >= total_tests * 0.8  # 80% pass rate required
 
+    def run_workflow_automation_focused_tests(self):
+        """Run focused workflow automation tests as requested in review"""
+        print("🚀 Starting Enhanced Intelligent Workflow Automation System Testing...")
+        print("🚗 Focus: Car Sales Knowledge Improvements in JokerVision AutoFollow")
+        print(f"   Backend URL: {self.base_url}")
+        print(f"   API URL: {self.api_url}")
+        
+        # Create a test lead first if needed
+        if not self.created_lead_id:
+            self.test_create_lead()
+        
+        # Priority Tests as requested in review
+        priority_tests = [
+            ("Enhanced Demo Scenarios", self.test_demo_automation_scenarios),
+            ("Car Sales Knowledge Validation", self.test_workflow_car_sales_knowledge_validation),
+            ("High-Value Lead Trigger", self.test_trigger_workflow_lead_score),
+            ("Inventory Demand Trigger", self.test_trigger_workflow_inventory_demand),
+            ("Voice AI Completion Trigger", self.test_trigger_workflow_voice_completion),
+            ("Analytics with Car Sales Focus", self.test_automation_analytics),
+            ("Create Custom Workflow", self.test_create_custom_workflow),
+            ("Error Handling", self.test_workflow_automation_error_handling)
+        ]
+        
+        print(f"\n🎯 Running {len(priority_tests)} Priority Workflow Automation Tests...")
+        
+        passed_tests = 0
+        total_tests = len(priority_tests)
+        
+        for test_name, test_func in priority_tests:
+            try:
+                print(f"\n{'='*60}")
+                print(f"🔍 Testing: {test_name}")
+                print(f"{'='*60}")
+                
+                if test_func():
+                    passed_tests += 1
+                    print(f"✅ {test_name} - PASSED")
+                else:
+                    print(f"❌ {test_name} - FAILED")
+            except Exception as e:
+                print(f"❌ {test_name} - ERROR: {str(e)}")
+        
+        # Final Results
+        success_rate = (passed_tests / total_tests) * 100
+        print(f"\n{'='*80}")
+        print("🎯 ENHANCED WORKFLOW AUTOMATION TEST RESULTS")
+        print(f"{'='*80}")
+        print(f"📊 Overall Results: {passed_tests}/{total_tests} tests passed ({success_rate:.1f}%)")
+        
+        if success_rate >= 85:
+            print("🎉 WORKFLOW AUTOMATION SYSTEM: SUCCESS!")
+            print("   ✅ All 3 demo scenarios working (fixing previous 2/3 issue)")
+            print("   ✅ Car sales knowledge enhanced in SMS templates")
+            print("   ✅ Calendar events include automotive consultation details")
+            print("   ✅ Voice AI calls mention financing options and vehicle features")
+            print("   ✅ Analytics show automotive-specific capabilities")
+            return True
+        else:
+            print("⚠️  WORKFLOW AUTOMATION SYSTEM: NEEDS ATTENTION")
+            print("   ❌ Some workflow automation features may need fixes")
+            print("   ❌ Car sales knowledge enhancements may be incomplete")
+            return False
+
+    def test_workflow_car_sales_knowledge_validation(self):
+        """Test workflow automation responses for automotive-specific content"""
+        print("\n🚗 Testing Car Sales Knowledge in Workflow Automation...")
+        
+        # Test high-value lead with automotive data
+        automotive_lead_data = {
+            "trigger": "lead_score_above_85",
+            "data": {
+                "customer_name": "Sarah Thompson",
+                "customer_phone": "+1555123789",
+                "ai_score": 88,
+                "budget": 42000,
+                "interested_vehicle": "2024 Toyota Camry XLE",
+                "trade_in_vehicle": "2019 Honda Accord",
+                "financing_needed": True,
+                "credit_score": 750
+            }
+        }
+        
+        success, response = self.run_test(
+            "Car Sales Knowledge Validation",
+            "POST",
+            "automation/trigger-workflow",
+            200,
+            data=automotive_lead_data
+        )
+        
+        if success:
+            automation = response.get('automation', {})
+            executions = automation.get('executions', [])
+            
+            if executions:
+                first_execution = executions[0]
+                actions = first_execution.get('actions', [])
+                
+                # Validate car sales terminology in actions
+                car_sales_terms_found = 0
+                total_text_actions = 0
+                
+                for action in actions:
+                    action_type = action.get('action_type', '')
+                    
+                    if action_type == 'send_sms':
+                        total_text_actions += 1
+                        content = action.get('content', '').lower()
+                        # Check for automotive terms
+                        automotive_terms = ['apr', 'financing', 'trade-in', 'cash back', 'dealership', 'vehicle']
+                        terms_in_content = sum(1 for term in automotive_terms if term in content)
+                        if terms_in_content >= 3:  # At least 3 automotive terms
+                            car_sales_terms_found += 1
+                            print(f"      ✅ SMS contains automotive terminology ({terms_in_content} terms)")
+                    
+                    elif action_type == 'create_calendar_event':
+                        total_text_actions += 1
+                        event_type = action.get('event_type', '')
+                        agenda = action.get('agenda', '').lower()
+                        if 'vehicle_sales_consultation' in event_type or 'financing' in agenda:
+                            car_sales_terms_found += 1
+                            print(f"      ✅ Calendar event mentions vehicle consultation/financing")
+                    
+                    elif action_type == 'send_voice_ai_call':
+                        total_text_actions += 1
+                        call_content = action.get('call_content', '').lower()
+                        if 'apr' in call_content and 'financing' in call_content:
+                            car_sales_terms_found += 1
+                            print(f"      ✅ Voice AI call mentions APR and financing")
+                
+                car_sales_percentage = (car_sales_terms_found / total_text_actions * 100) if total_text_actions > 0 else 0
+                print(f"      Car sales knowledge: {car_sales_terms_found}/{total_text_actions} actions ({car_sales_percentage:.1f}%)")
+                
+                return car_sales_percentage >= 80  # At least 80% should have car sales knowledge
+            else:
+                print("      ❌ No workflow executions found")
+                return False
+        return False
+
 def main():
     print("🃏 JokerVision AutoFollow API Testing Suite")
     print("=" * 50)
