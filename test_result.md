@@ -279,8 +279,8 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Frontend Integration Testing"
-    - "End-to-End Workflow Testing"
+    - "Mass Marketing API Endpoints"
+    - "Mass Marketing Frontend Component"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
