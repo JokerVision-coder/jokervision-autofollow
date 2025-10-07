@@ -5,7 +5,7 @@
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const BACKEND_URL = 'http://localhost:8001'; // Will be configured for production
+const BACKEND_URL = 'https://dealership-hub-12.preview.emergentagent.com';
 const API_BASE = `${BACKEND_URL}/api`;
 
 class ApiService {
