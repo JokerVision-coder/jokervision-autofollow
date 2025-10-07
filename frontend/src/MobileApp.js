@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { toast } from 'sonner';
+import { Button } from './components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './components/ui/card';
+import { Badge } from './components/ui/badge';
 import { 
   Smartphone, Download, QrCode, Share2, Settings, Users, MessageSquare,
   Bell, Calendar, Phone, Mail, BarChart3, Target, Star, Clock, Zap,
@@ -9,21 +12,6 @@ import {
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
-
-// Simple component definitions
-const Card = ({ children, className = "" }) => <div className={`${className}`}>{children}</div>;
-const CardContent = ({ children, className = "" }) => <div className={`${className}`}>{children}</div>;
-const Button = ({ children, className = "", onClick, size = "", variant = "", disabled = false, ...props }) => (
-  <button 
-    className={`px-4 py-2 rounded transition-colors ${className} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
-    onClick={onClick}
-    disabled={disabled}
-    {...props}
-  >
-    {children}
-  </button>
-);
-const Badge = ({ children, className = "" }) => <span className={`px-2 py-1 rounded text-xs ${className}`}>{children}</span>;
 
 const MobileApp = () => {
   const [activeTab, setActiveTab] = useState('overview');
