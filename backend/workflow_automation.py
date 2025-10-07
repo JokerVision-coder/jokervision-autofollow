@@ -205,12 +205,15 @@ class WorkflowAutomationEngine:
                 vehicle_interest = context.get('interested_vehicle', 'Vehicle Inquiry')
                 result.update({
                     "event_created": True,
-                    "event_title": f"🚗 Car Sales Priority: {customer_name} - {vehicle_interest}",
+                    "event_title": f"🚗 VIP AUTOMOTIVE CONSULTATION: {customer_name} - {vehicle_interest}",
                     "scheduled_time": (datetime.now(timezone.utc) + timedelta(hours=2)).isoformat(),
-                    "duration": "30 minutes",
-                    "event_type": "vehicle_sales_consultation", 
-                    "agenda": f"Discuss financing options, trade-in value, test drive scheduling for {vehicle_interest}",
-                    "priority": "high_value_automotive_lead"
+                    "duration": "45 minutes",
+                    "event_type": "comprehensive_automotive_sales_presentation", 
+                    "agenda": f"Complete automotive consultation for {vehicle_interest}: financing pre-approval review (0% APR options), trade-in appraisal presentation ($4K above KBB guarantee), test drive coordination, extended warranty & protection package review, manufacturer incentive explanation ($5,500 available), same-day delivery scheduling",
+                    "priority": "high_priority_automotive_lead",
+                    "preparation_checklist": ["Vehicle detailed and fueled", "Financing options prepared", "Trade-in appraisal completed", "Warranty packages ready", "Manufacturer incentive documentation", "DMV paperwork prepared", "Insurance verification", "Delivery scheduling available"],
+                    "sales_materials": ["APR comparison charts", "Trade-in value guarantee", "Warranty benefit summary", "Manufacturer incentive breakdown", "Payment calculator", "Insurance options"],
+                    "automotive_expertise": "Comprehensive dealership consultation with all automotive sales components prepared"
                 })
                 
             elif action_type == "notify_sales_manager":
