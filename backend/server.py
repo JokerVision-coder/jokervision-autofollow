@@ -7852,62 +7852,7 @@ async def get_inventory_summary(tenant_id: str = Query(...)):
         logger.error(f"Error fetching inventory summary: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to fetch inventory summary")
 
-@api_router.get("/inventory/vehicles")
-async def get_vehicles(
-    tenant_id: str = Query(...),
-    make: Optional[str] = None,
-    model: Optional[str] = None,
-    year: Optional[int] = None,
-    condition: Optional[str] = None,
-    price_min: Optional[float] = None,
-    price_max: Optional[float] = None,
-    status: Optional[str] = None,
-    limit: int = Query(50, le=100)
-):
-    """Get filtered inventory vehicles"""
-    try:
-        # Build filter query
-        filter_query = {"tenant_id": tenant_id}
-        
-        if make:
-            filter_query["make"] = {"$regex": make, "$options": "i"}
-        if model:
-            filter_query["model"] = {"$regex": model, "$options": "i"}
-        if year:
-            filter_query["year"] = year
-        if condition and condition != "any":
-            filter_query["condition"] = condition
-        if price_min is not None:
-            filter_query["price"] = {"$gte": price_min}
-        if price_max is not None:
-            if "price" in filter_query:
-                filter_query["price"]["$lte"] = price_max
-            else:
-                filter_query["price"] = {"$lte": price_max}
-        if status and status != "any":
-            filter_query["status"] = status
-        
-        # Get vehicles with pagination
-        vehicles = await db.vehicles.find(filter_query).sort("created_at", -1).limit(limit).to_list(None)
-        
-        # Convert datetime fields
-        result_vehicles = []
-        for vehicle in vehicles:
-            if isinstance(vehicle.get('created_at'), str):
-                vehicle['created_at'] = datetime.fromisoformat(vehicle['created_at'])
-            if isinstance(vehicle.get('updated_at'), str):
-                vehicle['updated_at'] = datetime.fromisoformat(vehicle['updated_at'])
-            result_vehicles.append(Vehicle(**vehicle))
-        
-        return {
-            "vehicles": result_vehicles,
-            "total_count": len(result_vehicles),
-            "filters_applied": {k: v for k, v in filter_query.items() if k != "tenant_id"}
-        }
-        
-    except Exception as e:
-        logger.error(f"Error fetching vehicles: {str(e)}")
-        raise HTTPException(status_code=500, detail="Failed to fetch vehicles")
+# Removed duplicate inventory/vehicles endpoint - using the first one with mobile compatibility
 
 @api_router.post("/inventory/vehicles", response_model=Vehicle)
 async def create_vehicle(vehicle_data: VehicleCreate):
