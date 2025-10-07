@@ -438,9 +438,16 @@ class JokerVisionBackground {
 
     onTabUpdated(tabId, changeInfo, tab) {
         if (changeInfo.status === 'complete' && tab.url) {
-            if (tab.url.includes('marketplace.facebook.com')) {
+            if (tab.url.includes('marketplace.facebook.com') || tab.url.includes('facebook.com/marketplace')) {
                 // Inject additional functionality when user visits Facebook Marketplace
                 this.enhanceMarketplacePage(tabId, tab.url);
+                
+                // Start lead monitoring if enabled
+                if (this.settings?.leadCapture) {
+                    setTimeout(() => {
+                        this.startLeadMonitoring(tabId);
+                    }, 2000); // Wait for page to fully load
+                }
             }
         }
     }
