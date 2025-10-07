@@ -88,14 +88,16 @@ class AIInboxManager:
         try:
             content_lower = message_content.lower()
             
-            # Intent classification
+            # Enhanced Automotive Intent Classification
             intent_keywords = {
-                "greeting": ["hi", "hello", "hey", "good morning", "good afternoon"],
-                "vehicle_inquiry": ["interested in", "looking for", "want", "need", "tell me about", "available", "stock"],
-                "pricing_inquiry": ["price", "cost", "how much", "payment", "financing", "monthly", "down payment", "lease"],
-                "scheduling": ["schedule", "appointment", "test drive", "visit", "come in", "available", "when", "time"],
-                "complaint": ["problem", "issue", "disappointed", "unhappy", "wrong", "mistake"],
-                "urgent": ["urgent", "asap", "immediately", "today", "now", "emergency"]
+                "greeting": ["hi", "hello", "hey", "good morning", "good afternoon", "thanks for", "thank you"],
+                "vehicle_inquiry": ["interested in", "looking for", "want", "need", "tell me about", "available", "stock", "inventory", "models", "features", "specs", "mpg", "safety rating", "warranty", "certified"],
+                "pricing_inquiry": ["price", "cost", "how much", "payment", "financing", "monthly", "down payment", "lease", "apr", "interest rate", "trade in", "cash back", "incentives", "rebates", "total cost", "msrp"],
+                "scheduling": ["schedule", "appointment", "test drive", "visit", "come in", "available", "when", "time", "today", "tomorrow", "weekend", "evening", "morning"],
+                "trade_in_inquiry": ["trade in", "trade-in", "current car", "my vehicle", "worth", "appraisal", "value", "selling", "exchange"],
+                "financing_inquiry": ["finance", "loan", "credit", "approval", "qualify", "down payment", "monthly payment", "term", "length", "co-signer"],
+                "complaint": ["problem", "issue", "disappointed", "unhappy", "wrong", "mistake", "poor service", "unsatisfied"],
+                "urgent": ["urgent", "asap", "immediately", "today", "now", "emergency", "leaving town", "need today"]
             }
             
             detected_intents = []
