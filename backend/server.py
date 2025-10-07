@@ -32,6 +32,17 @@ app = FastAPI()
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
 
+# Initialize OpenAI Realtime Chat for Revolutionary Voice AI
+EMERGENT_LLM_KEY = os.getenv("EMERGENT_LLM_KEY")
+if EMERGENT_LLM_KEY:
+    realtime_chat = OpenAIChatRealtime(api_key=EMERGENT_LLM_KEY)
+    realtime_router = APIRouter()
+    OpenAIChatRealtime.register_openai_realtime_router(realtime_router, realtime_chat)
+    app.include_router(realtime_router, prefix="/api/voice")
+    logger.info("🎤 Revolutionary Voice AI System initialized successfully")
+else:
+    logger.warning("EMERGENT_LLM_KEY not found - Voice AI disabled")
+
 # Lead Models - Updated for Multi-Tenant
 class LeadCreate(BaseModel):
     tenant_id: str
