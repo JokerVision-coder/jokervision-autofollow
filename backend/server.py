@@ -8738,11 +8738,17 @@ async def trigger_demo_automation_scenarios():
         if voice_result:
             results.append(voice_result)
         
+        # Ensure we always report actual execution count
+        total_attempted = 3
+        success_count = len(results)
+        
         return {
-            "demo_status": "completed",
-            "scenarios_executed": len(results),
+            "demo_status": "completed" if success_count == total_attempted else "partial_success",
+            "scenarios_executed": success_count,
+            "scenarios_attempted": total_attempted,
+            "success_rate": f"{(success_count/total_attempted)*100:.1f}%",
             "automation_results": results,
-            "message": "Demo automation scenarios executed successfully",
+            "message": f"Demo automation scenarios: {success_count}/{total_attempted} executed successfully",
             "capabilities_demonstrated": [
                 "High-value lead instant response (SMS + Calendar + Manager Alert + Voice AI Call)",
                 "Hot inventory demand response (Website Feature + Social Boost + Customer Alerts)",
