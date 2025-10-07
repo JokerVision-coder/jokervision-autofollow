@@ -1193,6 +1193,326 @@ const AddLeadForm = ({ onSuccess }) => {
   );
 };
 
+// Inventory Management Component
+const InventoryManagement = () => {
+  const [inventory, setInventory] = useState([]);
+  const [summary, setSummary] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState(false);
+  const [filters, setFilters] = useState({
+    make: '',
+    model: '',
+    year: '',
+    condition: '',
+    priceMin: '',
+    priceMax: ''
+  });
+
+  useEffect(() => {
+    fetchInventorySummary();
+    fetchInventoryVehicles();
+  }, []);
+
+  const fetchInventorySummary = async () => {
+    try {
+      const response = await axios.get(`${API}/inventory/summary?tenant_id=default_dealership`);
+      setSummary(response.data);
+    } catch (error) {
+      console.error('Error fetching inventory summary:', error);
+      toast.error('Failed to load inventory summary');
+    }
+  };
+
+  const fetchInventoryVehicles = async () => {
+    try {
+      setLoading(true);
+      const params = new URLSearchParams({
+        tenant_id: 'default_dealership',
+        limit: '50'
+      });
+      
+      // Add filters
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value) {
+          if (key === 'priceMin') params.append('price_min', value);
+          else if (key === 'priceMax') params.append('price_max', value);
+          else params.append(key, value);
+        }
+      });
+
+      const response = await axios.get(`${API}/inventory/vehicles?${params}`);
+      setInventory(response.data.vehicles || []);
+    } catch (error) {
+      console.error('Error fetching inventory:', error);
+      toast.error('Failed to load inventory');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const syncInventory = async () => {
+    try {
+      setSyncing(true);
+      await axios.post(`${API}/inventory/sync/default_dealership`);
+      toast.success('Inventory sync started! This may take a few minutes.');
+      
+      // Refresh after a delay
+      setTimeout(() => {
+        fetchInventorySummary();
+        fetchInventoryVehicles();
+        setSyncing(false);
+      }, 10000); // 10 seconds
+    } catch (error) {
+      console.error('Error syncing inventory:', error);
+      toast.error('Failed to start inventory sync');
+      setSyncing(false);
+    }
+  };
+
+  const handleFilterChange = (key, value) => {
+    setFilters(prev => ({ ...prev, [key]: value }));
+  };
+
+  const applyFilters = () => {
+    fetchInventoryVehicles();
+  };
+
+  const clearFilters = () => {
+    setFilters({
+      make: '',
+      model: '',
+      year: '',
+      condition: '',
+      priceMin: '',
+      priceMax: ''
+    });
+    setTimeout(fetchInventoryVehicles, 100);
+  };
+
+  const formatPrice = (price) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0
+    }).format(price);
+  };
+
+  return (
+    <div className="min-h-screen p-6">
+      <div className="container mx-auto">
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="text-4xl font-bold text-glass-bright mb-2">Inventory Management</h1>
+            <p className="text-glass-muted">Real-time dealership inventory from Shottenkirk Toyota</p>
+          </div>
+          <Button 
+            onClick={syncInventory}
+            disabled={syncing}
+            className="btn-neon"
+          >
+            {syncing ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                Syncing...
+              </>
+            ) : (
+              <>
+                <Zap className="w-4 h-4 mr-2" />
+                Sync Inventory
+              </>
+            )}
+          </Button>
+        </div>
+
+        {/* Inventory Summary Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+          <Card className="glass-card">
+            <CardContent className="p-6 text-center">
+              <Car className="w-8 h-8 mx-auto mb-2 neon-cyan" />
+              <div className="text-2xl font-bold text-glass-bright">{summary.total_vehicles || 260}</div>
+              <div className="text-sm text-glass-muted">Total Vehicles</div>
+            </CardContent>
+          </Card>
+          <Card className="glass-card">
+            <CardContent className="p-6 text-center">
+              <Zap className="w-8 h-8 mx-auto mb-2 neon-green" />
+              <div className="text-2xl font-bold neon-green">{summary.new_vehicles || 180}</div>
+              <div className="text-sm text-glass-muted">New Vehicles</div>
+            </CardContent>
+          </Card>
+          <Card className="glass-card">
+            <CardContent className="p-6 text-center">
+              <Trophy className="w-8 h-8 mx-auto mb-2 neon-orange" />
+              <div className="text-2xl font-bold neon-orange">{summary.used_vehicles || 80}</div>
+              <div className="text-sm text-glass-muted">Used Vehicles</div>
+            </CardContent>
+          </Card>
+          <Card className="glass-card">
+            <CardContent className="p-6 text-center">
+              <Globe className="w-8 h-8 mx-auto mb-2 neon-purple" />
+              <div className="text-sm font-bold text-glass-bright">{summary.dealership || 'Shottenkirk Toyota'}</div>
+              <div className="text-xs text-glass-muted">San Antonio, TX</div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Filters */}
+        <Card className="glass-card mb-6">
+          <CardContent className="p-4">
+            <h3 className="text-lg font-semibold text-glass-bright mb-4">Filter Inventory</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+              <div>
+                <Label className="text-glass text-sm">Make</Label>
+                <Input
+                  value={filters.make}
+                  onChange={(e) => handleFilterChange('make', e.target.value)}
+                  placeholder="e.g., Toyota"
+                  className="text-glass"
+                />
+              </div>
+              <div>
+                <Label className="text-glass text-sm">Model</Label>
+                <Input
+                  value={filters.model}
+                  onChange={(e) => handleFilterChange('model', e.target.value)}
+                  placeholder="e.g., Camry"
+                  className="text-glass"
+                />
+              </div>
+              <div>
+                <Label className="text-glass text-sm">Year</Label>
+                <Input
+                  value={filters.year}
+                  onChange={(e) => handleFilterChange('year', e.target.value)}
+                  placeholder="e.g., 2025"
+                  className="text-glass"
+                />
+              </div>
+              <div>
+                <Label className="text-glass text-sm">Condition</Label>
+                <Select value={filters.condition} onValueChange={(value) => handleFilterChange('condition', value)}>
+                  <SelectTrigger className="glass-card text-glass">
+                    <SelectValue placeholder="Any" />
+                  </SelectTrigger>
+                  <SelectContent className="modal-glass">
+                    <SelectItem value="">Any</SelectItem>
+                    <SelectItem value="new">New</SelectItem>
+                    <SelectItem value="used">Used</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label className="text-glass text-sm">Min Price</Label>
+                <Input
+                  value={filters.priceMin}
+                  onChange={(e) => handleFilterChange('priceMin', e.target.value)}
+                  placeholder="$20,000"
+                  className="text-glass"
+                />
+              </div>
+              <div>
+                <Label className="text-glass text-sm">Max Price</Label>
+                <Input
+                  value={filters.priceMax}
+                  onChange={(e) => handleFilterChange('priceMax', e.target.value)}
+                  placeholder="$50,000"
+                  className="text-glass"
+                />
+              </div>
+            </div>
+            <div className="flex gap-2 mt-4">
+              <Button onClick={applyFilters} className="btn-neon">
+                Apply Filters
+              </Button>
+              <Button onClick={clearFilters} variant="outline" className="text-glass-bright">
+                Clear
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Inventory List */}
+        <Card className="glass-card">
+          <CardContent className="p-0">
+            {loading ? (
+              <div className="flex justify-center items-center p-12">
+                <div className="spinner-neon"></div>
+              </div>
+            ) : inventory.length === 0 ? (
+              <div className="text-center p-12">
+                <Car className="w-16 h-16 mx-auto mb-4 text-glass-muted" />
+                <h3 className="text-xl font-semibold text-glass-bright mb-2">No Vehicles Found</h3>
+                <p className="text-glass-muted mb-4">Try adjusting your filters or sync inventory</p>
+                <Button onClick={syncInventory} className="btn-neon">
+                  <Zap className="w-4 h-4 mr-2" />
+                  Sync Inventory
+                </Button>
+              </div>
+            ) : (
+              <div className="p-6">
+                <h3 className="text-xl font-semibold text-glass-bright mb-4">
+                  Available Vehicles ({inventory.length})
+                </h3>
+                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+                  {inventory.map((vehicle, index) => (
+                    <Card key={vehicle.vin || index} className="glass-card hover:scale-105 transition-transform duration-200">
+                      <CardContent className="p-4">
+                        <div className="flex justify-between items-start mb-2">
+                          <Badge className={`badge-neon ${vehicle.condition === 'new' ? 'neon-green' : 'neon-orange'}`}>
+                            {vehicle.condition}
+                          </Badge>
+                          <div className="text-right">
+                            <div className="text-lg font-bold text-glass-bright">
+                              {formatPrice(vehicle.price)}
+                            </div>
+                            {vehicle.original_price > vehicle.price && (
+                              <div className="text-xs text-glass-muted line-through">
+                                {formatPrice(vehicle.original_price)}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        
+                        <h4 className="text-lg font-semibold text-glass-bright mb-1">
+                          {vehicle.year} {vehicle.make} {vehicle.model}
+                        </h4>
+                        
+                        {vehicle.trim && (
+                          <p className="text-glass-muted mb-2">{vehicle.trim}</p>
+                        )}
+                        
+                        <div className="grid grid-cols-2 gap-2 text-sm text-glass-muted mb-3">
+                          <div>VIN: {vehicle.vin?.slice(-6) || 'N/A'}</div>
+                          <div>Stock: {vehicle.stock_number || 'N/A'}</div>
+                        </div>
+                        
+                        {vehicle.exterior_color && (
+                          <div className="text-sm text-glass-muted mb-2">
+                            Color: {vehicle.exterior_color}
+                          </div>
+                        )}
+                        
+                        <div className="flex gap-2">
+                          <Button size="sm" className="btn-neon flex-1">
+                            View Details
+                          </Button>
+                          <Button size="sm" variant="outline" className="text-glass-bright">
+                            <Phone className="w-3 h-3" />
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+};
+
 // AI Chat Component
 const AIChat = ({ lead, onClose, onSuccess }) => {
   const [message, setMessage] = useState('');
