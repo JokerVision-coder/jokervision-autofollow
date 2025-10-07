@@ -1675,11 +1675,24 @@ async def get_all_appointments():
     appointments = await db.appointments.find().sort("appointment_datetime", 1).to_list(1000)
     result = []
     for apt in appointments:
+        # Remove MongoDB ObjectId
+        if '_id' in apt:
+            del apt['_id']
+        
+        # Handle datetime conversion
         if isinstance(apt.get('appointment_datetime'), str):
             apt['appointment_datetime'] = datetime.fromisoformat(apt['appointment_datetime'])
         if isinstance(apt.get('created_at'), str):
             apt['created_at'] = datetime.fromisoformat(apt['created_at'])
-        result.append(CalendarAppointment(**apt))
+        
+        # Only include appointments that have required fields
+        if apt.get('appointment_datetime') and apt.get('lead_id'):
+            try:
+                result.append(CalendarAppointment(**apt))
+            except Exception as e:
+                # Skip invalid appointments and log the error
+                logger.warning(f"Skipping invalid appointment: {str(e)}")
+                continue
     return result
 
 @api_router.put("/appointments/{appointment_id}")
