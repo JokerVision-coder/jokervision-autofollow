@@ -8635,8 +8635,8 @@ app.add_middleware(
 # REVOLUTIONARY REAL-TIME WEBSOCKET ENDPOINTS
 # =============================================================================
 
-@app.websocket("/ws/{connection_id}")
-async def websocket_endpoint(websocket: WebSocket, connection_id: str, user_id: Optional[str] = None):
+# @app.websocket("/ws/{connection_id}")
+# async def websocket_endpoint(websocket: WebSocket, connection_id: str, user_id: Optional[str] = None):
     """Revolutionary real-time WebSocket connection for JokerVision AutoFollow"""
     connection_manager = get_connection_manager()
     
