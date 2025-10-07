@@ -1233,7 +1233,7 @@ const InventoryManagement = () => {
       
       // Add filters
       Object.entries(filters).forEach(([key, value]) => {
-        if (value) {
+        if (value && value !== 'any') {
           if (key === 'priceMin') params.append('price_min', value);
           else if (key === 'priceMax') params.append('price_max', value);
           else params.append(key, value);
