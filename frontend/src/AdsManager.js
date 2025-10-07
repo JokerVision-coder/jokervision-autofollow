@@ -5,7 +5,8 @@ import {
   Search, Plus, Eye, Edit, Trash2, BarChart3, DollarSign, 
   Users, MousePointer, TrendingUp, Calendar, Settings, Play, Pause,
   Globe, MapPin, Car, Phone, Mail, Target, Zap, AlertCircle,
-  ExternalLink, Copy, Download, Upload, RefreshCw, Clock
+  ExternalLink, Copy, Download, Upload, RefreshCw, Clock, Camera,
+  Briefcase, Heart, Share2, Video, Image as ImageIcon, Megaphone
 } from 'lucide-react';
 
 const API = process.env.REACT_APP_BACKEND_URL;
