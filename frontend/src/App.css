@@ -270,6 +270,44 @@ button {
   color: rgba(255, 255, 255, 1) !important;
 }
 
+/* Shadcn UI component overrides for dark theme */
+[data-radix-popper-content-wrapper] {
+  z-index: 50 !important;
+}
+
+/* Ensure Select components work on dark backgrounds */
+.dark-select [data-radix-select-content] {
+  background: rgba(15, 15, 35, 0.98) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  backdrop-filter: blur(20px) !important;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6) !important;
+}
+
+.dark-select [data-radix-select-item] {
+  color: rgba(255, 255, 255, 0.95) !important;
+  padding: 8px 12px !important;
+}
+
+.dark-select [data-radix-select-item]:hover {
+  background: rgba(102, 126, 234, 0.3) !important;
+  color: rgba(255, 255, 255, 1) !important;
+}
+
+.dark-select [data-radix-select-item][data-highlighted] {
+  background: rgba(102, 126, 234, 0.3) !important;
+  color: rgba(255, 255, 255, 1) !important;
+}
+
+/* Override any default text colors that might be invisible */
+* {
+  color: inherit;
+}
+
+/* Specific overrides for common invisible text issues */
+.invisible-fix {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
 /* Ensure all text elements have proper contrast */
 p, span, div {
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
