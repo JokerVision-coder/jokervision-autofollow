@@ -226,11 +226,12 @@ class WorkflowAutomationEngine:
                 vehicle_interest = context.get('interested_vehicle', 'your vehicle inquiry')
                 result.update({
                     "voice_call_scheduled": True,
-                    "call_type": "automotive_sales_followup",
+                    "call_type": "priority_automotive_sales_consultation",
                     "scheduled_time": (datetime.now(timezone.utc) + timedelta(hours=1)).isoformat(),
-                    "voice_ai_script": "personalized_automotive_consultation",
-                    "call_content": f"Hi {customer_name}, this is an automated call from our dealership regarding {vehicle_interest}. We have exclusive financing at 2.9% APR and your trade-in appraisal is ready. Press 1 to speak with our car specialist or call (555) 123-CARS.",
-                    "automotive_expertise": "Enhanced with car sales knowledge and financing options"
+                    "voice_ai_script": "advanced_automotive_sales_presentation",
+                    "call_content": f"Hello {customer_name}, this is your personal automotive specialist calling about the {vehicle_interest}. GREAT NEWS: We secured 0.9% APR financing, $4,000 manufacturer cash back, extended warranty, gap insurance, and guaranteed trade-in value $2,000 above KBB. Your credit is pre-approved. Press 1 for immediate assistance or call our direct VIP line (555) 123-CARS. This exclusive offer expires in 24 hours.",
+                    "automotive_expertise": "Professional car sales presentation with financing, warranty, trade-in, and urgency tactics",
+                    "dealership_features": ["0.9% APR financing", "Manufacturer rebates", "Extended warranty", "Gap insurance", "Above-market trade values", "VIP customer service"]
                 })
                 
             elif action_type == "feature_on_website":
