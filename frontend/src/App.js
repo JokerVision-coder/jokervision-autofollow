@@ -1936,6 +1936,9 @@ function App() {
           <Route path="/workflows" element={<WorkflowBuilder />} />
           <Route path="/ai-toolkit" element={<AIToolkit />} />
           <Route path="/subscription" element={<SubscriptionManagement />} />
+          <Route path="/advanced-websites" element={<AdvancedWebsiteBuilder />} />
+          <Route path="/voice" element={<VoiceIntegration />} />
+          <Route path="/analytics" element={<AdvancedAnalytics />} />
         </Routes>
         <Toaster position="top-right" />
       </div>
