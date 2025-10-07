@@ -5220,6 +5220,11 @@ async def get_marketing_campaigns(tenant_id: str):
     try:
         campaigns = await db.marketing_campaigns.find({"tenant_id": tenant_id}).sort("created_at", -1).to_list(100)
         
+        # Convert campaigns to proper format (remove _id ObjectId)
+        for campaign in campaigns:
+            if "_id" in campaign:
+                del campaign["_id"]
+        
         if not campaigns:
             # Return mock campaigns for demo
             mock_campaigns = [
