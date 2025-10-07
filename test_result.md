@@ -282,7 +282,6 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Mass Marketing API Endpoints"
     - "Mass Marketing Frontend Component"
   stuck_tasks: []
   test_all: false
