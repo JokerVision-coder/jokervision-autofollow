@@ -5719,8 +5719,8 @@ async def get_website_analytics(tenant_id: str):
 # VOICE INTEGRATION API ENDPOINTS
 # =============================================================================
 
-@api_router.get("/voice/calls")
-async def get_voice_calls(tenant_id: str):
+@api_router.get("/voice/calls/all")
+async def get_all_voice_calls(tenant_id: str):
     """Get voice call history for a tenant"""
     try:
         calls = await db.voice_calls.find({"tenant_id": tenant_id}).sort("timestamp", -1).to_list(100)
