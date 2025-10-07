@@ -6427,23 +6427,27 @@ async def auto_generate_appointment(lead_data: dict):
             # Generate appointment for next available slot
             next_slot = get_next_available_appointment_slot()
             
+            # Create proper datetime for appointment
+            appointment_datetime = datetime.strptime(f"{next_slot['date']} {next_slot['time']}", "%Y-%m-%d %H:%M")
+            appointment_datetime = appointment_datetime.replace(tzinfo=timezone.utc)
+            
             appointment = {
                 "id": str(uuid.uuid4()),
-                "tenant_id": lead_data.get("tenant_id"),
                 "lead_id": lead_data.get("id"),
+                "appointment_datetime": appointment_datetime.isoformat(),
+                "duration_minutes": 60,
                 "title": f"Auto-Generated Test Drive - {lead_data.get('vehicle_interest', 'Vehicle')}",
                 "description": "Automatically generated appointment for high-interest Facebook Marketplace lead",
+                "status": "scheduled",
+                "created_at": datetime.now(timezone.utc).isoformat(),
+                # Additional fields for tracking
                 "customer_name": f"{lead_data.get('first_name', '')} {lead_data.get('last_name', '')}".strip(),
                 "customer_phone": lead_data.get("primary_phone", ""),
                 "customer_email": lead_data.get("email", ""),
                 "vehicle_interest": lead_data.get("vehicle_interest", ""),
-                "appointment_date": next_slot["date"],
-                "appointment_time": next_slot["time"],
                 "location": "Dealership Showroom",
-                "status": "auto_generated",
                 "source": "facebook_marketplace_auto",
                 "priority": "high",
-                "created_at": datetime.now(timezone.utc).isoformat(),
                 "auto_generated": True
             }
             
