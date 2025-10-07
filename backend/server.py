@@ -2037,12 +2037,7 @@ async def get_creative_templates(
         raise HTTPException(status_code=500, detail="Failed to retrieve templates")
 
 @api_router.post("/creative/generate-ideas")
-async def generate_content_ideas_api(
-    tenant_id: str,
-    platform: str,
-    objective: str = "engagement",
-    count: int = 10
-):
+async def generate_content_ideas_api(request: dict):
     """Generate AI-powered content ideas"""
     try:
         # Generate base ideas
