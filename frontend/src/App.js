@@ -1456,49 +1456,123 @@ const InventoryManagement = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
                   {inventory.map((vehicle, index) => (
                     <Card key={vehicle.vin || index} className="glass-card hover:scale-105 transition-transform duration-200">
-                      <CardContent className="p-4">
-                        <div className="flex justify-between items-start mb-2">
-                          <Badge className={`badge-neon ${vehicle.condition === 'new' ? 'neon-green' : 'neon-orange'}`}>
-                            {vehicle.condition}
-                          </Badge>
-                          <div className="text-right">
-                            <div className="text-lg font-bold text-glass-bright">
-                              {formatPrice(vehicle.price)}
-                            </div>
-                            {vehicle.original_price > vehicle.price && (
-                              <div className="text-xs text-glass-muted line-through">
-                                {formatPrice(vehicle.original_price)}
+                      <CardContent className="p-0">
+                        {/* Vehicle Image */}
+                        <div className="relative h-48 w-full mb-4 rounded-t-lg overflow-hidden">
+                          {vehicle.images && vehicle.images.length > 0 ? (
+                            <img 
+                              src={vehicle.images[0]} 
+                              alt={`${vehicle.year} ${vehicle.make} ${vehicle.model}`}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                e.target.src = `https://via.placeholder.com/400x300/1a1a2e/eee?text=${vehicle.year}+${vehicle.make}+${vehicle.model}`;
+                              }}
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-gradient-to-br from-gray-700 to-gray-800 flex items-center justify-center">
+                              <div className="text-center text-gray-300">
+                                <Car className="w-12 h-12 mx-auto mb-2" />
+                                <div className="text-sm">{vehicle.year} {vehicle.make}</div>
+                                <div className="text-xs">{vehicle.model}</div>
                               </div>
-                            )}
+                            </div>
+                          )}
+                          
+                          {/* Condition Badge */}
+                          <div className="absolute top-3 left-3">
+                            <Badge className={`badge-neon ${vehicle.condition === 'new' ? 'neon-green' : 'neon-orange'}`}>
+                              {vehicle.condition?.toUpperCase()}
+                            </Badge>
                           </div>
+                          
+                          {/* Savings Badge */}
+                          {vehicle.savings > 0 && (
+                            <div className="absolute top-3 right-3">
+                              <Badge className="bg-red-600 text-white">
+                                Save ${vehicle.savings.toLocaleString()}
+                              </Badge>
+                            </div>
+                          )}
                         </div>
-                        
-                        <h4 className="text-lg font-semibold text-glass-bright mb-1">
-                          {vehicle.year} {vehicle.make} {vehicle.model}
-                        </h4>
-                        
-                        {vehicle.trim && (
-                          <p className="text-glass-muted mb-2">{vehicle.trim}</p>
-                        )}
-                        
-                        <div className="grid grid-cols-2 gap-2 text-sm text-glass-muted mb-3">
-                          <div>VIN: {vehicle.vin?.slice(-6) || 'N/A'}</div>
-                          <div>Stock: {vehicle.stock_number || 'N/A'}</div>
-                        </div>
-                        
-                        {vehicle.exterior_color && (
-                          <div className="text-sm text-glass-muted mb-2">
-                            Color: {vehicle.exterior_color}
+
+                        <div className="p-4">
+                          {/* Price Section */}
+                          <div className="flex justify-between items-center mb-3">
+                            <div className="text-right">
+                              <div className="text-xl font-bold text-glass-bright">
+                                {formatPrice(vehicle.price)}
+                              </div>
+                              {vehicle.original_price > vehicle.price && (
+                                <div className="text-sm text-glass-muted line-through">
+                                  MSRP: {formatPrice(vehicle.original_price)}
+                                </div>
+                              )}
+                            </div>
                           </div>
-                        )}
-                        
-                        <div className="flex gap-2">
-                          <Button size="sm" className="btn-neon flex-1">
-                            View Details
-                          </Button>
-                          <Button size="sm" variant="outline" className="text-glass-bright">
-                            <Phone className="w-3 h-3" />
-                          </Button>
+                          
+                          {/* Vehicle Title */}
+                          <h4 className="text-lg font-semibold text-glass-bright mb-1">
+                            {vehicle.year} {vehicle.make} {vehicle.model}
+                          </h4>
+                          
+                          {/* Trim */}
+                          {vehicle.trim && (
+                            <p className="text-glass-muted mb-2 font-medium">{vehicle.trim}</p>
+                          )}
+                          
+                          {/* Vehicle Details Grid */}
+                          <div className="grid grid-cols-2 gap-2 text-sm text-glass-muted mb-3">
+                            <div className="flex items-center">
+                              <span className="w-2 h-2 bg-blue-400 rounded-full mr-2"></span>
+                              VIN: {vehicle.vin?.slice(-6) || 'N/A'}
+                            </div>
+                            <div className="flex items-center">
+                              <span className="w-2 h-2 bg-green-400 rounded-full mr-2"></span>
+                              Stock: {vehicle.stock_number || 'N/A'}
+                            </div>
+                          </div>
+                          
+                          {/* Color Information */}
+                          {vehicle.exterior_color && (
+                            <div className="text-sm text-glass-muted mb-3 p-2 glass-card rounded">
+                              <div className="flex items-center">
+                                <Palette className="w-3 h-3 mr-2 text-purple-400" />
+                                <span className="font-medium">Exterior:</span>
+                                <span className="ml-1">{vehicle.exterior_color}</span>
+                              </div>
+                              {vehicle.interior_color && (
+                                <div className="flex items-center mt-1">
+                                  <span className="w-3 h-3 mr-2"></span>
+                                  <span className="font-medium">Interior:</span>
+                                  <span className="ml-1">{vehicle.interior_color}</span>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                          
+                          {/* Action Buttons */}
+                          <div className="flex gap-2">
+                            <Button size="sm" className="btn-neon flex-1">
+                              <Eye className="w-3 h-3 mr-1" />
+                              View Details
+                            </Button>
+                            <Button 
+                              size="sm" 
+                              variant="outline" 
+                              className="text-glass-bright hover:bg-blue-600"
+                              title="Call Dealership"
+                            >
+                              <Phone className="w-3 h-3" />
+                            </Button>
+                            <Button 
+                              size="sm" 
+                              variant="outline" 
+                              className="text-glass-bright hover:bg-green-600"
+                              title="Schedule Test Drive"
+                            >
+                              <Calendar className="w-3 h-3" />
+                            </Button>
+                          </div>
                         </div>
                       </CardContent>
                     </Card>
