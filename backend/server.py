@@ -8724,14 +8724,16 @@ async def trigger_demo_automation_scenarios():
         if inventory_result:
             results.append(inventory_result)
         
-        # Demo 3: Voice AI completion automation
+        # Demo 3: Voice AI completion automation (Fixed data structure)
         voice_call_data = {
             "customer_name": "Michael Rodriguez",
             "call_satisfaction": 4.8,
-            "purchase_intent": 0.92,
-            "interested_vehicle": "2023 Ford F-150",
+            "purchase_intent": 0.92,  # Required field for voice AI workflow conditions
+            "interested_vehicle": "2023 Ford F-150 Platinum",
             "call_duration": "6:45",
-            "next_steps": "Schedule test drive"
+            "next_steps": "Schedule test drive",
+            "budget": 58000,
+            "financing_interest": "excellent_credit"
         }
         
         voice_result = await trigger_voice_workflow(voice_call_data)
