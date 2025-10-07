@@ -1437,6 +1437,7 @@ function App() {
           <Route path="/leads" element={<LeadsManagement />} />
           <Route path="/team" element={<TeamManagement />} />
           <Route path="/creative" element={<CreativeStudio />} />
+          <Route path="/inventory" element={<InventoryManagement />} />
         </Routes>
         <Toaster position="top-right" />
       </div>
