@@ -14,7 +14,7 @@ import {
   Search, Bell, Car, Users, Clock, CheckCircle2, AlertTriangle,
   Phone, Mail, MessageSquare, Plus, Eye, Edit, Trash2, 
   Calendar, DollarSign, Star, Target, Zap, RefreshCw, Send,
-  CarIcon, Truck, Bike, Plane, Heart, BookmarkPlus
+  CarIcon, Truck, Bike, Plane, Heart, BookmarkPlus, TrendingUp
 } from 'lucide-react';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
