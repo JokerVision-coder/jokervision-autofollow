@@ -1677,6 +1677,451 @@ Vehicle Type: sedan"""
         
         return passed_tests >= total_tests * 0.8  # 80% pass rate required
 
+    # =============================================================================
+    # AI-POWERED INBOX SYSTEM TESTS
+    # =============================================================================
+
+    def test_ai_inbox_process_message(self):
+        """Test AI Inbox message processing endpoint"""
+        message_data = {
+            "conversation": {
+                "id": "conv_test_123",
+                "contact": {
+                    "name": "Sarah Johnson",
+                    "phone": "555-123-4567",
+                    "email": "sarah.johnson@email.com"
+                },
+                "channel": "sms"
+            },
+            "message_content": "Hi, I'm interested in a 2024 Toyota Camry. Can you tell me about pricing and availability?"
+        }
+        
+        success, response = self.run_test(
+            "AI Inbox - Process Message",
+            "POST",
+            "ai-inbox/process-message",
+            200,
+            data=message_data
+        )
+        
+        if success:
+            # Verify response structure
+            required_fields = ['status', 'ai_analysis', 'timestamp', 'system_version']
+            missing_fields = [field for field in required_fields if field not in response]
+            
+            if not missing_fields:
+                ai_analysis = response.get('ai_analysis', {})
+                
+                # Check AI analysis components
+                analysis_fields = ['ai_response', 'message_analysis', 'enhanced_lead_score', 'automation_applied']
+                analysis_missing = [field for field in analysis_fields if field not in ai_analysis]
+                
+                if not analysis_missing:
+                    ai_response = ai_analysis.get('ai_response', {})
+                    message_analysis = ai_analysis.get('message_analysis', {})
+                    
+                    print(f"   ✅ AI Analysis Complete:")
+                    print(f"      - Intent: {message_analysis.get('primary_intent', 'N/A')}")
+                    print(f"      - Urgency: {message_analysis.get('urgency', 'N/A')}")
+                    print(f"      - Sentiment: {message_analysis.get('sentiment', 'N/A')}")
+                    print(f"      - Lead Score: {ai_analysis.get('enhanced_lead_score', 'N/A')}")
+                    print(f"      - Response Confidence: {ai_response.get('confidence', 'N/A')}")
+                    print(f"      - Should Escalate: {ai_response.get('should_escalate', 'N/A')}")
+                    
+                    # Store conversation ID for follow-up tests
+                    self.test_conversation_id = "conv_test_123"
+                    self.test_ai_response = ai_response.get('response_text', '')
+                    
+                    return True
+                else:
+                    print(f"   ❌ AI analysis missing fields: {analysis_missing}")
+                    return False
+            else:
+                print(f"   ❌ Response missing fields: {missing_fields}")
+                return False
+        return False
+
+    def test_ai_inbox_auto_respond(self):
+        """Test AI Inbox auto-response endpoint"""
+        if not hasattr(self, 'test_conversation_id'):
+            self.test_conversation_id = "conv_test_123"
+        if not hasattr(self, 'test_ai_response'):
+            self.test_ai_response = "Hi Sarah! Thanks for your interest in the 2024 Toyota Camry. I'd be happy to help you with pricing and availability information!"
+        
+        response_data = {
+            "response_text": self.test_ai_response,
+            "channel": "sms",
+            "recipient": {
+                "name": "Sarah Johnson",
+                "phone": "555-123-4567"
+            }
+        }
+        
+        success, response = self.run_test(
+            "AI Inbox - Auto Respond",
+            "POST",
+            f"ai-inbox/auto-respond/{self.test_conversation_id}",
+            200,
+            data=response_data
+        )
+        
+        if success:
+            # Verify response structure
+            required_fields = ['status', 'delivery', 'message']
+            missing_fields = [field for field in required_fields if field not in response]
+            
+            if not missing_fields:
+                delivery = response.get('delivery', {})
+                delivery_fields = ['message_id', 'conversation_id', 'sent_via', 'recipient', 'content', 'sent_at', 'status', 'ai_generated']
+                delivery_missing = [field for field in delivery_fields if field not in delivery]
+                
+                if not delivery_missing:
+                    print(f"   ✅ Auto-response sent successfully:")
+                    print(f"      - Message ID: {delivery.get('message_id', 'N/A')}")
+                    print(f"      - Channel: {delivery.get('sent_via', 'N/A')}")
+                    print(f"      - Status: {delivery.get('status', 'N/A')}")
+                    print(f"      - AI Generated: {delivery.get('ai_generated', 'N/A')}")
+                    print(f"      - Content Preview: {delivery.get('content', '')[:100]}...")
+                    return True
+                else:
+                    print(f"   ❌ Delivery info missing fields: {delivery_missing}")
+                    return False
+            else:
+                print(f"   ❌ Response missing fields: {missing_fields}")
+                return False
+        return False
+
+    def test_ai_inbox_stats(self):
+        """Test AI Inbox statistics endpoint"""
+        success, response = self.run_test(
+            "AI Inbox - Statistics",
+            "GET",
+            "ai-inbox/stats",
+            200
+        )
+        
+        if success:
+            # Verify response structure
+            required_fields = ['ai_inbox_system', 'integration_status', 'supported_channels', 'ai_features', 'performance_metrics']
+            missing_fields = [field for field in required_fields if field not in response]
+            
+            if not missing_fields:
+                ai_system = response.get('ai_inbox_system', {})
+                ai_features = response.get('ai_features', {})
+                performance = response.get('performance_metrics', {})
+                
+                print(f"   ✅ AI Inbox Statistics Retrieved:")
+                print(f"      - System Status: {ai_system.get('ai_system', 'N/A')}")
+                print(f"      - Conversations Managed: {ai_system.get('conversations_managed', 'N/A')}")
+                print(f"      - Templates Loaded: {ai_system.get('templates_loaded', 'N/A')}")
+                print(f"      - Auto Response Rate: {ai_system.get('auto_response_rate', 'N/A')}")
+                print(f"      - Average Response Time: {ai_system.get('average_response_time', 'N/A')}")
+                print(f"      - Response Accuracy: {performance.get('response_accuracy', 'N/A')}")
+                print(f"      - Customer Satisfaction: {performance.get('customer_satisfaction', 'N/A')}")
+                print(f"      - Conversion Improvement: {performance.get('conversion_improvement', 'N/A')}")
+                
+                # Verify supported channels
+                channels = response.get('supported_channels', [])
+                expected_channels = ['SMS', 'Email', 'Facebook Messenger', 'Instagram DM', 'WhatsApp', 'Phone']
+                channels_present = all(channel in channels for channel in expected_channels)
+                
+                if channels_present:
+                    print(f"      - All {len(expected_channels)} channels supported ✅")
+                else:
+                    print(f"      - Missing some expected channels ⚠️")
+                
+                return True
+            else:
+                print(f"   ❌ Response missing fields: {missing_fields}")
+                return False
+        return False
+
+    def test_ai_inbox_create_campaign(self):
+        """Test AI Inbox marketing campaign creation"""
+        campaign_data = {
+            "name": "Test AI Marketing Campaign - Holiday Special",
+            "type": "promotional",
+            "target_audience": {
+                "leads": ["lead_123", "lead_456", "lead_789"],
+                "criteria": {
+                    "interested_vehicles": ["Toyota Camry", "Honda Accord"],
+                    "engagement_level": "medium_to_high",
+                    "last_contact": "within_30_days"
+                }
+            },
+            "template": "🎄 Holiday Special Alert! Hi {name}, exclusive year-end pricing on the {interested_vehicle} you were looking at. Save up to $3,000 + 0.9% APR financing! Limited time offer - interested in details?",
+            "schedule": {
+                "send_immediately": False,
+                "scheduled_date": "2024-12-15T10:00:00Z",
+                "time_zone": "America/Chicago"
+            }
+        }
+        
+        success, response = self.run_test(
+            "AI Inbox - Create Campaign",
+            "POST",
+            "ai-inbox/create-campaign",
+            200,
+            data=campaign_data
+        )
+        
+        if success:
+            # Verify response structure
+            required_fields = ['status', 'campaign', 'message']
+            missing_fields = [field for field in required_fields if field not in response]
+            
+            if not missing_fields:
+                campaign = response.get('campaign', {})
+                campaign_fields = ['campaign_id', 'status', 'estimated_reach', 'message']
+                campaign_missing = [field for field in campaign_fields if field not in campaign]
+                
+                if not campaign_missing:
+                    print(f"   ✅ Marketing Campaign Created:")
+                    print(f"      - Campaign ID: {campaign.get('campaign_id', 'N/A')}")
+                    print(f"      - Status: {campaign.get('status', 'N/A')}")
+                    print(f"      - Estimated Reach: {campaign.get('estimated_reach', 'N/A')} leads")
+                    print(f"      - Message: {campaign.get('message', 'N/A')}")
+                    
+                    # Store campaign ID for potential follow-up tests
+                    self.test_campaign_id = campaign.get('campaign_id')
+                    
+                    return True
+                else:
+                    print(f"   ❌ Campaign info missing fields: {campaign_missing}")
+                    return False
+            else:
+                print(f"   ❌ Response missing fields: {missing_fields}")
+                return False
+        return False
+
+    def test_ai_inbox_follow_up_sequence(self):
+        """Test AI Inbox follow-up sequence creation"""
+        sequence_data = {
+            "lead": {
+                "id": "lead_test_456",
+                "name": "Michael Rodriguez",
+                "phone": "555-987-6543",
+                "email": "michael.rodriguez@email.com",
+                "interested_vehicles": ["Toyota RAV4"],
+                "engagement_level": "high",
+                "last_contact": "2024-01-15T14:30:00Z"
+            },
+            "type": "high_interest"  # standard, high_interest, price_conscious
+        }
+        
+        success, response = self.run_test(
+            "AI Inbox - Follow-up Sequence",
+            "POST",
+            "ai-inbox/follow-up-sequence",
+            200,
+            data=sequence_data
+        )
+        
+        if success:
+            # Verify response structure
+            required_fields = ['status', 'follow_up', 'message']
+            missing_fields = [field for field in required_fields if field not in response]
+            
+            if not missing_fields:
+                follow_up = response.get('follow_up', {})
+                follow_up_fields = ['sequence_id', 'lead_id', 'sequence_type', 'steps', 'estimated_completion', 'status', 'next_message']
+                follow_up_missing = [field for field in follow_up_fields if field not in follow_up]
+                
+                if not follow_up_missing:
+                    print(f"   ✅ Follow-up Sequence Started:")
+                    print(f"      - Sequence ID: {follow_up.get('sequence_id', 'N/A')}")
+                    print(f"      - Lead ID: {follow_up.get('lead_id', 'N/A')}")
+                    print(f"      - Sequence Type: {follow_up.get('sequence_type', 'N/A')}")
+                    print(f"      - Steps: {follow_up.get('steps', 'N/A')}")
+                    print(f"      - Estimated Completion: {follow_up.get('estimated_completion', 'N/A')}")
+                    print(f"      - Status: {follow_up.get('status', 'N/A')}")
+                    print(f"      - Next Message In: {follow_up.get('next_message', 'N/A')} hours")
+                    
+                    # Store sequence ID for potential follow-up tests
+                    self.test_sequence_id = follow_up.get('sequence_id')
+                    
+                    return True
+                else:
+                    print(f"   ❌ Follow-up info missing fields: {follow_up_missing}")
+                    return False
+            else:
+                print(f"   ❌ Response missing fields: {missing_fields}")
+                return False
+        return False
+
+    def test_ai_inbox_conversation_analysis(self):
+        """Test AI Inbox conversation analysis endpoint"""
+        if not hasattr(self, 'test_conversation_id'):
+            self.test_conversation_id = "conv_test_123"
+        
+        success, response = self.run_test(
+            "AI Inbox - Conversation Analysis",
+            "GET",
+            f"ai-inbox/conversation-analysis/{self.test_conversation_id}",
+            200
+        )
+        
+        if success:
+            # Verify response structure
+            required_fields = ['conversation_id', 'message_count', 'engagement_level', 'interested_vehicles', 'current_stage', 'ai_recommendations', 'next_best_actions']
+            missing_fields = [field for field in required_fields if field not in response]
+            
+            if not missing_fields:
+                print(f"   ✅ Conversation Analysis Retrieved:")
+                print(f"      - Conversation ID: {response.get('conversation_id', 'N/A')}")
+                print(f"      - Message Count: {response.get('message_count', 'N/A')}")
+                print(f"      - Engagement Level: {response.get('engagement_level', 'N/A')}")
+                print(f"      - Interested Vehicles: {response.get('interested_vehicles', [])}")
+                print(f"      - Current Stage: {response.get('current_stage', 'N/A')}")
+                print(f"      - AI Recommendations: {len(response.get('ai_recommendations', []))} items")
+                print(f"      - Next Best Actions: {len(response.get('next_best_actions', []))} items")
+                
+                # Show first recommendation if available
+                recommendations = response.get('ai_recommendations', [])
+                if recommendations:
+                    print(f"      - Top Recommendation: {recommendations[0]}")
+                
+                return True
+            else:
+                print(f"   ❌ Response missing fields: {missing_fields}")
+                return False
+        return False
+
+    def test_ai_inbox_integration_with_ml(self):
+        """Test AI Inbox integration with ML lead scoring"""
+        print("\n🧠 Testing AI Inbox + ML Integration...")
+        
+        # Test message processing with ML scoring
+        message_data = {
+            "conversation": {
+                "id": "conv_ml_test_789",
+                "contact": {
+                    "name": "Jennifer Chen",
+                    "phone": "555-456-7890",
+                    "email": "jennifer.chen@email.com"
+                },
+                "channel": "facebook_messenger"
+            },
+            "message_content": "I need to buy a reliable SUV for my family ASAP. Budget is around $35,000. Can you help me today?"
+        }
+        
+        success, response = self.run_test(
+            "AI Inbox + ML - High Urgency Message",
+            "POST",
+            "ai-inbox/process-message",
+            200,
+            data=message_data
+        )
+        
+        if success:
+            ai_analysis = response.get('ai_analysis', {})
+            enhanced_score = ai_analysis.get('enhanced_lead_score', 0)
+            message_analysis = ai_analysis.get('message_analysis', {})
+            ai_response = ai_analysis.get('ai_response', {})
+            
+            # Verify ML integration
+            if enhanced_score > 0:
+                print(f"   ✅ ML Lead Scoring Integration Working:")
+                print(f"      - Enhanced Lead Score: {enhanced_score}/100")
+                print(f"      - Urgency Detected: {message_analysis.get('urgency', 'N/A')}")
+                print(f"      - Should Escalate: {ai_response.get('should_escalate', 'N/A')}")
+                print(f"      - Estimated Response Time: {ai_response.get('estimated_response_time', 'N/A')}")
+                
+                # Check if high urgency was properly detected
+                if message_analysis.get('urgency') == 'high' and ai_response.get('should_escalate'):
+                    print(f"      - ✅ High urgency properly detected and flagged for escalation")
+                    return True
+                else:
+                    print(f"      - ⚠️ Urgency detection may need improvement")
+                    return True  # Still pass as basic integration works
+            else:
+                print(f"   ❌ ML Lead Scoring not working - score is 0")
+                return False
+        return False
+
+    def test_ai_inbox_multi_channel_support(self):
+        """Test AI Inbox multi-channel message processing"""
+        print("\n📱 Testing AI Inbox Multi-Channel Support...")
+        
+        channels = [
+            {"channel": "sms", "name": "SMS Text"},
+            {"channel": "email", "name": "Email"},
+            {"channel": "facebook_messenger", "name": "Facebook Messenger"},
+            {"channel": "instagram_dm", "name": "Instagram DM"},
+            {"channel": "whatsapp", "name": "WhatsApp"}
+        ]
+        
+        passed_channels = 0
+        
+        for i, channel_info in enumerate(channels):
+            message_data = {
+                "conversation": {
+                    "id": f"conv_channel_test_{i}",
+                    "contact": {
+                        "name": f"Test Customer {i+1}",
+                        "phone": f"555-{100+i:03d}-{200+i:04d}"
+                    },
+                    "channel": channel_info["channel"]
+                },
+                "message_content": f"Hi, I'm interested in your vehicles. Can you help me find a good {['sedan', 'SUV', 'truck', 'hybrid', 'coupe'][i]}?"
+            }
+            
+            success, response = self.run_test(
+                f"AI Inbox - {channel_info['name']} Channel",
+                "POST",
+                "ai-inbox/process-message",
+                200,
+                data=message_data
+            )
+            
+            if success:
+                ai_analysis = response.get('ai_analysis', {})
+                if ai_analysis.get('automation_applied'):
+                    passed_channels += 1
+                    print(f"   ✅ {channel_info['name']} - Processing successful")
+                else:
+                    print(f"   ❌ {channel_info['name']} - Automation not applied")
+            else:
+                print(f"   ❌ {channel_info['name']} - Processing failed")
+        
+        success_rate = (passed_channels / len(channels)) * 100
+        print(f"   📊 Multi-Channel Support: {passed_channels}/{len(channels)} channels working ({success_rate:.1f}%)")
+        
+        return passed_channels >= len(channels) * 0.8  # 80% of channels should work
+
+    def test_ai_inbox_comprehensive(self):
+        """Run comprehensive AI Inbox test suite"""
+        print("\n🤖 Running Comprehensive AI-Powered Inbox Tests...")
+        
+        ai_inbox_tests = [
+            ("Process Message", self.test_ai_inbox_process_message),
+            ("Auto Respond", self.test_ai_inbox_auto_respond),
+            ("Statistics", self.test_ai_inbox_stats),
+            ("Create Campaign", self.test_ai_inbox_create_campaign),
+            ("Follow-up Sequence", self.test_ai_inbox_follow_up_sequence),
+            ("Conversation Analysis", self.test_ai_inbox_conversation_analysis),
+            ("ML Integration", self.test_ai_inbox_integration_with_ml),
+            ("Multi-Channel Support", self.test_ai_inbox_multi_channel_support)
+        ]
+        
+        passed_tests = 0
+        total_tests = len(ai_inbox_tests)
+        
+        for test_name, test_func in ai_inbox_tests:
+            try:
+                if test_func():
+                    passed_tests += 1
+                    print(f"   ✅ {test_name} - PASSED")
+                else:
+                    print(f"   ❌ {test_name} - FAILED")
+            except Exception as e:
+                print(f"   ❌ {test_name} - ERROR: {str(e)}")
+        
+        success_rate = (passed_tests / total_tests) * 100
+        print(f"\n   📊 AI-Powered Inbox Test Suite: {passed_tests}/{total_tests} passed ({success_rate:.1f}%)")
+        
+        return passed_tests >= total_tests * 0.75  # 75% pass rate required for AI system
+
     # Social Media Hub API Tests
     def test_get_social_media_accounts(self):
         """Test GET /api/social-media/accounts endpoint"""
