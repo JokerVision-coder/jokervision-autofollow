@@ -540,6 +540,28 @@ class MarketplaceContentScript {
                         sendResponse({ success: false, error: 'Description field not found' });
                     }
                     break;
+                // Facebook Marketplace automation actions
+                case 'scanCurrentVehicle':
+                    this.scanCurrentVehicle().then(sendResponse);
+                    return true; // Keep message channel open for async response
+                case 'scanAndUploadInventory':
+                    this.scanAndUploadInventory().then(sendResponse);
+                    return true;
+                case 'scanMarketplaceInventory':
+                    this.scanMarketplaceInventory().then(sendResponse);
+                    return true;
+                case 'startLeadMonitoring':
+                    this.startLeadMonitoring(request.settings);
+                    sendResponse({ success: true });
+                    break;
+                case 'monitorLeadActivity':
+                    this.monitorLeadActivity();
+                    sendResponse({ success: true });
+                    break;
+                case 'enhancePage':
+                    this.enhanceMarketplacePage(request.url);
+                    sendResponse({ success: true });
+                    break;
                 default:
                     sendResponse({ error: 'Unknown action' });
             }
