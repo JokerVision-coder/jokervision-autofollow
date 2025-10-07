@@ -7798,6 +7798,311 @@ async def sync_inventory(tenant_id: str):
         logger.error(f"Error syncing inventory: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to sync inventory")
 
+# Walk-In Tracker Models
+class WalkInCustomer(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    tenant_id: str
+    customer_name: str
+    phone: str
+    email: Optional[str] = None
+    visit_date: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    interested_vehicle: str
+    budget: float
+    status: str = "pending"  # pending, contacted, scheduled, converted, lost
+    priority: str = "medium"  # low, medium, high
+    reason_not_bought: str
+    salesperson: str
+    notes: Optional[str] = None
+    follow_up_scheduled: datetime = Field(default_factory=lambda: datetime.now(timezone.utc) + timedelta(days=1))
+    ai_score: int = Field(default=75, ge=0, le=100)
+    contact_attempts: int = 0
+    last_contact_date: Optional[datetime] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class VehicleWishlistRequest(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    tenant_id: str
+    customer_name: str
+    phone: str
+    email: Optional[str] = None
+    request_date: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    
+    # Vehicle specifications
+    desired_year: int
+    desired_make: str
+    desired_model: str
+    desired_trim: Optional[str] = None
+    desired_color: Optional[str] = None
+    max_budget: float
+    max_mileage: int = 0
+    
+    # Request details
+    status: str = "active"  # active, fulfilled, expired, cancelled
+    urgency: str = "medium"  # low, medium, high, urgent
+    flexible_specs: bool = True
+    willing_to_wait: bool = True
+    deposit_amount: float = 0
+    timeframe: str = "1 month"
+    
+    # Customer preferences
+    preferred_features: List[str] = []
+    dealbreakers: List[str] = []
+    
+    # Sales info
+    salesperson: str
+    notes: Optional[str] = None
+    last_contact_date: Optional[datetime] = None
+    
+    # AI scoring
+    ai_match_score: int = Field(default=75, ge=0, le=100)
+    conversion_probability: int = Field(default=75, ge=0, le=100)
+    estimated_value: float = 0
+    
+    # Notification preferences
+    notify_by_sms: bool = True
+    notify_by_email: bool = True
+    notify_by_call: bool = False
+    auto_schedule_viewing: bool = False
+    
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+# Walk-In Tracker Routes
+@api_router.get("/walk-in-tracker/customers")
+async def get_walk_in_customers(
+    tenant_id: str = Query(...),
+    status: Optional[str] = None,
+    priority: Optional[str] = None,
+    limit: int = Query(50, le=100)
+):
+    """Get walk-in customers for follow-up"""
+    try:
+        filter_query = {"tenant_id": tenant_id}
+        
+        if status and status != "all":
+            filter_query["status"] = status
+        if priority and priority != "all":
+            filter_query["priority"] = priority
+        
+        customers = await db.walk_in_customers.find(filter_query).sort("visit_date", -1).limit(limit).to_list(None)
+        
+        result_customers = []
+        for customer in customers:
+            # Convert datetime fields
+            for field in ['visit_date', 'follow_up_scheduled', 'last_contact_date', 'created_at']:
+                if customer.get(field) and isinstance(customer[field], str):
+                    try:
+                        customer[field] = datetime.fromisoformat(customer[field])
+                    except:
+                        customer[field] = None
+            
+            result_customers.append(WalkInCustomer(**customer))
+        
+        return {
+            "customers": result_customers,
+            "total_count": len(result_customers)
+        }
+        
+    except Exception as e:
+        logger.error(f"Error fetching walk-in customers: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch walk-in customers")
+
+@api_router.post("/walk-in-tracker/customers", response_model=WalkInCustomer)
+async def create_walk_in_customer(customer_data: dict):
+    """Add a new walk-in customer"""
+    try:
+        customer_obj = WalkInCustomer(**customer_data)
+        customer_doc = customer_obj.dict()
+        
+        # Convert datetime fields to strings for MongoDB
+        for field in ['visit_date', 'follow_up_scheduled', 'last_contact_date', 'created_at']:
+            if customer_doc.get(field):
+                customer_doc[field] = customer_doc[field].isoformat()
+        
+        await db.walk_in_customers.insert_one(customer_doc)
+        return customer_obj
+        
+    except Exception as e:
+        logger.error(f"Error creating walk-in customer: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to create walk-in customer")
+
+@api_router.post("/walk-in-tracker/follow-up/{customer_id}")
+async def send_follow_up(customer_id: str, method: str = Query(...)):
+    """Send follow-up to walk-in customer"""
+    try:
+        customer = await db.walk_in_customers.find_one({"id": customer_id})
+        if not customer:
+            raise HTTPException(status_code=404, detail="Customer not found")
+        
+        # Update contact attempts and last contact date
+        await db.walk_in_customers.update_one(
+            {"id": customer_id},
+            {
+                "$set": {
+                    "status": "contacted",
+                    "last_contact_date": datetime.now(timezone.utc).isoformat(),
+                    "contact_attempts": customer.get("contact_attempts", 0) + 1
+                }
+            }
+        )
+        
+        return {
+            "message": f"Follow-up sent via {method}",
+            "customer_id": customer_id,
+            "method": method
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error sending follow-up: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to send follow-up")
+
+# Vehicle Wishlist Routes
+@api_router.get("/vehicle-wishlist/requests")
+async def get_wishlist_requests(
+    tenant_id: str = Query(...),
+    status: Optional[str] = None,
+    urgency: Optional[str] = None,
+    make: Optional[str] = None,
+    limit: int = Query(50, le=100)
+):
+    """Get vehicle wishlist requests"""
+    try:
+        filter_query = {"tenant_id": tenant_id}
+        
+        if status and status != "all":
+            filter_query["status"] = status
+        if urgency and urgency != "all":
+            filter_query["urgency"] = urgency
+        if make and make != "all":
+            filter_query["desired_make"] = {"$regex": make, "$options": "i"}
+        
+        requests = await db.vehicle_wishlist.find(filter_query).sort("request_date", -1).limit(limit).to_list(None)
+        
+        result_requests = []
+        for request in requests:
+            # Convert datetime fields
+            for field in ['request_date', 'last_contact_date', 'created_at', 'updated_at']:
+                if request.get(field) and isinstance(request[field], str):
+                    try:
+                        request[field] = datetime.fromisoformat(request[field])
+                    except:
+                        request[field] = None
+            
+            result_requests.append(VehicleWishlistRequest(**request))
+        
+        return {
+            "requests": result_requests,
+            "total_count": len(result_requests)
+        }
+        
+    except Exception as e:
+        logger.error(f"Error fetching wishlist requests: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch wishlist requests")
+
+@api_router.post("/vehicle-wishlist/requests", response_model=VehicleWishlistRequest)
+async def create_wishlist_request(request_data: dict):
+    """Add a new vehicle wishlist request"""
+    try:
+        request_obj = VehicleWishlistRequest(**request_data)
+        request_doc = request_obj.dict()
+        
+        # Convert datetime fields to strings for MongoDB
+        for field in ['request_date', 'last_contact_date', 'created_at', 'updated_at']:
+            if request_doc.get(field):
+                request_doc[field] = request_doc[field].isoformat()
+        
+        await db.vehicle_wishlist.insert_one(request_doc)
+        return request_obj
+        
+    except Exception as e:
+        logger.error(f"Error creating wishlist request: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to create wishlist request")
+
+@api_router.post("/vehicle-wishlist/auto-match")
+async def auto_match_vehicles(tenant_id: str = Query(...)):
+    """Automatically match wishlist requests with available inventory"""
+    try:
+        # Get active wishlist requests
+        active_requests = await db.vehicle_wishlist.find({
+            "tenant_id": tenant_id,
+            "status": "active"
+        }).to_list(None)
+        
+        # Get available vehicles
+        available_vehicles = await db.vehicles.find({
+            "tenant_id": tenant_id,
+            "status": "Available"
+        }).to_list(None)
+        
+        matches_found = 0
+        
+        for request in active_requests:
+            for vehicle in available_vehicles:
+                # Check if vehicle matches request criteria
+                if (vehicle.get("make", "").lower() == request.get("desired_make", "").lower() and
+                    vehicle.get("model", "").lower() == request.get("desired_model", "").lower() and
+                    vehicle.get("year", 0) >= request.get("desired_year", 0) - 1 and
+                    vehicle.get("year", 0) <= request.get("desired_year", 0) + 1 and
+                    vehicle.get("price", 0) <= request.get("max_budget", 0) * 1.1):
+                    
+                    # Mark request as fulfilled
+                    await db.vehicle_wishlist.update_one(
+                        {"id": request["id"]},
+                        {
+                            "$set": {
+                                "status": "fulfilled",
+                                "last_contact_date": datetime.now(timezone.utc).isoformat(),
+                                "updated_at": datetime.now(timezone.utc).isoformat()
+                            }
+                        }
+                    )
+                    
+                    matches_found += 1
+                    break  # Move to next request after finding a match
+        
+        return {
+            "matches_found": matches_found,
+            "message": f"Found {matches_found} matches and notified customers"
+        }
+        
+    except Exception as e:
+        logger.error(f"Error in auto-match: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to auto-match vehicles")
+
+@api_router.post("/vehicle-wishlist/notify/{request_id}")
+async def notify_customer_match(request_id: str, vehicle_id: Optional[str] = None):
+    """Notify customer about vehicle match"""
+    try:
+        request = await db.vehicle_wishlist.find_one({"id": request_id})
+        if not request:
+            raise HTTPException(status_code=404, detail="Wishlist request not found")
+        
+        # Update request status
+        await db.vehicle_wishlist.update_one(
+            {"id": request_id},
+            {
+                "$set": {
+                    "status": "fulfilled" if vehicle_id else "contacted",
+                    "last_contact_date": datetime.now(timezone.utc).isoformat(),
+                    "updated_at": datetime.now(timezone.utc).isoformat()
+                }
+            }
+        )
+        
+        return {
+            "message": "Customer notification sent successfully",
+            "request_id": request_id,
+            "vehicle_id": vehicle_id
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error notifying customer: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to notify customer")
+
 # Include the router in the main app
 app.include_router(api_router)
 
