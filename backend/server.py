@@ -8401,7 +8401,15 @@ async def sync_inventory(tenant_id: str):
         # Use real inventory scraper
         scraper = ShottenkilkInventoryScraper()
         logger.info(f"Starting real inventory scraping for tenant: {tenant_id}")
-        inventory_data = await scraper.scrape_all_inventory()
+        
+        try:
+            inventory_data = await scraper.scrape_all_inventory()
+            logger.info(f"Successfully scraped {inventory_data.get('total_vehicles', 0)} vehicles")
+        except Exception as scraper_error:
+            logger.error(f"Scraping failed: {str(scraper_error)}. Falling back to mock data.")
+            # Fallback to mock data if scraping fails
+            inventory_data = scraper.get_mock_data()
+            inventory_data["fallback_used"] = True
         
         synced_count = 0
         for vehicle_data in inventory_data["vehicles"]:
