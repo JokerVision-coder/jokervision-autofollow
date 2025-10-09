@@ -227,27 +227,15 @@ const ExclusiveLeadEngine = () => {
   };
 
   const fetchAIPredictions = async () => {
-    const mockPredictions = {
-      next_hour_leads: 12,
-      next_hour_quality: 'high',
-      conversion_probability: {
-        'exclusive_001': 94,
-        'exclusive_002': 87,
-        'exclusive_003': 98
-      },
-      optimal_pricing_strategy: {
-        luxury_segment: 'premium_positioning',
-        volume_segment: 'competitive_pricing',
-        urgent_buyers: 'value_bundling'
-      },
-      market_predictions: {
-        demand_spike_predicted: 'next_2_hours',
-        optimal_inventory_focus: '2024_luxury_suvs',
-        competitor_weakness_window: '3_hour_window'
-      }
-    };
-    
-    setAiPredictions(mockPredictions);
+    try {
+      const response = await fetch(`${API}/exclusive-leads/predictions?tenant_id=default`);
+      const data = await response.json();
+      setAiPredictions(data.ai_predictions);
+    } catch (error) {
+      console.error('Error fetching AI predictions:', error);
+      // Fallback to empty object if API fails
+      setAiPredictions({});
+    }
   };
 
   const fetchRealTimeAlerts = async () => {
