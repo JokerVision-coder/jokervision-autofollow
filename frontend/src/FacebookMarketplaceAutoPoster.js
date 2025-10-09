@@ -279,14 +279,14 @@ const FacebookMarketplaceAutoPoster = () => {
 
         <motion.div
           whileHover={{ scale: 1.02 }}
-          className="bg-gradient-to-br from-orange-900/40 to-red-800/40 backdrop-blur-lg border border-orange-500/30 rounded-2xl p-6"
+          className="bg-gradient-to-br from-indigo-900/40 to-blue-800/40 backdrop-blur-lg border border-indigo-500/30 rounded-2xl p-6"
         >
           <div className="flex items-center justify-between mb-4">
-            <Brain className="w-8 h-8 text-orange-400" />
-            <Badge className="bg-orange-500 text-xs">AI Powered</Badge>
+            <Brain className="w-8 h-8 text-indigo-400" />
+            <Badge className="bg-indigo-500 text-xs">AI Powered</Badge>
           </div>
           <h3 className="text-3xl font-bold text-white mb-2">{analytics.aiOptimizationSuccess}%</h3>
-          <p className="text-orange-300 text-sm">AI Success Rate</p>
+          <p className="text-indigo-300 text-sm">AI Success Rate</p>
           <p className="text-gray-400 text-xs mt-1">Superior to all competitors</p>
         </motion.div>
       </div>
