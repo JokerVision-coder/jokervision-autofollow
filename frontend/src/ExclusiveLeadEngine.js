@@ -203,34 +203,15 @@ const ExclusiveLeadEngine = () => {
   };
 
   const fetchMarketTiming = async () => {
-    const mockTiming = {
-      optimal_contact_windows: {
-        luxury_buyers: 'Weekday 9-11 AM',
-        truck_buyers: 'Weekend evenings',
-        suv_family_buyers: 'Weekday 6-8 PM',
-        business_buyers: 'Tuesday-Thursday 10 AM-3 PM'
-      },
-      seasonal_trends: {
-        current_season: 'peak_buying_season',
-        seasonal_multiplier: 1.34,
-        days_until_peak: 12,
-        inventory_pressure: 'medium'
-      },
-      economic_indicators: {
-        interest_rate_trend: 'favorable',
-        consumer_confidence: 'high',
-        auto_loan_approval_rates: 'increasing',
-        trade_in_values: 'stable_high'
-      },
-      urgency_triggers: [
-        'Year-end tax benefits (14 days left)',
-        'Model year closeout incentives',
-        'Interest rate lock period ending',
-        'Lease return deadline approaching'
-      ]
-    };
-    
-    setMarketTiming(mockTiming);
+    try {
+      const response = await fetch(`${API}/exclusive-leads/market-timing?tenant_id=default`);
+      const data = await response.json();
+      setMarketTiming(data.market_timing);
+    } catch (error) {
+      console.error('Error fetching market timing:', error);
+      // Fallback to empty object if API fails  
+      setMarketTiming({});
+    }
   };
 
   const fetchLeadProtection = async () => {
