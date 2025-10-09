@@ -45,6 +45,15 @@ db = client[os.environ['DB_NAME']]
 # Create the main app without a prefix
 app = FastAPI()
 
+# Security and Rate Limiting Configuration
+limiter = Limiter(key_func=get_remote_address)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_middleware(SlowAPIMiddleware)
+
+# Security bearer token
+security = HTTPBearer()
+
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
 
