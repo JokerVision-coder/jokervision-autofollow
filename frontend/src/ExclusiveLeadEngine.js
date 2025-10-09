@@ -191,30 +191,15 @@ const ExclusiveLeadEngine = () => {
   };
 
   const fetchCompetitorData = async () => {
-    const mockCompetitorData = {
-      competitors_monitored: 23,
-      their_lead_sources: [
-        { name: 'Generic AutoTrader', leads_today: 45, quality_score: 34 },
-        { name: 'Cars.com Basic', leads_today: 38, quality_score: 29 },
-        { name: 'Facebook Ads (Generic)', leads_today: 67, quality_score: 22 },
-        { name: 'ALME Agency Leads', leads_today: 28, quality_score: 41 }
-      ],
-      our_advantage: {
-        lead_exclusivity: '100% vs 0% competitors',
-        response_time: '47 seconds vs 8.2 minutes competitors',
-        close_rate: '78.4% vs 23.1% competitors',
-        customer_satisfaction: '96.8% vs 74.3% competitors'
-      },
-      market_gaps_identified: 8,
-      untapped_opportunities: [
-        'High-net-worth professionals network',
-        'Corporate fleet decision makers',
-        'Luxury vehicle lease expiration alerts',
-        'Business tax incentive timing'
-      ]
-    };
-    
-    setCompetitorData(mockCompetitorData);
+    try {
+      const response = await fetch(`${API}/exclusive-leads/competitors?tenant_id=default`);
+      const data = await response.json();
+      setCompetitorData(data.competitor_data);
+    } catch (error) {
+      console.error('Error fetching competitor data:', error);
+      // Fallback to empty object if API fails
+      setCompetitorData({});
+    }
   };
 
   const fetchMarketTiming = async () => {
