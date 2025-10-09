@@ -99,7 +99,7 @@ async def setup_production_database():
             print("✅ Database connectivity test passed!")
         
         # Show database statistics
-        stats = await db.command("dbstats")
+        stats = await client[db_name].command("dbstats")
         print(f"📈 Database stats:")
         print(f"   Collections: {stats.get('collections', 0)}")
         print(f"   Data size: {stats.get('dataSize', 0)} bytes")
