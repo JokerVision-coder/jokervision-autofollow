@@ -223,9 +223,16 @@ const MainTabNavigator = ({ connectionStatus, voiceAIAvailable }) => {
       />
       
       <Tab.Screen 
-        name="Leads" 
-        component={LeadsScreen}
-        options={{ title: '👥 Leads' }}
+        name="ExclusiveLeads" 
+        component={ExclusiveLeadsScreen}
+        options={{ 
+          title: '👑 Exclusive', 
+          tabBarBadge: '●',
+          tabBarBadgeStyle: { 
+            backgroundColor: '#e94560',
+            fontSize: 8,
+          },
+        }}
       />
       
       <Tab.Screen 
