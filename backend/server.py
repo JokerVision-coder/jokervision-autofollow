@@ -1351,6 +1351,9 @@ async def verify_token(credentials: HTTPAuthorizationCredentials = Depends(secur
         # decoded = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
         
         return {"user_id": "demo_user", "tenant_id": "default"}
+    except Exception as e:
+        logger.error(f"Authentication error: {str(e)}")
+        raise HTTPException(status_code=401, detail="Authentication failed")
 
 def validate_tenant_id(tenant_id: str) -> str:
     """Validate and sanitize tenant_id"""
@@ -1359,9 +1362,6 @@ def validate_tenant_id(tenant_id: str) -> str:
     if len(tenant_id) > 50:
         raise HTTPException(status_code=400, detail="Tenant_id too long")
     return tenant_id.lower()
-    except Exception as e:
-        logger.error(f"Authentication error: {str(e)}")
-        raise HTTPException(status_code=401, detail="Authentication failed")
 
 # Health Check Endpoints (Public - No Auth Required)
 @app.get("/health")
