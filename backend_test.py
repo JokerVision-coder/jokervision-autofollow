@@ -4002,48 +4002,6 @@ Vehicle Type: sedan"""
             print(f"      - If frontend sections are still empty, the issue is likely in frontend code")
         
         return passed_tests >= total_tests * 0.75  # 75% pass rate required
-            
-            if not missing_actions:
-                print("   ✅ ALL 4 voice AI actions executed successfully")
-                
-                # Analyze automotive content in each action
-                automotive_content_scores = []
-                
-                for action in actions_executed:
-                    action_type = action.get('type')
-                    content = str(action.get('content', '') + action.get('description', '')).lower()
-                    
-                    # Enhanced automotive content indicators
-                    automotive_indicators = [
-                        '0.9% apr', '0% apr', 'manufacturer cash back', 'trade-in guarantee',
-                        'vin reservation', 'dealership phone', 'vip treatment', 'exclusive offer',
-                        'urgency', 'same-day approval', 'extended terms', 'first-time buyer',
-                        'protection plan', 'gap insurance', 'warranty', 'certified pre-owned',
-                        'toyota', 'rav4', 'financing options', 'test drive', 'vehicle consultation'
-                    ]
-                    
-                    found_indicators = sum(1 for indicator in automotive_indicators if indicator in content)
-                    automotive_score = (found_indicators / len(automotive_indicators)) * 100
-                    automotive_content_scores.append(automotive_score)
-                    
-                    if found_indicators >= 3:
-                        print(f"      ✅ {action_type}: {found_indicators} automotive indicators ({automotive_score:.1f}%)")
-                    else:
-                        print(f"      ⚠️  {action_type}: Only {found_indicators} automotive indicators ({automotive_score:.1f}%)")
-                
-                avg_automotive_content = sum(automotive_content_scores) / len(automotive_content_scores)
-                print(f"   📊 Average automotive content: {avg_automotive_content:.1f}%")
-                
-                if avg_automotive_content >= 75.0:
-                    print("   ✅ CRITICAL SUCCESS: Voice AI actions contain comprehensive automotive content")
-                    return True
-                else:
-                    print(f"   ❌ CRITICAL FAILURE: Automotive content {avg_automotive_content:.1f}% below 75% target")
-                    return False
-            else:
-                print(f"   ❌ CRITICAL FAILURE: Missing expected actions: {missing_actions}")
-                return False
-        return False
 
     def test_enhanced_workflow_automation_comprehensive(self):
         """Run comprehensive enhanced workflow automation tests"""
