@@ -143,7 +143,7 @@ const WorkflowAutomation = () => {
 
         <motion.div
           whileHover={{ scale: 1.02 }}
-          className="bg-gradient-to-br from-purple-900/40 to-purple-800/40 backdrop-blur-lg border border-purple-500/30 rounded-2xl p-6"
+          className="bg-gradient-to-br from-indigo-900/40 to-indigo-800/40 backdrop-blur-lg border border-indigo-500/30 rounded-2xl p-6"
         >
           <div className="flex items-center justify-between mb-4">
             <BarChart3 className="w-8 h-8 text-purple-400" />
