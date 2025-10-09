@@ -4100,6 +4100,412 @@ Vehicle Type: sedan"""
             print("   ❌ AI Ideas or Analytics functionality may be incomplete")
             return False
 
+    # =============================================================================
+    # INVENTORY SYSTEM TESTS - PRIORITY TESTING FOR VEHICLE DATA ANALYSIS
+    # =============================================================================
+
+    def test_inventory_vehicles_data_structure(self):
+        """Test GET /api/inventory/vehicles - Analyze vehicle data structure and completeness"""
+        print("\n🚗 Testing Inventory Vehicles Data Structure...")
+        
+        success, response = self.run_test(
+            "Get Inventory Vehicles",
+            "GET",
+            "inventory/vehicles?tenant_id=default_dealership&limit=50",
+            200
+        )
+        
+        if success:
+            vehicles = response.get('vehicles', [])
+            total_count = response.get('total', 0)
+            
+            print(f"   📊 Total vehicles in database: {total_count}")
+            print(f"   📊 Vehicles returned in response: {len(vehicles)}")
+            
+            if vehicles:
+                # Analyze first vehicle structure
+                first_vehicle = vehicles[0]
+                print(f"\n   🔍 Analyzing vehicle data structure:")
+                
+                # Check title information (year, make, model, trim)
+                title_fields = ['year', 'make', 'model', 'trim']
+                title_completeness = sum(1 for field in title_fields if first_vehicle.get(field))
+                print(f"   - Title completeness: {title_completeness}/{len(title_fields)} fields")
+                
+                # Check image data
+                images = first_vehicle.get('images', [])
+                print(f"   - Images per vehicle: {len(images)} images")
+                
+                if images:
+                    # Check image structure
+                    first_image = images[0]
+                    image_fields = ['url', 'type', 'description']
+                    image_structure = [field for field in image_fields if field in first_image]
+                    print(f"   - Image structure: {image_structure}")
+                    
+                    # Test image accessibility
+                    if 'url' in first_image:
+                        try:
+                            import requests
+                            img_response = requests.head(first_image['url'], timeout=5)
+                            if img_response.status_code == 200:
+                                print(f"   - First image URL accessible: ✅")
+                            else:
+                                print(f"   - First image URL status: {img_response.status_code}")
+                        except:
+                            print(f"   - Image URL accessibility: ❌ (timeout/error)")
+                
+                # Check specifications
+                specs = first_vehicle.get('specifications', {})
+                spec_fields = ['engine', 'transmission', 'mileage', 'fuel_type', 'drivetrain']
+                spec_completeness = sum(1 for field in spec_fields if specs.get(field))
+                print(f"   - Specifications completeness: {spec_completeness}/{len(spec_fields)} fields")
+                
+                # Check pricing data
+                pricing_fields = ['price', 'msrp', 'market_price']
+                pricing_completeness = sum(1 for field in pricing_fields if first_vehicle.get(field))
+                print(f"   - Pricing completeness: {pricing_completeness}/{len(pricing_fields)} fields")
+                
+                # Check features
+                features = first_vehicle.get('features', [])
+                print(f"   - Features count: {len(features)} features")
+                
+                # Analyze multiple vehicles for consistency
+                if len(vehicles) > 1:
+                    print(f"\n   🔍 Analyzing data consistency across {min(5, len(vehicles))} vehicles:")
+                    
+                    image_counts = [len(v.get('images', [])) for v in vehicles[:5]]
+                    avg_images = sum(image_counts) / len(image_counts)
+                    print(f"   - Average images per vehicle: {avg_images:.1f}")
+                    print(f"   - Image count range: {min(image_counts)} - {max(image_counts)}")
+                    
+                    # Check for vehicles with complete titles
+                    complete_titles = 0
+                    for vehicle in vehicles[:10]:
+                        if all(vehicle.get(field) for field in ['year', 'make', 'model']):
+                            complete_titles += 1
+                    print(f"   - Vehicles with complete titles: {complete_titles}/10")
+                
+                return True
+            else:
+                print("   ❌ No vehicles found in response")
+                return False
+        return False
+
+    def test_inventory_summary_analysis(self):
+        """Test GET /api/inventory/summary - Check summary statistics"""
+        print("\n📊 Testing Inventory Summary Analysis...")
+        
+        success, response = self.run_test(
+            "Get Inventory Summary",
+            "GET",
+            "inventory/summary?tenant_id=default_dealership",
+            200
+        )
+        
+        if success:
+            print(f"   📊 Summary Response Analysis:")
+            
+            # Check summary fields
+            summary_fields = ['total_vehicles', 'by_make', 'by_year', 'by_price_range', 'recent_additions']
+            for field in summary_fields:
+                if field in response:
+                    value = response[field]
+                    if isinstance(value, dict):
+                        print(f"   - {field}: {len(value)} categories")
+                    elif isinstance(value, list):
+                        print(f"   - {field}: {len(value)} items")
+                    else:
+                        print(f"   - {field}: {value}")
+                else:
+                    print(f"   - {field}: ❌ Missing")
+            
+            # Analyze by_make distribution
+            by_make = response.get('by_make', {})
+            if by_make:
+                print(f"\n   🏭 Vehicle distribution by make:")
+                for make, count in sorted(by_make.items(), key=lambda x: x[1], reverse=True)[:5]:
+                    print(f"   - {make}: {count} vehicles")
+            
+            # Check total consistency
+            total_vehicles = response.get('total_vehicles', 0)
+            make_total = sum(by_make.values()) if by_make else 0
+            if total_vehicles == make_total:
+                print(f"   ✅ Total vehicles consistent: {total_vehicles}")
+            else:
+                print(f"   ⚠️  Total mismatch: summary={total_vehicles}, by_make={make_total}")
+            
+            return True
+        return False
+
+    def test_vehicle_data_completeness_check(self):
+        """Test vehicle data completeness - titles, images, specifications, pricing"""
+        print("\n🔍 Testing Vehicle Data Completeness...")
+        
+        success, response = self.run_test(
+            "Get Vehicles for Completeness Check",
+            "GET",
+            "inventory/vehicles?tenant_id=default_dealership&limit=20",
+            200
+        )
+        
+        if success:
+            vehicles = response.get('vehicles', [])
+            
+            if vehicles:
+                print(f"   📊 Analyzing {len(vehicles)} vehicles for data completeness:")
+                
+                # Initialize counters
+                complete_titles = 0
+                multiple_images = 0
+                complete_specs = 0
+                has_pricing = 0
+                has_features = 0
+                
+                for vehicle in vehicles:
+                    # Check title completeness (year, make, model, trim)
+                    if all(vehicle.get(field) for field in ['year', 'make', 'model']):
+                        complete_titles += 1
+                    
+                    # Check multiple images
+                    images = vehicle.get('images', [])
+                    if len(images) > 1:
+                        multiple_images += 1
+                    
+                    # Check specifications
+                    specs = vehicle.get('specifications', {})
+                    if len(specs) >= 3:  # At least 3 spec fields
+                        complete_specs += 1
+                    
+                    # Check pricing
+                    if vehicle.get('price') or vehicle.get('msrp'):
+                        has_pricing += 1
+                    
+                    # Check features
+                    features = vehicle.get('features', [])
+                    if len(features) >= 5:  # At least 5 features
+                        has_features += 1
+                
+                # Calculate percentages
+                total = len(vehicles)
+                print(f"\n   📊 Data Completeness Results:")
+                print(f"   - Complete titles (year/make/model): {complete_titles}/{total} ({complete_titles/total*100:.1f}%)")
+                print(f"   - Multiple images: {multiple_images}/{total} ({multiple_images/total*100:.1f}%)")
+                print(f"   - Complete specifications: {complete_specs}/{total} ({complete_specs/total*100:.1f}%)")
+                print(f"   - Has pricing data: {has_pricing}/{total} ({has_pricing/total*100:.1f}%)")
+                print(f"   - Rich features list: {has_features}/{total} ({has_features/total*100:.1f}%)")
+                
+                # Overall completeness score
+                completeness_score = (complete_titles + multiple_images + complete_specs + has_pricing + has_features) / (total * 5) * 100
+                print(f"   📊 Overall completeness score: {completeness_score:.1f}%")
+                
+                return completeness_score >= 60  # 60% completeness threshold
+            else:
+                print("   ❌ No vehicles found for completeness check")
+                return False
+        return False
+
+    def test_image_data_analysis(self):
+        """Test image data analysis - count, accessibility, types"""
+        print("\n🖼️  Testing Image Data Analysis...")
+        
+        success, response = self.run_test(
+            "Get Vehicles for Image Analysis",
+            "GET",
+            "inventory/vehicles?tenant_id=default_dealership&limit=10",
+            200
+        )
+        
+        if success:
+            vehicles = response.get('vehicles', [])
+            
+            if vehicles:
+                print(f"   📊 Analyzing images for {len(vehicles)} vehicles:")
+                
+                total_images = 0
+                accessible_images = 0
+                image_types = {}
+                vehicles_with_multiple_images = 0
+                
+                for i, vehicle in enumerate(vehicles):
+                    images = vehicle.get('images', [])
+                    vehicle_image_count = len(images)
+                    total_images += vehicle_image_count
+                    
+                    if vehicle_image_count > 1:
+                        vehicles_with_multiple_images += 1
+                    
+                    print(f"   - Vehicle {i+1}: {vehicle_image_count} images")
+                    
+                    # Analyze first few images
+                    for j, image in enumerate(images[:3]):  # Check first 3 images
+                        if isinstance(image, dict):
+                            # Count image types
+                            img_type = image.get('type', 'unknown')
+                            image_types[img_type] = image_types.get(img_type, 0) + 1
+                            
+                            # Test image URL accessibility (sample)
+                            if j == 0 and 'url' in image:  # Test first image only
+                                try:
+                                    import requests
+                                    img_response = requests.head(image['url'], timeout=3)
+                                    if img_response.status_code == 200:
+                                        accessible_images += 1
+                                except:
+                                    pass  # Count as not accessible
+                
+                # Calculate statistics
+                avg_images_per_vehicle = total_images / len(vehicles) if vehicles else 0
+                
+                print(f"\n   📊 Image Analysis Results:")
+                print(f"   - Total images: {total_images}")
+                print(f"   - Average images per vehicle: {avg_images_per_vehicle:.1f}")
+                print(f"   - Vehicles with multiple images: {vehicles_with_multiple_images}/{len(vehicles)} ({vehicles_with_multiple_images/len(vehicles)*100:.1f}%)")
+                print(f"   - Accessible image URLs tested: {accessible_images}/{len(vehicles)} first images")
+                
+                if image_types:
+                    print(f"   - Image types found: {list(image_types.keys())}")
+                    for img_type, count in image_types.items():
+                        print(f"     * {img_type}: {count} images")
+                
+                # Check for expected image types (exterior, interior, engine)
+                expected_types = ['exterior', 'interior', 'engine']
+                found_types = [t for t in expected_types if t in image_types]
+                print(f"   - Expected image types found: {found_types}")
+                
+                return avg_images_per_vehicle >= 1.5  # At least 1.5 images per vehicle on average
+            else:
+                print("   ❌ No vehicles found for image analysis")
+                return False
+        return False
+
+    def test_inventory_data_issues_identification(self):
+        """Identify specific issues with inventory data loading"""
+        print("\n🔧 Testing Inventory Data Issues Identification...")
+        
+        issues_found = []
+        
+        # Test 1: Check if inventory is properly loaded
+        success, response = self.run_test(
+            "Check Inventory Loading",
+            "GET",
+            "inventory/vehicles?tenant_id=default_dealership&limit=5",
+            200
+        )
+        
+        if success:
+            vehicles = response.get('vehicles', [])
+            total = response.get('total', 0)
+            
+            if total == 0:
+                issues_found.append("❌ CRITICAL: No vehicles in inventory database")
+            elif total < 100:
+                issues_found.append(f"⚠️  LOW INVENTORY: Only {total} vehicles in database (expected 200+)")
+            else:
+                print(f"   ✅ Inventory count acceptable: {total} vehicles")
+            
+            # Test 2: Check image gallery issues
+            if vehicles:
+                single_image_count = 0
+                no_image_count = 0
+                
+                for vehicle in vehicles:
+                    images = vehicle.get('images', [])
+                    if len(images) == 0:
+                        no_image_count += 1
+                    elif len(images) == 1:
+                        single_image_count += 1
+                
+                if single_image_count > len(vehicles) * 0.8:  # More than 80% have only 1 image
+                    issues_found.append(f"❌ IMAGE GALLERY ISSUE: {single_image_count}/{len(vehicles)} vehicles have only 1 image")
+                
+                if no_image_count > 0:
+                    issues_found.append(f"❌ MISSING IMAGES: {no_image_count}/{len(vehicles)} vehicles have no images")
+            
+            # Test 3: Check title completeness
+            if vehicles:
+                incomplete_titles = 0
+                for vehicle in vehicles:
+                    if not all(vehicle.get(field) for field in ['year', 'make', 'model']):
+                        incomplete_titles += 1
+                
+                if incomplete_titles > 0:
+                    issues_found.append(f"❌ INCOMPLETE TITLES: {incomplete_titles}/{len(vehicles)} vehicles missing year/make/model")
+            
+            # Test 4: Check specifications
+            if vehicles:
+                missing_specs = 0
+                for vehicle in vehicles:
+                    specs = vehicle.get('specifications', {})
+                    if len(specs) < 3:  # Less than 3 specifications
+                        missing_specs += 1
+                
+                if missing_specs > len(vehicles) * 0.5:  # More than 50% missing specs
+                    issues_found.append(f"❌ MISSING SPECIFICATIONS: {missing_specs}/{len(vehicles)} vehicles lack detailed specs")
+        
+        # Test 5: Check dealership inventory upload completeness
+        success2, summary_response = self.run_test(
+            "Check Dealership Upload Completeness",
+            "GET",
+            "inventory/summary?tenant_id=default_dealership",
+            200
+        )
+        
+        if success2:
+            total_vehicles = summary_response.get('total_vehicles', 0)
+            by_make = summary_response.get('by_make', {})
+            
+            # Check if Toyota inventory is properly loaded (should be primary)
+            toyota_count = by_make.get('Toyota', 0)
+            if toyota_count < 50:  # Expected significant Toyota inventory
+                issues_found.append(f"❌ TOYOTA INVENTORY LOW: Only {toyota_count} Toyota vehicles (expected 100+)")
+            
+            # Check for diverse inventory
+            if len(by_make) < 3:
+                issues_found.append(f"❌ LIMITED MAKE DIVERSITY: Only {len(by_make)} different makes")
+        
+        # Report findings
+        print(f"\n   🔍 Issues Identification Results:")
+        if issues_found:
+            print(f"   📊 Found {len(issues_found)} potential issues:")
+            for issue in issues_found:
+                print(f"   {issue}")
+        else:
+            print("   ✅ No major issues identified with inventory data")
+        
+        return len(issues_found) == 0  # Return True if no issues found
+
+    def test_inventory_system_comprehensive(self):
+        """Run comprehensive inventory system test suite"""
+        print("\n🚗 Running Comprehensive Inventory System Tests...")
+        print("="*60)
+        
+        inventory_tests = [
+            ("Inventory Vehicles Data Structure", self.test_inventory_vehicles_data_structure),
+            ("Inventory Summary Analysis", self.test_inventory_summary_analysis),
+            ("Vehicle Data Completeness Check", self.test_vehicle_data_completeness_check),
+            ("Image Data Analysis", self.test_image_data_analysis),
+            ("Inventory Data Issues Identification", self.test_inventory_data_issues_identification)
+        ]
+        
+        passed_tests = 0
+        total_tests = len(inventory_tests)
+        
+        for test_name, test_func in inventory_tests:
+            try:
+                if test_func():
+                    passed_tests += 1
+                    print(f"   ✅ {test_name} - PASSED")
+                else:
+                    print(f"   ❌ {test_name} - FAILED")
+            except Exception as e:
+                print(f"   ❌ {test_name} - ERROR: {str(e)}")
+        
+        success_rate = (passed_tests / total_tests) * 100
+        print(f"\n   📊 Inventory System Test Suite: {passed_tests}/{total_tests} passed ({success_rate:.1f}%)")
+        
+        return passed_tests >= total_tests * 0.6  # 60% pass rate for inventory analysis
+
 def main():
     print("🃏 JokerVision AutoFollow API Testing Suite")
     print("=" * 50)
