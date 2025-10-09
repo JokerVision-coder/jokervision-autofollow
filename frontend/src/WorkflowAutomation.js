@@ -152,7 +152,7 @@ const WorkflowAutomation = () => {
           <h3 className="text-2xl font-bold text-white mb-2">
             {analytics?.automation_analytics?.executions_24h || 0}
           </h3>
-          <p className="text-gray-300 text-sm">Recent Executions</p>
+          <p className="text-indigo-300 text-sm">Recent Executions</p>
         </motion.div>
 
         <motion.div
