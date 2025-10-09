@@ -165,6 +165,12 @@ const MainTabNavigator = ({ connectionStatus, voiceAIAvailable }) => {
       case 'Notifications':
         iconName = 'notifications';
         break;
+      case 'Leads':
+        iconName = 'people';
+        break;
+      case 'Settings':
+        iconName = 'settings';
+        break;
       default:
         iconName = 'circle';
     }
