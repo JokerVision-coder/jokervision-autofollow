@@ -4877,8 +4877,9 @@ def main():
     
     tester = AutoFollowProAPITester()
     
-    # Test sequence
+    # Test sequence - PRIORITY: Exclusive Lead Engine Testing
     test_sequence = [
+        ("👑 EXCLUSIVE LEAD ENGINE - PRIORITY TESTING", tester.test_exclusive_lead_engine_comprehensive),
         ("Enhanced Dashboard Stats", tester.test_enhanced_dashboard_stats),
         ("JokerVision User Management", tester.test_user_management_system),
         ("JokerVision Sales Tracking", tester.test_sales_tracking_system),
