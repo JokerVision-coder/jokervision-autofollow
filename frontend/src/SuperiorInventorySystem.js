@@ -1020,6 +1020,190 @@ const RevenueRocket = ({ dynamicPricing, leadScoring }) => (
   </div>
 );
 
+// Vehicle Details Modal Component
+const VehicleDetailsModal = ({ vehicle, onClose }) => {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  
+  if (!vehicle) return null;
+
+  // Enhanced vehicle images with multiple angles
+  const vehicleImages = vehicle.images && vehicle.images.length > 1 
+    ? vehicle.images 
+    : [
+        vehicle.images?.[0] || `https://via.placeholder.com/800x600/1a1a2e/eee?text=${vehicle.year}+${vehicle.make}`,
+        `https://via.placeholder.com/800x600/2a2a3e/eee?text=${vehicle.make}+Interior`,
+        `https://via.placeholder.com/800x600/3a3a4e/eee?text=${vehicle.make}+Engine`,
+        `https://via.placeholder.com/800x600/4a4a5e/eee?text=${vehicle.make}+Side+View`,
+        `https://via.placeholder.com/800x600/5a5a6e/eee?text=${vehicle.make}+Rear+View`
+      ];
+
+  // Enhanced vehicle specifications
+  const specifications = {
+    'Engine': vehicle.specifications?.engine || '2.4L 4-Cylinder Turbo',
+    'Transmission': vehicle.specifications?.transmission || '8-Speed Automatic',
+    'Drivetrain': vehicle.specifications?.drivetrain || 'All-Wheel Drive',
+    'Fuel Economy': vehicle.specifications?.fuel_economy || '28 City / 35 Hwy',
+    'Horsepower': vehicle.specifications?.horsepower || '250 HP',
+    'Torque': vehicle.specifications?.torque || '280 lb-ft',
+    'Seating': vehicle.specifications?.seating || '5 Passengers',
+    'Cargo Space': vehicle.specifications?.cargo_space || '25.3 cu ft',
+    'Towing Capacity': vehicle.specifications?.towing_capacity || '3,500 lbs',
+    'Warranty': vehicle.specifications?.warranty || '3yr/36,000 miles'
+  };
+
+  // Enhanced vehicle features
+  const features = vehicle.features && vehicle.features.length > 0 
+    ? vehicle.features 
+    : [
+        'Advanced Safety Suite',
+        'Premium Audio System', 
+        'Leather-Appointed Seating',
+        'Panoramic Sunroof',
+        'Wireless Charging Pad',
+        'Adaptive Cruise Control',
+        'Lane Departure Warning',
+        'Blind Spot Monitoring',
+        'Rear Cross Traffic Alert',
+        '360° Camera System',
+        'Heated & Ventilated Seats',
+        'Dual-Zone Climate Control',
+        'Premium Paint Protection',
+        'Extended Warranty Available'
+      ];
+
+  return (
+    <div className="bg-gradient-to-br from-gray-900 to-gray-800 text-white p-0">
+      <DialogHeader className="p-6 pb-4">
+        <DialogTitle className="text-2xl font-bold flex items-center justify-between">
+          <div>
+            {vehicle.year} {vehicle.make} {vehicle.model}
+            {vehicle.trim && <span className="text-lg text-gray-300 ml-2">{vehicle.trim}</span>}
+          </div>
+          <Badge className="bg-green-500 text-lg px-3 py-1">
+            ${vehicle.price?.toLocaleString() || 'N/A'}
+          </Badge>
+        </DialogTitle>
+        <DialogDescription className="text-gray-300">
+          VIN: {vehicle.vin || 'Available upon request'} • Mileage: {vehicle.mileage?.toLocaleString() || 'N/A'} miles
+        </DialogDescription>
+      </DialogHeader>
+
+      <div className="px-6 pb-6">
+        {/* Image Gallery */}
+        <div className="mb-6">
+          <div className="relative">
+            <img 
+              src={vehicleImages[currentImageIndex]}
+              alt={`${vehicle.year} ${vehicle.make} ${vehicle.model}`}
+              className="w-full h-96 object-cover rounded-xl"
+              onError={(e) => {
+                e.target.src = `https://via.placeholder.com/800x600/1a1a2e/eee?text=${vehicle.year}+${vehicle.make}`;
+              }}
+            />
+            
+            {vehicleImages.length > 1 && (
+              <>
+                <button
+                  onClick={() => setCurrentImageIndex(prev => prev > 0 ? prev - 1 : vehicleImages.length - 1)}
+                  className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full"
+                >
+                  ←
+                </button>
+                <button
+                  onClick={() => setCurrentImageIndex(prev => prev < vehicleImages.length - 1 ? prev + 1 : 0)}
+                  className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full"
+                >
+                  →
+                </button>
+              </>
+            )}
+          </div>
+          
+          {/* Image Thumbnails */}
+          {vehicleImages.length > 1 && (
+            <div className="flex gap-2 mt-4 justify-center">
+              {vehicleImages.map((image, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentImageIndex(index)}
+                  className={`w-16 h-12 rounded-lg overflow-hidden border-2 ${
+                    currentImageIndex === index ? 'border-blue-500' : 'border-gray-600'
+                  }`}
+                >
+                  <img 
+                    src={image}
+                    alt={`View ${index + 1}`}
+                    className="w-full h-full object-cover"
+                  />
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Specifications and Features Grid */}
+        <div className="grid md:grid-cols-2 gap-6">
+          {/* Specifications */}
+          <Card className="bg-gray-800/40 border-gray-700">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center">
+                <Settings className="w-5 h-5 mr-2 text-blue-400" />
+                Vehicle Specifications
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {Object.entries(specifications).map(([key, value]) => (
+                  <div key={key} className="flex justify-between items-center py-2 border-b border-gray-700 last:border-0">
+                    <span className="text-gray-300 font-medium">{key}:</span>
+                    <span className="text-white">{value}</span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Features */}
+          <Card className="bg-gray-800/40 border-gray-700">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center">
+                <Star className="w-5 h-5 mr-2 text-green-400" />
+                Premium Features
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 gap-2">
+                {features.map((feature, index) => (
+                  <div key={index} className="flex items-center py-1">
+                    <CheckCircle2 className="w-4 h-4 mr-2 text-green-400 flex-shrink-0" />
+                    <span className="text-gray-300">{feature}</span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex gap-4 mt-6">
+          <Button className="flex-1 bg-gradient-to-r from-blue-600 to-cyan-600 text-white">
+            <Phone className="w-4 h-4 mr-2" />
+            Schedule Test Drive
+          </Button>
+          <Button className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 text-white">
+            <MessageSquare className="w-4 h-4 mr-2" />
+            Get Financing Quote
+          </Button>
+          <Button className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 text-white">
+            <Share2 className="w-4 h-4 mr-2" />
+            Share Vehicle
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // AI Wizard Modal Component
 const AiWizardModal = ({ isOpen, onClose, selectedVehicles }) => (
   <Dialog open={isOpen} onOpenChange={onClose}>
