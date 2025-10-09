@@ -254,17 +254,29 @@ const ExclusiveLeadEngine = () => {
     try {
       toast.info('🔒 Claiming exclusive lead access...');
       
-      setTimeout(() => {
+      const response = await fetch(`${API}/exclusive-leads/claim/${leadId}?tenant_id=default`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        
         setExclusiveLeads(prev => prev.map(lead => 
           lead.id === leadId 
-            ? { ...lead, claimed: true, claimed_at: new Date().toISOString() }
+            ? { ...lead, claimed: true, claimed_at: data.claim_result.claimed_at }
             : lead
         ));
         
-        toast.success('✅ EXCLUSIVE LEAD CLAIMED! You have priority access for the next 2 hours. Contact immediately!');
-      }, 1500);
+        toast.success(`✅ ${data.claim_result.success_message}`);
+      } else {
+        toast.error('❌ Failed to claim exclusive lead');
+      }
       
     } catch (error) {
+      console.error('Error claiming lead:', error);
       toast.error('❌ Failed to claim exclusive lead');
     }
   };
