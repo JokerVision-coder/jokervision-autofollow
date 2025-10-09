@@ -37,6 +37,7 @@ import ExclusiveLeadsScreen from './src/screens/ExclusiveLeadsScreen';
 import { initializeVoiceAI } from './src/services/VoiceAIService';
 import { setupPushNotifications } from './src/services/NotificationService';
 import { connectToBackend } from './src/services/ApiService';
+import exclusiveLeadsService from './src/services/ExclusiveLeadsService';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
