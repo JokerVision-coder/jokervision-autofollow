@@ -254,6 +254,18 @@ const ExclusiveLeadEngine = () => {
   };
 
   const fetchLeadIntelligence = async () => {
+    try {
+      // Try to fetch from backend API first
+      const response = await fetch(`${API}/exclusive-leads/dashboard`);
+      if (response.ok) {
+        const data = await response.json();
+        setLeadIntelligence(data.lead_intelligence || {});
+        return;
+      }
+    } catch (error) {
+      console.log('Using mock intelligence data as fallback');
+    }
+    
     const mockIntelligence = {
       total_exclusive_leads: 47,
       avg_exclusivity_duration: '2.3 hours',
