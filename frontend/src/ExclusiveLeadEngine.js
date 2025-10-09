@@ -390,6 +390,18 @@ const ExclusiveLeadEngine = () => {
   };
 
   const fetchRealTimeAlerts = async () => {
+    try {
+      // Try to fetch from backend API first
+      const response = await fetch(`${API}/exclusive-leads/alerts`);
+      if (response.ok) {
+        const data = await response.json();
+        setRealTimeAlerts(data.alerts || []);
+        return;
+      }
+    } catch (error) {
+      console.log('Using mock alerts data as fallback');
+    }
+    
     const mockAlerts = [
       {
         id: 'alert_001',
