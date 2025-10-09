@@ -3373,7 +3373,7 @@ async def send_facebook_message(recipient_id: str, message_text: str):
         logging.error("Facebook Page Access Token not configured")
         return
     
-    url = f"https://graph.facebook.com/v18.0/me/messages"
+    url = "https://graph.facebook.com/v18.0/me/messages"
     
     payload = {
         "recipient": {"id": recipient_id},
@@ -5488,7 +5488,7 @@ async def chrome_schedule_appointment(appointment_data: ChromeAppointmentSchedul
             "tenant_id": appointment_data.tenant_id,
             "lead_id": appointment_data.lead_id,
             "title": f"Test Drive - {appointment_info.get('vehicleInterest', 'Vehicle')}",
-            "description": f"Test drive appointment scheduled through Facebook Marketplace",
+            "description": "Test drive appointment scheduled through Facebook Marketplace",
             "customer_name": appointment_info.get("customerName", ""),
             "customer_phone": appointment_info.get("customerPhone", ""),
             "customer_email": appointment_info.get("customerEmail", ""),
@@ -7840,7 +7840,7 @@ async def connect_social_media_account(account_data: SocialMediaAccountCreate):
             platform=account_data.platform,
             platform_id=token_result.get("user_id", f"mock_id_{uuid.uuid4()}"),
             name=f"Your {account_data.platform.title()} Account",
-            username=f"@youraccount",
+            username="@youraccount",
             access_token=token_result["access_token"],
             expires_at=datetime.now(timezone.utc) + timedelta(seconds=token_result.get("expires_in", 86400)),
             followers=random.randint(100, 10000)
@@ -9560,8 +9560,8 @@ async def bulk_post_to_facebook(request: dict):
         
         # Simulate vehicle data (in real implementation, fetch from database)
         mock_vehicle_data = {
-            "title": f"2024 Toyota Camry LE - Excellent Condition",
-            "description": f"Beautiful 2024 Toyota Camry in excellent condition. Well-maintained, clean interior, recent service records available. Perfect for daily commuting or family use.",
+            "title": "2024 Toyota Camry LE - Excellent Condition",
+            "description": "Beautiful 2024 Toyota Camry in excellent condition. Well-maintained, clean interior, recent service records available. Perfect for daily commuting or family use.",
             "price": 28500 + (i * 1000),
             "images": [f"https://example.com/vehicle_{vehicle_id}_1.jpg"],
             "make": "Toyota",
