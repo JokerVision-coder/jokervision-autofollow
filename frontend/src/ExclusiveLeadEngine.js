@@ -215,24 +215,15 @@ const ExclusiveLeadEngine = () => {
   };
 
   const fetchLeadProtection = async () => {
-    const mockProtection = [
-      {
-        lead_id: 'exclusive_001',
-        protection_level: 'maximum',
-        actions_taken: ['competitor_blocking', 'priority_routing', 'exclusive_pricing'],
-        protection_expires: new Date(Date.now() + 3600000).toISOString(),
-        success_probability: 94
-      },
-      {
-        lead_id: 'exclusive_002', 
-        protection_level: 'high',
-        actions_taken: ['fast_response', 'personalized_approach', 'value_demonstration'],
-        protection_expires: new Date(Date.now() + 7200000).toISOString(),
-        success_probability: 87
-      }
-    ];
-    
-    setLeadProtection(mockProtection);
+    try {
+      const response = await fetch(`${API}/exclusive-leads/protection?tenant_id=default`);
+      const data = await response.json();
+      setLeadProtection(data.lead_protection);
+    } catch (error) {
+      console.error('Error fetching lead protection:', error);
+      // Fallback to empty array if API fails
+      setLeadProtection([]);
+    }
   };
 
   const fetchAIPredictions = async () => {
