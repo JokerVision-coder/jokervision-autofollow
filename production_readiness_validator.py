@@ -107,8 +107,8 @@ class ProductionReadinessValidator:
             # Test without authentication
             response = requests.get(f"{self.api_url}/exclusive-leads/leads", timeout=10)
             
-            if response.status_code == 401:
-                print("   ✅ Exclusive leads properly protected (401 Unauthorized)")
+            if response.status_code in [401, 403]:
+                print(f"   ✅ Exclusive leads properly protected ({response.status_code})")
                 return True
             elif response.status_code == 200:
                 print("   ⚠️  Exclusive leads accessible without auth - may be in demo mode")
