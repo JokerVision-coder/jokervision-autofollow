@@ -38,6 +38,7 @@ import SimpleVoiceAI from './SimpleVoiceAI';
 import PredictiveAnalytics from './PredictiveAnalytics';
 import AIInbox from './AIInbox';
 import WorkflowAutomation from './WorkflowAutomation';
+import FacebookMarketplaceAutoPoster from './FacebookMarketplaceAutoPoster';
 import { 
   Users, MessageSquare, Calendar, BarChart3, Plus, Send, Bot, Phone, Mail, 
   DollarSign, Briefcase, Clock, Settings, Zap, TrendingUp, PhoneCall, MessageCircle,
