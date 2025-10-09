@@ -1338,17 +1338,22 @@ Si necesitas más información o quieres seguir adelante, estoy a solo un mensaj
 
 async def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
     """Verify JWT token for authentication (simplified for demo)"""
-    token = credentials.credentials
-    
-    # In production, implement proper JWT verification
-    # For now, accept any token for demo purposes
-    if not token:
-        raise HTTPException(status_code=401, detail="Authentication required")
-    
-    # This is where you'd verify the JWT token in production
-    # jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
-    
-    return {"user_id": "demo_user", "tenant_id": "default"}
+    try:
+        token = credentials.credentials
+        
+        # In production, implement proper JWT verification
+        # For now, accept any valid-looking token for demo purposes
+        if not token or len(token) < 10:
+            logger.warning(f"Invalid token attempt: {token[:10] if token else 'None'}")
+            raise HTTPException(status_code=401, detail="Invalid authentication token")
+        
+        # This is where you'd verify the JWT token in production
+        # decoded = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+        
+        return {"user_id": "demo_user", "tenant_id": "default"}
+    except Exception as e:
+        logger.error(f"Authentication error: {str(e)}")
+        raise HTTPException(status_code=401, detail="Authentication failed")
 
 # Health Check Endpoints (Public - No Auth Required)
 @app.get("/health")
