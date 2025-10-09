@@ -1790,8 +1790,9 @@ const AddUserForm = ({ onSuccess }) => {
 
 // Navigation Component with Dropdown Menu
 const Navigation = () => {
-  const [showMainMenu, setShowMainMenu] = useState(false);
-  const [showToolsMenu, setShowToolsMenu] = useState(false);
+  const [showCommunicationMenu, setShowCommunicationMenu] = useState(false);
+  const [showMarketingMenu, setShowMarketingMenu] = useState(false);
+  const [showManagementMenu, setShowManagementMenu] = useState(false);
   const location = useLocation();
 
   // Primary navigation items (most frequently used)
