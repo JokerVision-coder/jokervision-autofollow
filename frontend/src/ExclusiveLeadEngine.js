@@ -167,78 +167,15 @@ const ExclusiveLeadEngine = () => {
   };
 
   const fetchExclusiveLeads = async () => {
-    // Ultra-high quality exclusive leads that competitors can't access
-    const mockExclusiveLeads = [
-      {
-        id: 'exclusive_001',
-        name: 'Victoria Chen',
-        phone: '+1 (555) 987-6543',
-        email: 'v.chen.luxury@gmail.com',
-        source: 'private_network',
-        exclusivity_level: 'platinum',
-        vehicle_interest: '2024 BMW X7 M60i',
-        budget: 120000,
-        purchase_timeline: 'this_week',
-        lead_score: 98,
-        exclusivity_expires: new Date(Date.now() + 3600000).toISOString(), // 1 hour
-        competitor_interest: false,
-        pre_qualified: true,
-        financing_approved: true,
-        trade_in_value: 45000,
-        urgency_factors: ['lease_expiring', 'moving_cities', 'company_car_program'],
-        personality_profile: 'decisive_buyer',
-        preferred_contact: 'phone_call',
-        best_contact_time: 'weekday_mornings',
-        notes: 'CEO looking for immediate delivery, cash + trade deal preferred'
-      },
-      {
-        id: 'exclusive_002',
-        name: 'Marcus Rodriguez',
-        phone: '+1 (555) 234-8765',
-        email: 'marcus.r.business@outlook.com',
-        source: 'vip_referral',
-        exclusivity_level: 'gold',
-        vehicle_interest: '2024 Ford F-150 Raptor R',
-        budget: 95000,
-        purchase_timeline: 'within_48_hours',
-        lead_score: 96,
-        exclusivity_expires: new Date(Date.now() + 7200000).toISOString(), // 2 hours
-        competitor_interest: false,
-        pre_qualified: true,
-        financing_approved: false,
-        trade_in_value: 32000,
-        urgency_factors: ['business_expense', 'tax_year_end'],
-        personality_profile: 'research_heavy_buyer',
-        preferred_contact: 'text_message',
-        best_contact_time: 'evening_hours',
-        notes: 'Business owner needs truck for company, wants best financing terms'
-      },
-      {
-        id: 'exclusive_003',
-        name: 'Dr. Sarah Williams',
-        phone: '+1 (555) 456-7890',
-        email: 'dr.williams.auto@gmail.com',
-        source: 'professional_network',
-        exclusivity_level: 'diamond',
-        vehicle_interest: '2024 Mercedes-Benz GLE 63 AMG',
-        budget: 115000,
-        purchase_timeline: 'this_weekend',
-        lead_score: 99,
-        exclusivity_expires: new Date(Date.now() + 1800000).toISOString(), // 30 minutes
-        competitor_interest: true,
-        competitor_offers: 2,
-        pre_qualified: true,
-        financing_approved: true,
-        trade_in_value: 52000,
-        urgency_factors: ['birthday_gift_spouse', 'bonus_received'],
-        personality_profile: 'luxury_focused_buyer',
-        preferred_contact: 'email_first',
-        best_contact_time: 'lunch_break',
-        notes: 'Doctor buying birthday gift for spouse, has received 2 competitor offers already'
-      }
-    ];
-    
-    setExclusiveLeads(mockExclusiveLeads);
+    try {
+      const response = await fetch(`${API}/exclusive-leads/leads?tenant_id=default`);
+      const data = await response.json();
+      setExclusiveLeads(data.exclusive_leads);
+    } catch (error) {
+      console.error('Error fetching exclusive leads:', error);
+      // Fallback to empty array if API fails
+      setExclusiveLeads([]);
+    }
   };
 
   const fetchLeadIntelligence = async () => {
