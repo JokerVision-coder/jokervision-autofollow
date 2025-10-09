@@ -189,7 +189,7 @@ class ProductionReadinessValidator:
             db = client[db_name]
             
             # Test connection
-            await db.admin.command('ping')
+            await client.admin.command('ping')
             print("   ✅ Database connectivity working")
             
             client.close()
