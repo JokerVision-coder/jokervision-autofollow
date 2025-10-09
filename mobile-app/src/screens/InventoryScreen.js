@@ -15,6 +15,8 @@ import {
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { getInventory, addVehicle } from '../services/ApiService';
+import { VehicleCard } from '../components';
+import { formatCurrency, formatMileage } from '../utils/formatters';
 
 const { width } = Dimensions.get('window');
 
