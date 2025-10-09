@@ -312,7 +312,7 @@ const FacebookMarketplaceAutoPoster = () => {
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="text-center">
-              <div className="text-2xl font-bold text-red-400">1,247</div>
+              <div className="text-2xl font-bold text-blue-400">1,247</div>
               <div className="text-sm text-gray-300">Our Posts This Week</div>
             </div>
             <div className="text-center">
