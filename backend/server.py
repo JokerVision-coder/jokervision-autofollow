@@ -11665,7 +11665,8 @@ async def get_exclusive_leads(request: Request, tenant_id: str = "default", user
         raise HTTPException(status_code=500, detail="Failed to fetch exclusive leads")
 
 @api_router.get("/exclusive-leads/intelligence")
-async def get_lead_intelligence(tenant_id: str = "default"):
+@limiter.limit("20/minute")
+async def get_lead_intelligence(request: Request, tenant_id: str = "default", user: dict = Depends(verify_token)):
     """Get exclusive lead intelligence and performance metrics"""
     try:
         logger.info(f"Fetching lead intelligence for tenant: {tenant_id}")
