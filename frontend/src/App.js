@@ -2026,6 +2026,7 @@ function App() {
           <Route path="/facebook-marketplace" element={<FacebookMarketplaceAutoPoster />} />
           <Route path="/integrations" element={<SocialMediaIntegrationCenter />} />
           <Route path="/lead-generation" element={<LeadGenerationHub />} />
+          <Route path="/exclusive-lead-engine" element={<ExclusiveLeadEngine />} />
         </Routes>
         <Toaster position="top-right" />
       </div>
