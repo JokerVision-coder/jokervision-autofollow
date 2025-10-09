@@ -285,11 +285,22 @@ const ExclusiveLeadEngine = () => {
     try {
       toast.info('🛡️ Activating advanced lead protection...');
       
-      setTimeout(() => {
-        toast.success('✅ Lead protection activated! Competitor blocking engaged, priority routing enabled.');
-      }, 1000);
+      const response = await fetch(`${API}/exclusive-leads/activate-protection/${leadId}?tenant_id=default`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        toast.success(`✅ ${data.protection_result.success_message}`);
+      } else {
+        toast.error('❌ Failed to activate lead protection');
+      }
       
     } catch (error) {
+      console.error('Error activating protection:', error);  
       toast.error('❌ Failed to activate lead protection');
     }
   };
