@@ -51,7 +51,7 @@ const SimpleVoiceAI = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-red-900 to-purple-900 p-6">
+        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-cyan-900 p-6">
             <div className="container mx-auto">
                 
                 {/* Header */}
