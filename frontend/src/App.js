@@ -2024,6 +2024,7 @@ function App() {
           <Route path="/workflow-automation" element={<WorkflowAutomation />} />
           <Route path="/facebook-marketplace" element={<FacebookMarketplaceAutoPoster />} />
           <Route path="/integrations" element={<SocialMediaIntegrationCenter />} />
+          <Route path="/lead-generation" element={<LeadGenerationHub />} />
         </Routes>
         <Toaster position="top-right" />
       </div>
