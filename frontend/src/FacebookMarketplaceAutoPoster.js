@@ -623,7 +623,7 @@ const FacebookMarketplaceAutoPoster = () => {
                         }`}>
                           {item.status}
                         </Badge>
-                        {item.aiOptimized && <Badge className="bg-purple-500">AI</Badge>}
+                        {item.aiOptimized && <Badge className="bg-indigo-500">AI</Badge>}
                         {item.views && (
                           <span className="text-sm text-gray-300">
                             {item.views} views • {item.inquiries} inquiries
