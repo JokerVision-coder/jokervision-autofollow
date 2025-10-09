@@ -23,6 +23,7 @@ import random
 from fastapi import BackgroundTasks
 from inventory_scraper import ShottenkilkInventoryScraper
 from enhanced_inventory_generator import EnhancedInventoryGenerator
+from cache_manager import cache_manager, cached, get_cached, set_cached, invalidate_cache
 from ml_models import get_ml_engine
 from ai_inbox_manager import get_ai_inbox_manager
 from workflow_automation import WorkflowAutomationEngine, trigger_lead_workflow, trigger_inventory_workflow, trigger_voice_workflow
