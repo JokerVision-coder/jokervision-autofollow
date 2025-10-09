@@ -8398,9 +8398,10 @@ async def sync_inventory(tenant_id: str):
         # This would typically sync with dealership management systems
         # For demo purposes, we'll simulate syncing
         
-        # Use the existing scraper if available
+        # Use real inventory scraper
         scraper = ShottenkilkInventoryScraper()
-        inventory_data = scraper.get_mock_data()
+        logger.info(f"Starting real inventory scraping for tenant: {tenant_id}")
+        inventory_data = await scraper.scrape_all_inventory()
         
         synced_count = 0
         for vehicle_data in inventory_data["vehicles"]:
