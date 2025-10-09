@@ -156,8 +156,8 @@ const MainTabNavigator = ({ connectionStatus, voiceAIAvailable }) => {
       case 'Inventory':
         iconName = 'inventory';
         break;
-      case 'Leads':
-        iconName = 'people';
+      case 'ExclusiveLeads':
+        iconName = 'star';
         break;
       case 'VoiceAI':
         iconName = 'mic';
