@@ -11581,7 +11581,8 @@ async def facebook_messenger_webhook(request: dict):
 # ====================================================
 
 @api_router.get("/exclusive-leads/leads")
-async def get_exclusive_leads(tenant_id: str = "default"):
+@limiter.limit("30/minute")
+async def get_exclusive_leads(request: Request, tenant_id: str = "default", user: dict = Depends(verify_token)):
     """Get high-value exclusive leads unavailable to competitors"""
     try:
         logger.info(f"Fetching exclusive leads for tenant: {tenant_id}")
