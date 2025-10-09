@@ -50,6 +50,8 @@ const SuperiorInventorySystem = () => {
   const [dynamicPricing, setDynamicPricing] = useState({});
   const [leadScoring, setLeadScoring] = useState({});
   const [autoNegotiation, setAutoNegotiation] = useState({});
+  const [selectedVehicleDetails, setSelectedVehicleDetails] = useState(null);
+  const [showVehicleDetails, setShowVehicleDetails] = useState(false);
 
   useEffect(() => {
     initializeRevolutionarySystem();
