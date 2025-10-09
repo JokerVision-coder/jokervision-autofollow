@@ -40,6 +40,7 @@ import AIInbox from './AIInbox';
 import WorkflowAutomation from './WorkflowAutomation';
 import FacebookMarketplaceAutoPoster from './FacebookMarketplaceAutoPoster';
 import SocialMediaIntegrationCenter from './SocialMediaIntegrationCenter';
+import LeadGenerationHub from './LeadGenerationHub';
 import { 
   Users, MessageSquare, Calendar, BarChart3, Plus, Send, Bot, Phone, Mail, 
   DollarSign, Briefcase, Clock, Settings, Zap, TrendingUp, PhoneCall, MessageCircle,
