@@ -11,6 +11,7 @@ import {
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { getDashboardStats, getRecentActivity } from '../services/ApiService';
+import { formatCurrency, formatNumber } from '../utils/formatters';
 
 const { width } = Dimensions.get('window');
 
