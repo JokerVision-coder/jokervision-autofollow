@@ -67,6 +67,7 @@
   "web_accessible_resources": [
     {
       "resources": [
+        "config.js",
         "injection.js",
         "ai-optimizer.js",
         "marketplace-injector.js",
