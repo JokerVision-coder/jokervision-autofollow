@@ -437,7 +437,7 @@ const FacebookMarketplaceAutoPoster = () => {
                 
                 <div className="absolute top-2 right-2 flex gap-1">
                   {vehicle.fbPosted && <Badge className="bg-green-500 text-xs">Posted</Badge>}
-                  <Badge className="bg-purple-500 text-xs">AI Ready</Badge>
+                  <Badge className="bg-indigo-500 text-xs">AI Ready</Badge>
                 </div>
 
                 <img 
