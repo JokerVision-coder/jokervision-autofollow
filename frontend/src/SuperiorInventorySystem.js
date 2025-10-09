@@ -602,7 +602,7 @@ const IntelligentDashboard = ({ inventory, selectedVehicles, setSelectedVehicles
 );
 
 // Revolutionary Vehicle Card
-const RevolutionaryVehicleCard = ({ vehicle, isSelected, onSelect }) => (
+const RevolutionaryVehicleCard = ({ vehicle, isSelected, onSelect, setSelectedVehicleDetails, setShowVehicleDetails }) => (
   <Card className={`relative overflow-hidden transition-all duration-300 hover:scale-105 ${
     isSelected ? 'ring-2 ring-cyan-400 bg-gradient-to-br from-cyan-900/40 to-blue-900/40' : 'bg-gray-800/40'
   }`}>
