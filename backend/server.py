@@ -9015,6 +9015,300 @@ async def analyze_conversation(conversation_id: str):
         raise HTTPException(status_code=500, detail="Failed to analyze conversation")
 
 # =============================================================================
+# Lead Generation & Appointment Setting Hub API Endpoints
+@app.get("/api/lead-generation/daily-metrics")
+async def get_daily_lead_metrics():
+    """Get daily lead generation and appointment metrics"""
+    metrics = {
+        "appointments_today": 7,
+        "appointments_goal": 10, 
+        "appointments_remaining": 3,
+        "leads_today": 24,
+        "leads_yesterday": 18,
+        "leads_this_week": 127,
+        "lead_to_appointment_rate": 29.2,
+        "appointment_show_rate": 85.7,
+        "appointment_to_sale_rate": 42.1,
+        "best_performing_source": "facebook_marketplace",
+        "follow_ups_completed": 31,
+        "follow_ups_pending": 12,
+        "avg_response_time": "4.2 minutes",
+        "weekly_appointment_goal": 50,
+        "weekly_appointments_current": 34,
+        "appointments_trend": "+14%",
+        "conversion_trend": "+8%"
+    }
+    
+    return {
+        "success": True,
+        "daily_metrics": metrics,
+        "performance_status": "on_track" if metrics["appointments_today"] >= 7 else "needs_attention",
+        "message": "Daily lead generation metrics retrieved successfully"
+    }
+
+@app.get("/api/lead-generation/active-leads")
+async def get_active_leads():
+    """Get today's active leads requiring attention"""
+    leads = [
+        {
+            "id": "lead_001",
+            "name": "Sarah Martinez",
+            "phone": "+1 (555) 234-5678",
+            "email": "sarah.martinez@email.com", 
+            "source": "facebook_marketplace",
+            "vehicle_interest": "2024 Toyota RAV4",
+            "status": "new",
+            "created_at": datetime.now().isoformat(),
+            "lead_score": 92,
+            "budget": 45000,
+            "timeline": "this_week",
+            "urgency": "high",
+            "notes": "Very interested in hybrid models, mentioned trade-in",
+            "follow_up_count": 0,
+            "appointment_set": False,
+            "last_contact": None
+        },
+        {
+            "id": "lead_002",
+            "name": "Michael Chen", 
+            "phone": "+1 (555) 876-5432",
+            "email": "mchen.auto@gmail.com",
+            "source": "website_form",
+            "vehicle_interest": "2023 Honda Accord Sport",
+            "status": "contacted",
+            "created_at": (datetime.now() - timedelta(minutes=20)).isoformat(),
+            "lead_score": 87,
+            "budget": 35000,
+            "timeline": "within_month", 
+            "urgency": "medium",
+            "notes": "First-time buyer, needs financing information",
+            "follow_up_count": 1,
+            "appointment_set": False,
+            "last_contact": (datetime.now() - timedelta(minutes=5)).isoformat()
+        }
+    ]
+    
+    return {
+        "success": True,
+        "active_leads": leads,
+        "total_leads": len(leads),
+        "high_priority": len([l for l in leads if l["urgency"] == "high"]),
+        "message": "Active leads retrieved successfully"
+    }
+
+@app.get("/api/lead-generation/appointments-today")
+async def get_todays_appointments():
+    """Get today's scheduled appointments"""
+    appointments = [
+        {
+            "id": "apt_001",
+            "lead_id": "lead_003",
+            "customer_name": "Jennifer Williams",
+            "phone": "+1 (555) 345-6789",
+            "vehicle_interest": "2024 Ford F-150 Lariat", 
+            "appointment_time": (datetime.now() + timedelta(hours=2)).isoformat(),
+            "status": "confirmed",
+            "type": "test_drive",
+            "sales_rep": "current_user",
+            "notes": "Bring financing options and warranty information"
+        },
+        {
+            "id": "apt_002",
+            "lead_id": "lead_005", 
+            "customer_name": "David Rodriguez",
+            "phone": "+1 (555) 432-8765",
+            "vehicle_interest": "2023 BMW X3",
+            "appointment_time": (datetime.now() + timedelta(hours=6)).isoformat(),
+            "status": "confirmed",
+            "type": "vehicle_viewing",
+            "sales_rep": "current_user",
+            "notes": "Luxury features demonstration requested"
+        }
+    ]
+    
+    return {
+        "success": True,
+        "appointments": appointments,
+        "total_appointments": len(appointments),
+        "confirmed_appointments": len([a for a in appointments if a["status"] == "confirmed"]),
+        "message": "Today's appointments retrieved successfully"
+    }
+
+@app.get("/api/lead-generation/lead-sources")
+async def get_lead_source_performance():
+    """Get performance metrics for all lead sources"""
+    sources = [
+        {
+            "id": "facebook_marketplace",
+            "name": "Facebook Marketplace", 
+            "leads_today": 8,
+            "conversion_rate": 34.5,
+            "avg_lead_score": 89,
+            "cost_per_lead": 12.50,
+            "status": "active"
+        },
+        {
+            "id": "website_form",
+            "name": "Website Contact Form",
+            "leads_today": 6,
+            "conversion_rate": 28.2,
+            "avg_lead_score": 76, 
+            "cost_per_lead": 8.75,
+            "status": "active"
+        },
+        {
+            "id": "google_ads",
+            "name": "Google Ads",
+            "leads_today": 4,
+            "conversion_rate": 41.3,
+            "avg_lead_score": 92,
+            "cost_per_lead": 24.30,
+            "status": "active"
+        },
+        {
+            "id": "referrals",
+            "name": "Customer Referrals",
+            "leads_today": 2,
+            "conversion_rate": 67.8,
+            "avg_lead_score": 95,
+            "cost_per_lead": 0.00,
+            "status": "active"
+        }
+    ]
+    
+    return {
+        "success": True,
+        "lead_sources": sources,
+        "total_sources": len(sources),
+        "best_performer": max(sources, key=lambda x: x["conversion_rate"]),
+        "message": "Lead source performance retrieved successfully"
+    }
+
+@app.post("/api/lead-generation/contact-lead")
+async def contact_lead(request: dict):
+    """Initiate contact with a lead via phone, SMS, or email"""
+    lead_id = request.get("lead_id")
+    contact_method = request.get("method")  # phone, sms, email
+    message = request.get("message", "")
+    
+    if not lead_id or not contact_method:
+        raise HTTPException(status_code=400, detail="Lead ID and contact method are required")
+    
+    # Simulate contact attempt
+    contact_result = {
+        "lead_id": lead_id,
+        "contact_method": contact_method,
+        "contact_time": datetime.now().isoformat(),
+        "status": "success",
+        "message_sent": message if contact_method in ["sms", "email"] else None,
+        "follow_up_scheduled": True,
+        "next_follow_up": (datetime.now() + timedelta(hours=2)).isoformat()
+    }
+    
+    return {
+        "success": True,
+        "contact_result": contact_result,
+        "message": f"Lead contacted successfully via {contact_method}"
+    }
+
+@app.post("/api/lead-generation/schedule-appointment")
+async def schedule_appointment(request: dict):
+    """Schedule an appointment with a lead"""
+    appointment_data = {
+        "lead_id": request.get("lead_id"),
+        "customer_name": request.get("customer_name"),
+        "phone": request.get("phone"),
+        "vehicle_interest": request.get("vehicle_interest"), 
+        "appointment_time": request.get("appointment_time"),
+        "appointment_type": request.get("appointment_type", "consultation"),
+        "notes": request.get("notes", ""),
+        "sales_rep": request.get("sales_rep", "current_user")
+    }
+    
+    if not all([appointment_data["lead_id"], appointment_data["customer_name"], appointment_data["appointment_time"]]):
+        raise HTTPException(status_code=400, detail="Lead ID, customer name, and appointment time are required")
+    
+    # Generate appointment
+    new_appointment = {
+        **appointment_data,
+        "id": f"apt_{int(datetime.now().timestamp())}",
+        "status": "confirmed",
+        "created_at": datetime.now().isoformat(),
+        "confirmation_sent": True,
+        "reminder_scheduled": True
+    }
+    
+    return {
+        "success": True,
+        "appointment": new_appointment,
+        "appointment_count_today": 8,  # Updated count
+        "progress_toward_goal": "80%",  # 8/10 appointments
+        "message": "Appointment scheduled successfully! 2 more needed for daily goal."
+    }
+
+@app.get("/api/lead-generation/follow-up-queue") 
+async def get_follow_up_queue():
+    """Get scheduled follow-up actions"""
+    follow_ups = [
+        {
+            "id": "followup_001",
+            "lead_id": "lead_002",
+            "customer_name": "Michael Chen",
+            "phone": "+1 (555) 876-5432",
+            "action_type": "phone_call",
+            "scheduled_time": (datetime.now() + timedelta(minutes=30)).isoformat(),
+            "priority": "high",
+            "message_template": "Follow up on Honda Accord inquiry - financing options ready"
+        },
+        {
+            "id": "followup_002",
+            "lead_id": "lead_007", 
+            "customer_name": "Amanda Davis",
+            "phone": "+1 (555) 789-0123",
+            "action_type": "sms",
+            "scheduled_time": (datetime.now() + timedelta(minutes=15)).isostring(),
+            "priority": "medium",
+            "message_template": "Hi Amanda! Following up on your Subaru interest. Great financing deals available today!"
+        }
+    ]
+    
+    return {
+        "success": True,
+        "follow_ups": follow_ups,
+        "total_pending": len(follow_ups),
+        "due_soon": len([f for f in follow_ups if f["priority"] == "high"]),
+        "message": "Follow-up queue retrieved successfully"
+    }
+
+@app.post("/api/lead-generation/automation-rule")
+async def create_lead_automation_rule(request: dict):
+    """Create automated lead generation and follow-up rules"""
+    rule_data = {
+        "name": request.get("name"),
+        "description": request.get("description"),
+        "trigger": request.get("trigger"),  # new_lead, high_value_lead, no_response
+        "conditions": request.get("conditions", []),
+        "actions": request.get("actions", []),  # send_sms, send_email, create_task, schedule_call
+        "status": "active"
+    }
+    
+    if not all([rule_data["name"], rule_data["trigger"], rule_data["actions"]]):
+        raise HTTPException(status_code=400, detail="Name, trigger, and actions are required")
+    
+    new_rule = {
+        **rule_data,
+        "id": f"rule_{int(datetime.now().timestamp())}",
+        "created_at": datetime.now().isoformat(),
+        "executions": 0,
+        "success_rate": 0
+    }
+    
+    return {
+        "success": True,
+        "automation_rule": new_rule,
+        "message": "Lead automation rule created successfully"
+    }
+
 # Social Media & App Integration Center API Endpoints
 @app.get("/api/integrations/connected-accounts")
 async def get_connected_accounts():
