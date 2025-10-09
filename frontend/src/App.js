@@ -1795,43 +1795,45 @@ const Navigation = () => {
   const location = useLocation();
 
   // Primary navigation items (most frequently used)
-  const primaryNavItems = [
+  // SALES REP TOOLS - Daily operational tools for sales representatives
+  const salesRepNavItems = [
     { to: "/", icon: BarChart3, label: "Dashboard" },
     { to: "/exclusive-leads", icon: Crown, label: "👑 Exclusive Leads" },
+    { to: "/lead-generation", icon: Target, label: "Leads" },
     { to: "/inventory", icon: Car, label: "Inventory" },
-    { to: "/creative", icon: Palette, label: "Creative Studio" },
-    { to: "/integrations", icon: LinkIcon, label: "Integrations" },
+    { to: "/pipeline", icon: TrendingUp, label: "Pipeline" },
+    { to: "/calendar", icon: Calendar, label: "Calendar" },
   ];
 
-  // Secondary navigation items (dropdown menu)
-  const secondaryNavItems = [
-    { to: "/sales", icon: Car, label: "Sales" },
-    { to: "/team", icon: Users, label: "Team" },
-    { to: "/lead-generation", icon: Target, label: "Lead Generation" },
-    { to: "/websites", icon: Globe, label: "Websites" },
-    { to: "/ads", icon: Target, label: "Ads Manager" },
-    { to: "/pipeline", icon: TrendingUp, label: "Pipeline" },
-    { to: "/marketing", icon: Send, label: "Mass Marketing" },
-    { to: "/social", icon: MessageSquare, label: "Social Media" },
-    { to: "/reviews", icon: Star, label: "Reviews" },
-    { to: "/calendar", icon: Calendar, label: "Calendar" },
-    { to: "/workflows", icon: Zap, label: "Workflows" },
-    { to: "/subscription", icon: CreditCard, label: "Subscription" },
-    { to: "/advanced-websites", icon: Globe, label: "Advanced Sites" },
+  // COMMUNICATIONS & TOOLS - Daily communication and operational tools
+  const communicationItems = [
     { to: "/voice", icon: Phone, label: "Voice AI" },
-    { to: "/analytics", icon: BarChart3, label: "Analytics Pro" },
-    { to: "/mobile-app", icon: Smartphone, label: "Mobile App" },
-    { to: "/walk-in-tracker", icon: UserX, label: "Walk-In Tracker" },
+    { to: "/ai-inbox", icon: Bot, label: "AI Inbox" },
+    { to: "/sales", icon: Car, label: "Sales Manager" },
+    { to: "/walk-in-tracker", icon: UserX, label: "Walk-Ins" },
     { to: "/vehicle-wishlist", icon: Bell, label: "Vehicle Alerts" },
   ];
 
-  // AI Tools navigation items  
-  const aiToolsItems = [
-    { to: "/ai-toolkit", icon: Brain, label: "AI Toolkit" },
-    { to: "/predictive-analytics", icon: Brain, label: "🧠 Predictive AI" },
-    { to: "/ai-inbox", icon: Bot, label: "🤖 AI Inbox" },
-    { to: "/workflow-automation", icon: Zap, label: "⚡ Workflow Automation" },
-    { to: "/facebook-marketplace", icon: Facebook, label: "📘 FB Marketplace AI" },
+  // MARKETING & GROWTH - Marketing and customer acquisition tools  
+  const marketingItems = [
+    { to: "/creative", icon: Palette, label: "Creative Studio" },
+    { to: "/marketing", icon: Send, label: "Mass Marketing" },
+    { to: "/social", icon: MessageSquare, label: "Social Media" },
+    { to: "/ads", icon: Target, label: "Ads Manager" },
+    { to: "/facebook-marketplace", icon: Facebook, label: "FB Marketplace" },
+    { to: "/websites", icon: Globe, label: "Website Builder" },
+    { to: "/reviews", icon: Star, label: "Reviews Manager" },
+  ];
+
+  // MANAGEMENT & ANALYTICS - Dealership administration and insights
+  const managementItems = [
+    { to: "/team", icon: Users, label: "Team Management" },
+    { to: "/analytics", icon: BarChart3, label: "Analytics Pro" },
+    { to: "/predictive-analytics", icon: Brain, label: "Predictive AI" },
+    { to: "/workflows", icon: Zap, label: "Workflow Automation" },
+    { to: "/integrations", icon: LinkIcon, label: "Integrations" },
+    { to: "/mobile-app", icon: Smartphone, label: "Mobile App" },
+    { to: "/subscription", icon: CreditCard, label: "Subscription" },
   ];
 
   return (
