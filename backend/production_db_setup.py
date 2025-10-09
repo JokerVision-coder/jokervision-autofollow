@@ -94,7 +94,7 @@ async def setup_production_database():
         
         # Test database connectivity
         print("🔍 Testing database connectivity...")
-        ping_result = await db.admin.command('ping')
+        ping_result = await client.admin.command('ping')
         if ping_result:
             print("✅ Database connectivity test passed!")
         
