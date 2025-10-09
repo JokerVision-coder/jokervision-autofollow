@@ -1430,6 +1430,14 @@ async def detailed_health_check():
         # Check AI services
         ai_status = "healthy" if EMERGENT_LLM_KEY else "disabled"
         
+        # Check cache status
+        try:
+            from cache_manager import get_cache_statistics
+            cache_stats = await get_cache_statistics()
+            cache_status = cache_stats.get("status", "unknown")
+        except:
+            cache_status = "unavailable"
+        
         return {
             "status": "healthy" if db_status == "healthy" else "degraded",
             "timestamp": datetime.now(timezone.utc).isoformat(),
@@ -1438,6 +1446,7 @@ async def detailed_health_check():
             "components": {
                 "database": db_status,
                 "ai_services": ai_status,
+                "cache_system": cache_status,
                 "api_endpoints": "healthy"
             }
         }
