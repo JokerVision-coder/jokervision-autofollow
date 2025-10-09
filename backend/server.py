@@ -11966,3 +11966,12 @@ app.add_middleware(
 @app.on_event("shutdown")
 async def shutdown_db_client():
     client.close()
+
+@app.on_event("startup")
+async def startup_cache():
+    """Initialize cache manager on startup"""
+    try:
+        await cache_manager.initialize()
+        logger.info("✅ Cache manager initialized")
+    except Exception as e:
+        logger.warning(f"⚠️ Cache initialization failed: {str(e)}")
