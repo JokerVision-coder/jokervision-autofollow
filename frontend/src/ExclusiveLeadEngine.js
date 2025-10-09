@@ -179,24 +179,15 @@ const ExclusiveLeadEngine = () => {
   };
 
   const fetchLeadIntelligence = async () => {
-    const mockIntelligence = {
-      total_exclusive_leads: 47,
-      avg_exclusivity_duration: '2.3 hours',
-      conversion_rate_exclusive: 78.4,
-      avg_deal_size_exclusive: 67500,
-      competitor_advantage: '340% higher close rate than shared leads',
-      market_penetration: {
-        luxury_segment: 89,
-        truck_segment: 76,
-        suv_segment: 82,
-        electric_segment: 94
-      },
-      lead_quality_score: 94.7,
-      exclusivity_protection_success: 98.2,
-      ai_prediction_accuracy: 91.8
-    };
-    
-    setLeadIntelligence(mockIntelligence);
+    try {
+      const response = await fetch(`${API}/exclusive-leads/intelligence?tenant_id=default`);
+      const data = await response.json();
+      setLeadIntelligence(data.intelligence);
+    } catch (error) {
+      console.error('Error fetching lead intelligence:', error);
+      // Fallback to empty object if API fails
+      setLeadIntelligence({});
+    }
   };
 
   const fetchCompetitorData = async () => {
