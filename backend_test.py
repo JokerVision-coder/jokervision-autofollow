@@ -4874,6 +4874,7 @@ def main():
     
     # Test sequence
     test_sequence = [
+        ("Performance & Scalability Optimization Suite", tester.test_performance_optimization_comprehensive),
         ("Enhanced Dashboard Stats", tester.test_enhanced_dashboard_stats),
         ("JokerVision User Management", tester.test_user_management_system),
         ("JokerVision Sales Tracking", tester.test_sales_tracking_system),
