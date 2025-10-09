@@ -9015,6 +9015,262 @@ async def analyze_conversation(conversation_id: str):
         raise HTTPException(status_code=500, detail="Failed to analyze conversation")
 
 # =============================================================================
+# Social Media & App Integration Center API Endpoints
+@app.get("/api/integrations/connected-accounts")
+async def get_connected_accounts():
+    """Get all connected social media and app accounts"""
+    accounts = [
+        {
+            "id": "fb_personal_001",
+            "platform": "facebook_personal", 
+            "name": "John Smith Personal",
+            "username": "@johnsmith.automotive",
+            "status": "connected",
+            "permissions": ["post", "read", "manage"],
+            "last_sync": "2024-01-09T15:30:00Z",
+            "followers": "2.3K",
+            "engagement": "4.2%",
+            "posts_today": 3,
+            "platform_specific": {
+                "page_id": "facebook_page_123456",
+                "access_token": "encrypted_token_here"
+            }
+        },
+        {
+            "id": "ig_business_001",
+            "platform": "instagram_business",
+            "name": "Smith Auto Sales", 
+            "username": "@smithautosales",
+            "status": "connected",
+            "permissions": ["post", "read", "manage", "ads"],
+            "last_sync": "2024-01-09T15:25:00Z",
+            "followers": "8.7K",
+            "engagement": "6.8%", 
+            "posts_today": 5,
+            "platform_specific": {
+                "business_account_id": "instagram_biz_789012",
+                "connected_facebook_page": "facebook_page_123456"
+            }
+        },
+        {
+            "id": "gmail_001",
+            "platform": "gmail",
+            "name": "john.smith@smithautosales.com",
+            "username": "john.smith@smithautosales.com",
+            "status": "connected", 
+            "permissions": ["read", "send"],
+            "last_sync": "2024-01-09T15:31:00Z",
+            "emails_today": 23,
+            "response_rate": "94%",
+            "platform_specific": {
+                "oauth_refresh_token": "encrypted_refresh_token_here"
+            }
+        }
+    ]
+    
+    return {
+        "success": True,
+        "connected_accounts": accounts,
+        "total_connected": len(accounts),
+        "message": "Connected accounts retrieved successfully"
+    }
+
+@app.get("/api/integrations/available-platforms")
+async def get_available_platforms():
+    """Get all available platforms for integration"""
+    platforms = {
+        "social_media": [
+            {"id": "facebook_personal", "name": "Facebook Personal", "category": "social_media", "oauth_required": True},
+            {"id": "facebook_business", "name": "Facebook Business Page", "category": "social_media", "oauth_required": True},
+            {"id": "instagram_personal", "name": "Instagram Personal", "category": "social_media", "oauth_required": True},
+            {"id": "instagram_business", "name": "Instagram Business", "category": "social_media", "oauth_required": True},
+            {"id": "twitter", "name": "Twitter/X", "category": "social_media", "oauth_required": True},
+            {"id": "linkedin_personal", "name": "LinkedIn Personal", "category": "social_media", "oauth_required": True},
+            {"id": "tiktok", "name": "TikTok", "category": "social_media", "oauth_required": True},
+            {"id": "youtube", "name": "YouTube Channel", "category": "social_media", "oauth_required": True}
+        ],
+        "marketplace": [
+            {"id": "facebook_marketplace", "name": "Facebook Marketplace", "category": "marketplace", "oauth_required": True},
+            {"id": "autotrader", "name": "AutoTrader", "category": "marketplace", "api_key_required": True},
+            {"id": "cars_com", "name": "Cars.com", "category": "marketplace", "api_key_required": True},
+            {"id": "cargurus", "name": "CarGurus", "category": "marketplace", "api_key_required": True}
+        ],
+        "communication": [
+            {"id": "whatsapp_business", "name": "WhatsApp Business", "category": "communication", "oauth_required": True},
+            {"id": "gmail", "name": "Gmail", "category": "communication", "oauth_required": True},
+            {"id": "outlook", "name": "Microsoft Outlook", "category": "communication", "oauth_required": True},
+            {"id": "twilio_sms", "name": "Twilio SMS", "category": "communication", "api_key_required": True}
+        ],
+        "crm_sales": [
+            {"id": "salesforce", "name": "Salesforce CRM", "category": "crm_sales", "oauth_required": True},
+            {"id": "hubspot", "name": "HubSpot CRM", "category": "crm_sales", "oauth_required": True},
+            {"id": "pipedrive", "name": "Pipedrive", "category": "crm_sales", "api_key_required": True}
+        ],
+        "analytics": [
+            {"id": "google_analytics", "name": "Google Analytics", "category": "analytics", "oauth_required": True},
+            {"id": "facebook_ads", "name": "Facebook Ads Manager", "category": "analytics", "oauth_required": True},
+            {"id": "google_ads", "name": "Google Ads", "category": "analytics", "oauth_required": True}
+        ]
+    }
+    
+    return {
+        "success": True,
+        "available_platforms": platforms,
+        "total_platforms": sum(len(category) for category in platforms.values()),
+        "message": "Available platforms retrieved successfully"
+    }
+
+@app.post("/api/integrations/connect-account")
+async def connect_account(request: dict):
+    """Initiate OAuth connection for a platform account"""
+    platform_id = request.get("platform_id")
+    redirect_uri = request.get("redirect_uri", "https://jokervision.com/oauth/callback")
+    
+    if not platform_id:
+        raise HTTPException(status_code=400, detail="Platform ID is required")
+    
+    # Generate OAuth URL for the platform
+    oauth_urls = {
+        "facebook_personal": f"https://www.facebook.com/v18.0/dialog/oauth?client_id=YOUR_APP_ID&redirect_uri={redirect_uri}&scope=pages_manage_posts,pages_read_engagement",
+        "facebook_business": f"https://www.facebook.com/v18.0/dialog/oauth?client_id=YOUR_APP_ID&redirect_uri={redirect_uri}&scope=pages_manage_posts,pages_read_engagement,business_management",
+        "instagram_business": f"https://api.instagram.com/oauth/authorize?client_id=YOUR_APP_ID&redirect_uri={redirect_uri}&scope=user_profile,user_media",
+        "gmail": f"https://accounts.google.com/o/oauth2/auth?client_id=YOUR_CLIENT_ID&redirect_uri={redirect_uri}&scope=https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/gmail.readonly",
+        "google_ads": f"https://accounts.google.com/o/oauth2/auth?client_id=YOUR_CLIENT_ID&redirect_uri={redirect_uri}&scope=https://www.googleapis.com/auth/adwords",
+        "salesforce": f"https://login.salesforce.com/services/oauth2/authorize?client_id=YOUR_CLIENT_ID&redirect_uri={redirect_uri}&response_type=code",
+        "hubspot": f"https://app.hubspot.com/oauth/authorize?client_id=YOUR_CLIENT_ID&redirect_uri={redirect_uri}&scope=contacts crm.objects.deals.read"
+    }
+    
+    oauth_url = oauth_urls.get(platform_id, f"https://oauth-placeholder.com/{platform_id}")
+    
+    return {
+        "success": True,
+        "oauth_url": oauth_url,
+        "platform_id": platform_id,
+        "state": f"state_{platform_id}_{int(datetime.now().timestamp())}",
+        "message": f"OAuth URL generated for {platform_id}"
+    }
+
+@app.post("/api/integrations/disconnect-account")
+async def disconnect_account(request: dict):
+    """Disconnect a connected account"""
+    account_id = request.get("account_id")
+    
+    if not account_id:
+        raise HTTPException(status_code=400, detail="Account ID is required")
+    
+    # Simulate account disconnection
+    disconnect_result = {
+        "account_id": account_id,
+        "disconnected_at": datetime.now().isoformat(),
+        "revoked_permissions": ["post", "read", "manage"],
+        "cleanup_performed": True
+    }
+    
+    return {
+        "success": True,
+        "disconnect_result": disconnect_result,
+        "message": f"Account {account_id} disconnected successfully"
+    }
+
+@app.post("/api/integrations/sync-account")
+async def sync_account(request: dict):
+    """Sync data from a connected account"""
+    account_id = request.get("account_id")
+    
+    if not account_id:
+        raise HTTPException(status_code=400, detail="Account ID is required")
+    
+    # Simulate account sync
+    sync_result = {
+        "account_id": account_id,
+        "sync_started_at": datetime.now().isoformat(),
+        "data_synced": {
+            "posts": 45,
+            "followers": 2387,
+            "engagement_data": True,
+            "messages": 12,
+            "leads": 8
+        },
+        "sync_status": "completed",
+        "next_sync": (datetime.now() + timedelta(hours=1)).isoformat()
+    }
+    
+    return {
+        "success": True,
+        "sync_result": sync_result,
+        "message": f"Account {account_id} synced successfully"
+    }
+
+@app.get("/api/integrations/automation-rules")
+async def get_automation_rules():
+    """Get cross-platform automation rules"""
+    rules = [
+        {
+            "id": "auto_001",
+            "name": "Cross-Platform Vehicle Posts",
+            "description": "Automatically post new vehicles to Facebook, Instagram, and Twitter",
+            "platforms": ["facebook_business", "instagram_business", "twitter"],
+            "trigger": "new_inventory",
+            "conditions": ["vehicle_price > 15000", "vehicle_condition == 'excellent'"],
+            "actions": ["post_to_social", "send_notification"],
+            "status": "active",
+            "executions": 47,
+            "success_rate": 94.2,
+            "created_at": "2024-01-01T10:00:00Z"
+        },
+        {
+            "id": "auto_002",
+            "name": "Lead Follow-up Sequence", 
+            "description": "Send automated email and SMS sequences to new leads",
+            "platforms": ["gmail", "twilio_sms"],
+            "trigger": "new_lead",
+            "conditions": ["lead_score > 75", "lead_source != 'spam'"],
+            "actions": ["send_welcome_email", "schedule_follow_up_sms"],
+            "status": "active",
+            "executions": 128,
+            "success_rate": 87.5,
+            "created_at": "2024-01-01T11:00:00Z"
+        }
+    ]
+    
+    return {
+        "success": True,
+        "automation_rules": rules,
+        "total_active": len([r for r in rules if r["status"] == "active"]),
+        "message": "Automation rules retrieved successfully"
+    }
+
+@app.post("/api/integrations/create-automation-rule")
+async def create_automation_rule(request: dict):
+    """Create a new cross-platform automation rule"""
+    rule_data = {
+        "name": request.get("name"),
+        "description": request.get("description"),
+        "platforms": request.get("platforms", []),
+        "trigger": request.get("trigger"),
+        "conditions": request.get("conditions", []),
+        "actions": request.get("actions", []),
+        "status": "active"
+    }
+    
+    if not all([rule_data["name"], rule_data["platforms"], rule_data["trigger"]]):
+        raise HTTPException(status_code=400, detail="Name, platforms, and trigger are required")
+    
+    # Generate new rule
+    new_rule = {
+        **rule_data,
+        "id": f"auto_{int(datetime.now().timestamp())}",
+        "executions": 0,
+        "success_rate": 0,
+        "created_at": datetime.now().isoformat()
+    }
+    
+    return {
+        "success": True,
+        "automation_rule": new_rule,
+        "message": "Automation rule created successfully"
+    }
+
 # FACEBOOK MARKETPLACE AUTO POSTER API - ENTERPRISE GRADE & POLICY COMPLIANT
 # =============================================================================
 
