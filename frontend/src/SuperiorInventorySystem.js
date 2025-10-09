@@ -310,14 +310,15 @@ const SuperiorInventorySystem = () => {
   };
 
   const generateMockSummary = () => ({
-    total_vehicles: 347,
-    new_vehicles: 201,
-    used_vehicles: 146,
-    marketplace_listed: 289, // Way higher than competitors
-    leads_generated: 1247, // 8x more than competitors
-    ai_optimized: 312,
-    voice_enabled: 289,
-    dealership: 'JokerVision AutoFollow - Revolutionary AI Dealership'
+    total_vehicles: 247,
+    new_vehicles: 128,
+    used_vehicles: 89,
+    certified_pre_owned: 30,
+    marketplace_listed: 234, // 95% of inventory posted to marketplaces
+    leads_generated: 1847, // 10x more than competitors
+    ai_optimized: 223,
+    voice_enabled: 198,
+    dealership: 'JokerVision AutoFollow - Complete Dealership Inventory System'
   });
 
   // Revolutionary AI Functions
