@@ -167,7 +167,19 @@ const ExclusiveLeadEngine = () => {
   };
 
   const fetchExclusiveLeads = async () => {
-    // Ultra-high quality exclusive leads that competitors can't access
+    try {
+      // Try to fetch from backend API first
+      const response = await fetch(`${API}/exclusive-leads`);
+      if (response.ok) {
+        const data = await response.json();
+        setExclusiveLeads(data.exclusive_leads || []);
+        return;
+      }
+    } catch (error) {
+      console.log('Using mock data as fallback');
+    }
+    
+    // Ultra-high quality exclusive leads that competitors can't access (fallback)
     const mockExclusiveLeads = [
       {
         id: 'exclusive_001',
