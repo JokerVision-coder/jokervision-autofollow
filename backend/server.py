@@ -11892,7 +11892,8 @@ async def claim_exclusive_lead(request: Request, lead_id: str, tenant_id: str = 
         raise HTTPException(status_code=500, detail="Failed to claim exclusive lead")
 
 @api_router.post("/exclusive-leads/activate-protection/{lead_id}")
-async def activate_lead_protection(lead_id: str, tenant_id: str = "default"):
+@limiter.limit("10/minute") 
+async def activate_lead_protection(request: Request, lead_id: str, tenant_id: str = "default", user: dict = Depends(verify_token)):
     """Activate advanced protection for an exclusive lead"""
     try:
         logger.info(f"Activating protection for lead {lead_id} for tenant: {tenant_id}")
