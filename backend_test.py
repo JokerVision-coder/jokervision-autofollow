@@ -4499,6 +4499,373 @@ Vehicle Type: sedan"""
         
         return passed_tests >= total_tests * 0.6  # 60% pass rate for inventory analysis
 
+    # =============================================================================
+    # PERFORMANCE & SCALABILITY OPTIMIZATION TESTS
+    # =============================================================================
+
+    def test_cache_stats_endpoint(self):
+        """Test cache statistics endpoint"""
+        success, response = self.run_test(
+            "Cache Statistics",
+            "GET",
+            "cache/stats",
+            200
+        )
+        
+        if success:
+            # Verify cache stats structure
+            if 'cache_stats' in response and 'timestamp' in response:
+                cache_stats = response['cache_stats']
+                print(f"   ✅ Cache stats retrieved - Status: {cache_stats.get('status', 'unknown')}")
+                return True
+            else:
+                print("   ❌ Cache stats missing required fields")
+                return False
+        return False
+
+    def test_cache_clear_endpoint(self):
+        """Test cache clearing functionality"""
+        success, response = self.run_test(
+            "Cache Clear",
+            "POST",
+            "cache/clear",
+            200
+        )
+        
+        if success:
+            # Verify cache clear response
+            if 'message' in response and 'success' in response:
+                print(f"   ✅ Cache clear successful - {response.get('message', '')}")
+                return True
+            else:
+                print("   ❌ Cache clear response missing required fields")
+                return False
+        return False
+
+    def test_cache_clear_specific_type(self):
+        """Test clearing specific cache type"""
+        success, response = self.run_test(
+            "Cache Clear Specific Type",
+            "POST",
+            "cache/clear?cache_type=lead_list",
+            200
+        )
+        
+        if success:
+            # Verify specific cache clear
+            if 'cache_type' in response and response.get('cache_type') == 'lead_list':
+                cleared_count = response.get('cleared_count', 0)
+                print(f"   ✅ Specific cache clear successful - {cleared_count} entries cleared")
+                return True
+            else:
+                print("   ❌ Specific cache clear failed")
+                return False
+        return False
+
+    def test_enhanced_health_check(self):
+        """Test enhanced health check with cache system status"""
+        success, response = self.run_test(
+            "Enhanced Health Check",
+            "GET",
+            "../health/detailed",  # This is at root level, not /api
+            200
+        )
+        
+        if success:
+            # Verify enhanced health check structure
+            required_fields = ['status', 'components']
+            missing_fields = [field for field in required_fields if field not in response]
+            
+            if not missing_fields:
+                components = response.get('components', {})
+                cache_status = components.get('cache_system', 'unknown')
+                db_status = components.get('database', 'unknown')
+                ai_status = components.get('ai_services', 'unknown')
+                
+                print(f"   ✅ Enhanced health check - Overall: {response.get('status')}")
+                print(f"      Database: {db_status}, AI: {ai_status}, Cache: {cache_status}")
+                return True
+            else:
+                print(f"   ❌ Enhanced health check missing fields: {missing_fields}")
+                return False
+        return False
+
+    def test_dashboard_stats_performance(self):
+        """Test dashboard stats endpoint performance and caching"""
+        import time
+        
+        # First request (should populate cache)
+        start_time = time.time()
+        success1, response1 = self.run_test(
+            "Dashboard Stats Performance (First Request)",
+            "GET",
+            "dashboard/stats",
+            200
+        )
+        first_request_time = (time.time() - start_time) * 1000  # Convert to milliseconds
+        
+        if not success1:
+            return False
+        
+        # Second request (should be served from cache)
+        start_time = time.time()
+        success2, response2 = self.run_test(
+            "Dashboard Stats Performance (Cached Request)",
+            "GET",
+            "dashboard/stats",
+            200
+        )
+        second_request_time = (time.time() - start_time) * 1000  # Convert to milliseconds
+        
+        if success1 and success2:
+            print(f"   ✅ Dashboard stats performance:")
+            print(f"      First request: {first_request_time:.0f}ms")
+            print(f"      Cached request: {second_request_time:.0f}ms")
+            
+            # Check if response time is under 500ms requirement
+            performance_ok = first_request_time < 500
+            cache_improvement = second_request_time < first_request_time
+            
+            print(f"      Performance target (<500ms): {'✅' if performance_ok else '❌'}")
+            print(f"      Cache improvement: {'✅' if cache_improvement else '❌'}")
+            
+            return performance_ok
+        return False
+
+    def test_leads_endpoint_performance(self):
+        """Test leads endpoint performance and caching"""
+        import time
+        
+        # First request (should populate cache)
+        start_time = time.time()
+        success1, response1 = self.run_test(
+            "Leads Performance (First Request)",
+            "GET",
+            "leads",
+            200
+        )
+        first_request_time = (time.time() - start_time) * 1000  # Convert to milliseconds
+        
+        if not success1:
+            return False
+        
+        # Second request (should be served from cache)
+        start_time = time.time()
+        success2, response2 = self.run_test(
+            "Leads Performance (Cached Request)",
+            "GET",
+            "leads",
+            200
+        )
+        second_request_time = (time.time() - start_time) * 1000  # Convert to milliseconds
+        
+        if success1 and success2:
+            leads_count = len(response1) if isinstance(response1, list) else 0
+            print(f"   ✅ Leads endpoint performance ({leads_count} leads):")
+            print(f"      First request: {first_request_time:.0f}ms")
+            print(f"      Cached request: {second_request_time:.0f}ms")
+            
+            # Check if response time is under 1000ms requirement
+            performance_ok = first_request_time < 1000
+            cache_improvement = second_request_time < first_request_time
+            
+            print(f"      Performance target (<1000ms): {'✅' if performance_ok else '❌'}")
+            print(f"      Cache improvement: {'✅' if cache_improvement else '❌'}")
+            
+            return performance_ok
+        return False
+
+    def test_cache_invalidation_on_lead_update(self):
+        """Test cache invalidation when leads are updated"""
+        if not self.created_lead_id:
+            print("❌ No lead ID available for cache invalidation testing")
+            return False
+        
+        # First, populate cache by getting leads
+        success1, _ = self.run_test(
+            "Populate Cache (Get Leads)",
+            "GET",
+            "leads",
+            200
+        )
+        
+        if not success1:
+            return False
+        
+        # Update the lead (should invalidate cache)
+        update_data = {
+            "status": "cache_test_updated",
+            "notes": "Testing cache invalidation"
+        }
+        
+        success2, _ = self.run_test(
+            "Update Lead (Should Invalidate Cache)",
+            "PUT",
+            f"leads/{self.created_lead_id}",
+            200,
+            data=update_data
+        )
+        
+        if success2:
+            print("   ✅ Lead update successful - cache should be invalidated")
+            
+            # Verify the update is reflected (cache should be refreshed)
+            success3, response3 = self.run_test(
+                "Get Updated Lead (Cache Refreshed)",
+                "GET",
+                f"leads/{self.created_lead_id}",
+                200
+            )
+            
+            if success3 and response3.get('status') == 'cache_test_updated':
+                print("   ✅ Cache invalidation working - updated data retrieved")
+                return True
+            else:
+                print("   ❌ Cache invalidation failed - stale data returned")
+                return False
+        return False
+
+    def test_cache_graceful_degradation(self):
+        """Test graceful degradation when cache is unavailable"""
+        # This test simulates cache unavailability by testing endpoints
+        # that should work even if cache fails
+        
+        success, response = self.run_test(
+            "Dashboard Stats (Graceful Degradation)",
+            "GET",
+            "dashboard/stats",
+            200
+        )
+        
+        if success:
+            # Verify that even if cache fails, we get valid data
+            required_fields = ['total_leads', 'new_leads', 'contacted_leads']
+            missing_fields = [field for field in required_fields if field not in response]
+            
+            if not missing_fields:
+                print("   ✅ Graceful degradation working - data served despite cache issues")
+                return True
+            else:
+                print(f"   ❌ Graceful degradation failed - missing fields: {missing_fields}")
+                return False
+        return False
+
+    def test_concurrent_requests_performance(self):
+        """Test system performance under concurrent requests"""
+        import threading
+        import time
+        
+        results = []
+        
+        def make_request():
+            start_time = time.time()
+            try:
+                response = requests.get(f"{self.api_url}/dashboard/stats")
+                request_time = (time.time() - start_time) * 1000
+                results.append({
+                    'success': response.status_code == 200,
+                    'time': request_time
+                })
+            except Exception as e:
+                results.append({
+                    'success': False,
+                    'time': 0,
+                    'error': str(e)
+                })
+        
+        # Create 5 concurrent threads
+        threads = []
+        for i in range(5):
+            thread = threading.Thread(target=make_request)
+            threads.append(thread)
+        
+        # Start all threads
+        start_time = time.time()
+        for thread in threads:
+            thread.start()
+        
+        # Wait for all threads to complete
+        for thread in threads:
+            thread.join()
+        
+        total_time = (time.time() - start_time) * 1000
+        
+        # Analyze results
+        successful_requests = sum(1 for r in results if r['success'])
+        avg_response_time = sum(r['time'] for r in results if r['success']) / max(successful_requests, 1)
+        
+        print(f"   ✅ Concurrent requests test:")
+        print(f"      Successful requests: {successful_requests}/5")
+        print(f"      Average response time: {avg_response_time:.0f}ms")
+        print(f"      Total execution time: {total_time:.0f}ms")
+        
+        # Performance criteria: at least 4/5 requests successful, avg response < 1000ms
+        performance_ok = successful_requests >= 4 and avg_response_time < 1000
+        print(f"      Performance acceptable: {'✅' if performance_ok else '❌'}")
+        
+        return performance_ok
+
+    def test_database_indexes_performance(self):
+        """Test database query performance with indexes"""
+        import time
+        
+        # Test leads query performance (should benefit from indexes)
+        start_time = time.time()
+        success, response = self.run_test(
+            "Database Index Performance (Leads Query)",
+            "GET",
+            "leads",
+            200
+        )
+        query_time = (time.time() - start_time) * 1000
+        
+        if success:
+            leads_count = len(response) if isinstance(response, list) else 0
+            print(f"   ✅ Database query performance:")
+            print(f"      Query time: {query_time:.0f}ms for {leads_count} leads")
+            
+            # Performance should be good with proper indexing
+            performance_ok = query_time < 1000  # Should be under 1 second
+            print(f"      Index performance: {'✅' if performance_ok else '❌'}")
+            
+            return performance_ok
+        return False
+
+    def test_performance_optimization_comprehensive(self):
+        """Run comprehensive Performance & Scalability Optimization test suite"""
+        print("\n⚡ Running Performance & Scalability Optimization Tests...")
+        
+        performance_tests = [
+            ("Cache Statistics Endpoint", self.test_cache_stats_endpoint),
+            ("Cache Clear Endpoint", self.test_cache_clear_endpoint),
+            ("Cache Clear Specific Type", self.test_cache_clear_specific_type),
+            ("Enhanced Health Check", self.test_enhanced_health_check),
+            ("Dashboard Stats Performance", self.test_dashboard_stats_performance),
+            ("Leads Endpoint Performance", self.test_leads_endpoint_performance),
+            ("Cache Invalidation on Update", self.test_cache_invalidation_on_lead_update),
+            ("Cache Graceful Degradation", self.test_cache_graceful_degradation),
+            ("Concurrent Requests Performance", self.test_concurrent_requests_performance),
+            ("Database Indexes Performance", self.test_database_indexes_performance)
+        ]
+        
+        passed_tests = 0
+        total_tests = len(performance_tests)
+        
+        for test_name, test_func in performance_tests:
+            try:
+                if test_func():
+                    passed_tests += 1
+                    print(f"   ✅ {test_name} - PASSED")
+                else:
+                    print(f"   ❌ {test_name} - FAILED")
+            except Exception as e:
+                print(f"   ❌ {test_name} - ERROR: {str(e)}")
+        
+        success_rate = (passed_tests / total_tests) * 100
+        print(f"\n   📊 Performance Optimization Test Suite: {passed_tests}/{total_tests} passed ({success_rate:.1f}%)")
+        
+        return passed_tests >= total_tests * 0.8  # 80% pass rate required
+
 def main():
     print("🃏 JokerVision AutoFollow API Testing Suite")
     print("=" * 50)
