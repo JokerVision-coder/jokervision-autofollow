@@ -1489,6 +1489,11 @@ async def update_lead(lead_id: str, update_data: LeadUpdate):
     
     if update_dict:
         await db.leads.update_one({"id": lead_id}, {"$set": update_dict})
+        
+        # Invalidate related caches when lead is updated
+        await invalidate_cache("lead_list")  # Clear leads list cache
+        await invalidate_cache("dashboard_stats")  # Clear dashboard stats cache
+        logger.debug(f"Cache invalidated after updating lead {lead_id}")
     
     updated_lead = await db.leads.find_one({"id": lead_id})
     if not updated_lead:
