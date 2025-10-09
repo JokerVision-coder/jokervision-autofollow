@@ -2018,6 +2018,7 @@ function App() {
           <Route path="/predictive-analytics" element={<PredictiveAnalytics />} />
           <Route path="/ai-inbox" element={<AIInbox />} />
           <Route path="/workflow-automation" element={<WorkflowAutomation />} />
+          <Route path="/facebook-marketplace" element={<FacebookMarketplaceAutoPoster />} />
         </Routes>
         <Toaster position="top-right" />
       </div>
