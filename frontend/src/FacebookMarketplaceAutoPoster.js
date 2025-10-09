@@ -299,7 +299,7 @@ const FacebookMarketplaceAutoPoster = () => {
               <Trophy className="w-8 h-8 text-yellow-400" />
               <div>
                 <CardTitle className="text-2xl text-white">🚀 CRUSHING COMPETITORS</CardTitle>
-                <CardDescription className="text-yellow-300">
+                <CardDescription className="text-cyan-300">
                   JokerVision vs DealerPromoter, ZenLite Pro, Glo3D, QuickPost
                 </CardDescription>
               </div>
