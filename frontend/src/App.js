@@ -2021,6 +2021,7 @@ function App() {
           <Route path="/ai-inbox" element={<AIInbox />} />
           <Route path="/workflow-automation" element={<WorkflowAutomation />} />
           <Route path="/facebook-marketplace" element={<FacebookMarketplaceAutoPoster />} />
+          <Route path="/integrations" element={<SocialMediaIntegrationCenter />} />
         </Routes>
         <Toaster position="top-right" />
       </div>
