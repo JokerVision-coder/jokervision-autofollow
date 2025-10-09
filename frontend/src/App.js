@@ -1882,7 +1882,7 @@ const Navigation = () => {
                         onClick={() => setShowMainMenu(false)}
                         className={`flex items-center px-4 py-2 transition-colors duration-200 ${
                           isActive 
-                            ? 'text-white bg-gradient-to-r from-purple-600 to-pink-600' 
+                            ? 'text-white bg-gradient-to-r from-blue-600 to-cyan-600' 
                             : 'text-glass hover:text-glass-bright hover:bg-glass/10'
                         }`}
                       >
@@ -1917,7 +1917,7 @@ const Navigation = () => {
                         onClick={() => setShowToolsMenu(false)}
                         className={`flex items-center px-4 py-2 transition-colors duration-200 ${
                           isActive 
-                            ? 'text-white bg-gradient-to-r from-purple-600 to-pink-600' 
+                            ? 'text-white bg-gradient-to-r from-blue-600 to-cyan-600' 
                             : 'text-glass hover:text-glass-bright hover:bg-glass/10'
                         }`}
                       >
