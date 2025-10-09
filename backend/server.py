@@ -1376,6 +1376,46 @@ async def health_check():
         "service": "jokervision-autofollow"
     }
 
+@api_router.get("/cache/stats")
+async def get_cache_stats():
+    """Get cache performance statistics"""
+    try:
+        from cache_manager import get_cache_statistics
+        stats = await get_cache_statistics()
+        return {
+            "cache_stats": stats,
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Error getting cache stats: {str(e)}")
+        return {
+            "cache_stats": {"status": "error", "error": str(e)},
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        }
+
+@api_router.post("/cache/clear")
+async def clear_cache(cache_type: str = None):
+    """Clear cache entries (admin function)"""
+    try:
+        from cache_manager import invalidate_cache, cache_manager
+        
+        if cache_type:
+            cleared_count = await invalidate_cache(cache_type)
+            return {
+                "message": f"Cleared {cleared_count} entries for cache type: {cache_type}",
+                "cache_type": cache_type,
+                "cleared_count": cleared_count
+            }
+        else:
+            success = await cache_manager.clear_all()
+            return {
+                "message": "All JokerVision cache entries cleared" if success else "Cache clear failed",
+                "success": success
+            }
+    except Exception as e:
+        logger.error(f"Error clearing cache: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Cache clear failed: {str(e)}")
+
 @app.get("/health/detailed")
 async def detailed_health_check():
     """Detailed health check with database connectivity"""
