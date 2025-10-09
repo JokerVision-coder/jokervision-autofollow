@@ -239,34 +239,15 @@ const ExclusiveLeadEngine = () => {
   };
 
   const fetchRealTimeAlerts = async () => {
-    const mockAlerts = [
-      {
-        id: 'alert_001',
-        type: 'exclusive_lead_expiring',
-        priority: 'critical',
-        message: 'URGENT: Diamond-level lead (Dr. Sarah Williams) exclusivity expires in 30 minutes!',
-        action_required: 'immediate_contact',
-        lead_id: 'exclusive_003'
-      },
-      {
-        id: 'alert_002',
-        type: 'competitor_activity',
-        priority: 'high', 
-        message: 'Competitor just lost high-value BMW lead - opportunity to capture',
-        action_required: 'market_positioning',
-        opportunity_value: 85000
-      },
-      {
-        id: 'alert_003',
-        type: 'market_timing',
-        priority: 'medium',
-        message: 'Optimal luxury buyer contact window starting in 15 minutes',
-        action_required: 'prepare_outreach',
-        estimated_leads: 8
-      }
-    ];
-    
-    setRealTimeAlerts(mockAlerts);
+    try {
+      const response = await fetch(`${API}/exclusive-leads/alerts?tenant_id=default`);
+      const data = await response.json();
+      setRealTimeAlerts(data.real_time_alerts);
+    } catch (error) {
+      console.error('Error fetching real-time alerts:', error);
+      // Fallback to empty array if API fails
+      setRealTimeAlerts([]);
+    }
   };
 
   const claimExclusiveLead = async (leadId) => {
