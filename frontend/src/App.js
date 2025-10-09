@@ -1867,34 +1867,37 @@ const Navigation = () => {
               );
             })}
 
-            {/* More Menu Dropdown */}
+            {/* Communications & Tools */}
             <div className="relative">
               <button
-                onClick={() => setShowMainMenu(!showMainMenu)}
+                onClick={() => setShowCommunicationMenu(!showCommunicationMenu)}
                 className="text-glass hover:text-glass-bright font-medium transition-colors duration-200 flex items-center px-3 py-2 rounded-lg hover:bg-glass/10"
               >
-                <Menu className="w-4 h-4 mr-2" />
-                More
+                <Phone className="w-4 h-4 mr-2" />
+                Tools
                 <ChevronDown className="w-4 h-4 ml-1" />
               </button>
               
-              {showMainMenu && (
-                <div className="absolute right-0 mt-2 w-56 bg-glass backdrop-blur-lg border border-glass-muted rounded-xl shadow-lg py-2 z-50">
-                  {secondaryNavItems.map((item) => {
+              {showCommunicationMenu && (
+                <div className="absolute right-0 mt-2 w-64 bg-slate-900/95 backdrop-blur-xl border border-slate-700/50 rounded-xl shadow-2xl py-3 z-50">
+                  <div className="px-4 pb-2 mb-2 border-b border-slate-700/50">
+                    <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Communication & Tools</h3>
+                  </div>
+                  {communicationItems.map((item) => {
                     const isActive = location.pathname === item.to;
                     return (
                       <Link 
                         key={item.to}
                         to={item.to}
-                        onClick={() => setShowMainMenu(false)}
-                        className={`flex items-center px-4 py-2 transition-colors duration-200 ${
+                        onClick={() => setShowCommunicationMenu(false)}
+                        className={`flex items-center px-4 py-2.5 mx-2 rounded-lg transition-colors duration-200 ${
                           isActive 
-                            ? 'text-white bg-gradient-to-r from-blue-600 to-cyan-600' 
-                            : 'text-glass hover:text-glass-bright hover:bg-glass/10'
+                            ? 'text-white bg-gradient-to-r from-blue-600 to-cyan-600 shadow-md' 
+                            : 'text-slate-200 hover:text-white hover:bg-slate-700/50'
                         }`}
                       >
-                        <item.icon className="w-4 h-4 mr-3" />
-                        {item.label}
+                        <item.icon className="w-4 h-4 mr-3 flex-shrink-0" />
+                        <span className="text-sm">{item.label}</span>
                       </Link>
                     );
                   })}
@@ -1902,34 +1905,75 @@ const Navigation = () => {
               )}
             </div>
 
-            {/* AI Tools Dropdown */}
+            {/* Marketing & Growth */}
             <div className="relative">
               <button
-                onClick={() => setShowToolsMenu(!showToolsMenu)}
+                onClick={() => setShowMarketingMenu(!showMarketingMenu)}
                 className="text-glass hover:text-glass-bright font-medium transition-colors duration-200 flex items-center px-3 py-2 rounded-lg hover:bg-glass/10"
               >
-                <Brain className="w-4 h-4 mr-2" />
-                AI Tools
+                <Palette className="w-4 h-4 mr-2" />
+                Marketing
                 <ChevronDown className="w-4 h-4 ml-1" />
               </button>
               
-              {showToolsMenu && (
-                <div className="absolute right-0 mt-2 w-56 bg-glass backdrop-blur-lg border border-glass-muted rounded-xl shadow-lg py-2 z-50">
-                  {aiToolsItems.map((item) => {
+              {showMarketingMenu && (
+                <div className="absolute right-0 mt-2 w-64 bg-slate-900/95 backdrop-blur-xl border border-slate-700/50 rounded-xl shadow-2xl py-3 z-50">
+                  <div className="px-4 pb-2 mb-2 border-b border-slate-700/50">
+                    <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Marketing & Growth</h3>
+                  </div>
+                  {marketingItems.map((item) => {
                     const isActive = location.pathname === item.to;
                     return (
                       <Link 
                         key={item.to}
                         to={item.to}
-                        onClick={() => setShowToolsMenu(false)}
-                        className={`flex items-center px-4 py-2 transition-colors duration-200 ${
+                        onClick={() => setShowMarketingMenu(false)}
+                        className={`flex items-center px-4 py-2.5 mx-2 rounded-lg transition-colors duration-200 ${
                           isActive 
-                            ? 'text-white bg-gradient-to-r from-blue-600 to-cyan-600' 
-                            : 'text-glass hover:text-glass-bright hover:bg-glass/10'
+                            ? 'text-white bg-gradient-to-r from-blue-600 to-cyan-600 shadow-md' 
+                            : 'text-slate-200 hover:text-white hover:bg-slate-700/50'
                         }`}
                       >
-                        <item.icon className="w-4 h-4 mr-3" />
-                        {item.label}
+                        <item.icon className="w-4 h-4 mr-3 flex-shrink-0" />
+                        <span className="text-sm">{item.label}</span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Management & Analytics */}
+            <div className="relative">
+              <button
+                onClick={() => setShowManagementMenu(!showManagementMenu)}
+                className="text-glass hover:text-glass-bright font-medium transition-colors duration-200 flex items-center px-3 py-2 rounded-lg hover:bg-glass/10"
+              >
+                <Users className="w-4 h-4 mr-2" />
+                Management
+                <ChevronDown className="w-4 h-4 ml-1" />
+              </button>
+              
+              {showManagementMenu && (
+                <div className="absolute right-0 mt-2 w-64 bg-slate-900/95 backdrop-blur-xl border border-slate-700/50 rounded-xl shadow-2xl py-3 z-50">
+                  <div className="px-4 pb-2 mb-2 border-b border-slate-700/50">
+                    <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Management & Analytics</h3>
+                  </div>
+                  {managementItems.map((item) => {
+                    const isActive = location.pathname === item.to;
+                    return (
+                      <Link 
+                        key={item.to}
+                        to={item.to}
+                        onClick={() => setShowManagementMenu(false)}
+                        className={`flex items-center px-4 py-2.5 mx-2 rounded-lg transition-colors duration-200 ${
+                          isActive 
+                            ? 'text-white bg-gradient-to-r from-blue-600 to-cyan-600 shadow-md' 
+                            : 'text-slate-200 hover:text-white hover:bg-slate-700/50'
+                        }`}
+                      >
+                        <item.icon className="w-4 h-4 mr-3 flex-shrink-0" />
+                        <span className="text-sm">{item.label}</span>
                       </Link>
                     );
                   })}
