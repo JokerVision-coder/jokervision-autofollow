@@ -292,7 +292,7 @@ const FacebookMarketplaceAutoPoster = () => {
       </div>
 
       {/* Competition Crusher Banner */}
-      <Card className="bg-gradient-to-r from-red-900/20 to-yellow-900/20 border-red-500/30">
+      <Card className="bg-gradient-to-r from-blue-900/20 to-cyan-900/20 border-blue-500/30">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
