@@ -1850,7 +1850,7 @@ const Navigation = () => {
                   to={item.to}
                   className={`font-medium transition-colors duration-200 flex items-center px-3 py-2 rounded-lg ${
                     isActive 
-                      ? 'text-white bg-gradient-to-r from-purple-600 to-pink-600 shadow-lg shadow-purple-500/30' 
+                      ? 'text-white bg-gradient-to-r from-blue-600 to-cyan-600 shadow-lg shadow-blue-500/30' 
                       : 'text-glass hover:text-glass-bright hover:bg-glass/10'
                   }`}
                 >
