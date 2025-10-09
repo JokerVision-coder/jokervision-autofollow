@@ -1807,6 +1807,7 @@ const Navigation = () => {
   const secondaryNavItems = [
     { to: "/sales", icon: Car, label: "Sales" },
     { to: "/team", icon: Users, label: "Team" },
+    { to: "/lead-generation", icon: Target, label: "Lead Generation" },
     { to: "/websites", icon: Globe, label: "Websites" },
     { to: "/ads", icon: Target, label: "Ads Manager" },
     { to: "/pipeline", icon: TrendingUp, label: "Pipeline" },
