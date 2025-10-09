@@ -1840,16 +1840,23 @@ const Navigation = () => {
           
           {/* Primary Navigation Items */}
           <div className="hidden lg:flex items-center space-x-4">
-            {primaryNavItems.map((item) => (
-              <Link 
-                key={item.to}
-                to={item.to}
-                className="text-glass hover:text-glass-bright font-medium transition-colors duration-200 flex items-center px-3 py-2 rounded-lg hover:bg-glass/10"
-              >
-                <item.icon className="w-4 h-4 mr-2" />
-                {item.label}
-              </Link>
-            ))}
+            {primaryNavItems.map((item) => {
+              const isActive = location.pathname === item.to;
+              return (
+                <Link 
+                  key={item.to}
+                  to={item.to}
+                  className={`font-medium transition-colors duration-200 flex items-center px-3 py-2 rounded-lg ${
+                    isActive 
+                      ? 'text-white bg-gradient-to-r from-purple-600 to-pink-600 shadow-lg shadow-purple-500/30' 
+                      : 'text-glass hover:text-glass-bright hover:bg-glass/10'
+                  }`}
+                >
+                  <item.icon className="w-4 h-4 mr-2" />
+                  {item.label}
+                </Link>
+              );
+            })}
 
             {/* More Menu Dropdown */}
             <div className="relative">
