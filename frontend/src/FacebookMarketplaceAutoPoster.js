@@ -391,7 +391,7 @@ const FacebookMarketplaceAutoPoster = () => {
               <Button 
                 onClick={bulkPostToFacebook}
                 disabled={selectedVehicles.size === 0 || isAutoPosting}
-                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
               >
                 {isAutoPosting ? (
                   <>
