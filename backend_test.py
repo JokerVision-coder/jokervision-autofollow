@@ -3630,23 +3630,6 @@ Vehicle Type: sedan"""
             print(f"      - If frontend sections are still empty, the issue is likely in frontend code")
         
         return passed_tests >= total_tests * 0.75  # 75% pass rate required
-                print("   ✅ ALL 4 voice AI actions executed successfully")
-                
-                # Analyze automotive content in each action
-                automotive_content_scores = []
-                
-                for action in actions_executed:
-                    action_type = action.get('type')
-                    content = str(action.get('content', '') + action.get('description', '')).lower()
-                    
-                    # Enhanced automotive content indicators
-                    automotive_indicators = [
-                        '0.9% apr', '0% apr', 'manufacturer cash back', 'trade-in guarantee',
-                        'vin reservation', 'dealership phone', 'vip treatment', 'exclusive offer',
-                        'urgency', 'same-day approval', 'extended terms', 'first-time buyer',
-                        'protection plan', 'gap insurance', 'warranty', 'certified pre-owned',
-                        'toyota', 'rav4', 'financing options', 'test drive', 'vehicle consultation'
-                    ]
                     
                     found_indicators = sum(1 for indicator in automotive_indicators if indicator in content)
                     automotive_score = (found_indicators / len(automotive_indicators)) * 100
