@@ -533,6 +533,16 @@ const SuperiorInventorySystem = () => {
             selectedVehicles={selectedVehicles}
           />
         )}
+        
+        {/* Vehicle Details Modal */}
+        <Dialog open={showVehicleDetails} onOpenChange={setShowVehicleDetails}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <VehicleDetailsModal 
+              vehicle={selectedVehicleDetails} 
+              onClose={() => setShowVehicleDetails(false)} 
+            />
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
