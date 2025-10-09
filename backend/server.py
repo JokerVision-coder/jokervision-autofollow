@@ -8428,9 +8428,12 @@ async def sync_inventory(tenant_id: str):
                 synced_count += 1
         
         return {
-            "message": "Inventory sync completed",
+            "message": "Real inventory sync completed",
             "synced_vehicles": synced_count,
-            "total_inventory": inventory_data["total_count"],
+            "total_vehicles": inventory_data.get("total_vehicles", len(inventory_data["vehicles"])),
+            "new_vehicles": inventory_data.get("new_vehicles", 0),
+            "used_vehicles": inventory_data.get("used_vehicles", 0),
+            "dealership": inventory_data.get("dealership", "Shottenkirk Toyota San Antonio"),
             "last_sync": datetime.now(timezone.utc).isoformat()
         }
         
