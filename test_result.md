@@ -678,7 +678,7 @@ test_plan:
     - "ML Model Training API"
     - "Inventory System Backend API Testing"
   test_all: false
-  test_priority: "inventory_system_backend_testing_complete"
+  test_priority: "social_media_integration_center_modal_testing_complete"
 
   - task: "Creative Studio Templates Section Frontend Testing"
     implemented: true
