@@ -259,6 +259,18 @@ const MainTabNavigator = ({ connectionStatus, voiceAIAvailable }) => {
         component={NotificationsScreen}
         options={{ title: '🔔 Alerts' }}
       />
+      
+      <Tab.Screen 
+        name="Leads" 
+        component={LeadsScreen}
+        options={{ title: '👥 Leads' }}
+      />
+      
+      <Tab.Screen 
+        name="Settings" 
+        component={SettingsScreen}
+        options={{ title: '⚙️ Settings' }}
+      />
     </Tab.Navigator>
   );
 };
