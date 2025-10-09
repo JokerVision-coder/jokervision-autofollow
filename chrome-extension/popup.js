@@ -1,7 +1,7 @@
 // JokerVision AutoDealer Pro - Chrome Extension Popup JavaScript
 class JokerVisionExtension {
     constructor() {
-        this.apiBaseUrl = 'https://dealergenius.preview.emergentagent.com/api';
+        this.apiBaseUrl = window.JokerVisionConfig?.apiBaseUrl || 'https://dealergenius.preview.emergentagent.com/api';
         this.currentTenantId = null;
         this.currentUser = null;
         this.init();
