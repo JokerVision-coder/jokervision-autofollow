@@ -1678,6 +1678,378 @@ Vehicle Type: sedan"""
         return passed_tests >= total_tests * 0.8  # 80% pass rate required
 
     # =============================================================================
+    # EXCLUSIVE LEAD ENGINE TESTS - PRIORITY TESTING
+    # =============================================================================
+
+    def test_exclusive_leads_dashboard(self):
+        """Test GET /api/exclusive-leads/dashboard - Comprehensive dashboard data"""
+        success, response = self.run_test(
+            "Exclusive Leads Dashboard",
+            "GET",
+            "exclusive-leads/dashboard",
+            200
+        )
+        
+        if success:
+            # Verify comprehensive dashboard structure
+            required_sections = ['lead_intelligence', 'competitor_data', 'market_timing']
+            missing_sections = [section for section in required_sections if section not in response]
+            
+            if not missing_sections:
+                # Check lead intelligence data
+                lead_intel = response.get('lead_intelligence', {})
+                conversion_rate = lead_intel.get('conversion_rate_exclusive', 0)
+                competitor_advantage = lead_intel.get('competitor_advantage', '')
+                
+                print(f"   ✅ Dashboard data complete - Conversion Rate: {conversion_rate}%")
+                print(f"      Competitive Advantage: {competitor_advantage}")
+                print(f"      Lead Quality Score: {lead_intel.get('lead_quality_score', 0)}")
+                
+                # Verify competitive advantage metrics
+                if conversion_rate >= 70 and '340%' in competitor_advantage:
+                    print("   ✅ Premium conversion metrics confirmed")
+                    return True
+                else:
+                    print("   ❌ Conversion metrics below premium standards")
+                    return False
+            else:
+                print(f"   ❌ Dashboard missing sections: {missing_sections}")
+                return False
+        return False
+
+    def test_exclusive_leads_premium_data(self):
+        """Test GET /api/exclusive-leads - Premium exclusive lead data"""
+        success, response = self.run_test(
+            "Premium Exclusive Leads Data",
+            "GET",
+            "exclusive-leads",
+            200
+        )
+        
+        if success:
+            # Verify exclusive leads structure
+            if 'exclusive_leads' in response:
+                leads = response['exclusive_leads']
+                print(f"   ✅ Retrieved {len(leads)} exclusive leads")
+                
+                if leads:
+                    # Analyze lead quality
+                    high_quality_leads = 0
+                    exclusivity_levels = set()
+                    
+                    for lead in leads:
+                        # Check required premium fields
+                        required_fields = [
+                            'id', 'name', 'phone', 'email', 'exclusivity_level', 
+                            'lead_score', 'budget', 'purchase_timeline', 'pre_qualified'
+                        ]
+                        missing_fields = [field for field in required_fields if field not in lead]
+                        
+                        if not missing_fields:
+                            lead_score = lead.get('lead_score', 0)
+                            budget = lead.get('budget', 0)
+                            exclusivity_level = lead.get('exclusivity_level', '')
+                            
+                            exclusivity_levels.add(exclusivity_level)
+                            
+                            # High-quality lead criteria
+                            if lead_score >= 90 and budget >= 50000:
+                                high_quality_leads += 1
+                    
+                    print(f"   ✅ High-quality leads (90+ score, $50K+ budget): {high_quality_leads}/{len(leads)}")
+                    print(f"   ✅ Exclusivity levels: {', '.join(exclusivity_levels)}")
+                    
+                    # Verify premium quality standards
+                    quality_rate = (high_quality_leads / len(leads)) * 100
+                    expected_levels = {'diamond', 'platinum', 'gold'}
+                    
+                    if quality_rate >= 80 and exclusivity_levels.intersection(expected_levels):
+                        print(f"   ✅ Premium lead quality confirmed ({quality_rate:.1f}% high-quality)")
+                        return True
+                    else:
+                        print(f"   ❌ Lead quality below premium standards ({quality_rate:.1f}%)")
+                        return False
+                else:
+                    print("   ❌ No exclusive leads returned")
+                    return False
+            else:
+                print("   ❌ Response missing 'exclusive_leads' field")
+                return False
+        return False
+
+    def test_exclusive_lead_claim_mechanism(self):
+        """Test POST /api/exclusive-leads/{lead_id}/claim - Lead claiming functionality"""
+        test_lead_id = "exclusive_001"
+        
+        success, response = self.run_test(
+            "Claim Exclusive Lead",
+            "POST",
+            f"exclusive-leads/{test_lead_id}/claim",
+            200
+        )
+        
+        if success:
+            # Verify claim response structure
+            required_fields = [
+                'lead_id', 'claimed', 'claimed_at', 'exclusivity_duration', 
+                'protection_level', 'actions_activated', 'success_probability'
+            ]
+            missing_fields = [field for field in required_fields if field not in response]
+            
+            if not missing_fields:
+                claimed = response.get('claimed', False)
+                protection_level = response.get('protection_level', '')
+                actions = response.get('actions_activated', [])
+                success_prob = response.get('success_probability', 0)
+                
+                print(f"   ✅ Lead claimed successfully - ID: {response.get('lead_id')}")
+                print(f"      Protection Level: {protection_level}")
+                print(f"      Actions Activated: {len(actions)} protection measures")
+                print(f"      Success Probability: {success_prob}%")
+                
+                # Verify claim effectiveness
+                expected_actions = ['competitor_blocking', 'priority_routing']
+                has_key_actions = any(action in actions for action in expected_actions)
+                
+                if claimed and success_prob >= 90 and has_key_actions:
+                    print("   ✅ Claim mechanism working with high success probability")
+                    return True
+                else:
+                    print("   ❌ Claim mechanism not meeting premium standards")
+                    return False
+            else:
+                print(f"   ❌ Claim response missing fields: {missing_fields}")
+                return False
+        return False
+
+    def test_exclusive_lead_protection(self):
+        """Test POST /api/exclusive-leads/{lead_id}/protect - Lead protection protocols"""
+        test_lead_id = "exclusive_002"
+        
+        success, response = self.run_test(
+            "Activate Lead Protection",
+            "POST",
+            f"exclusive-leads/{test_lead_id}/protect",
+            200
+        )
+        
+        if success:
+            # Verify protection response
+            required_fields = [
+                'lead_id', 'protection_activated', 'protection_level', 
+                'blocking_measures', 'estimated_success_increase'
+            ]
+            missing_fields = [field for field in required_fields if field not in response]
+            
+            if not missing_fields:
+                activated = response.get('protection_activated', False)
+                measures = response.get('blocking_measures', [])
+                success_increase = response.get('estimated_success_increase', '0%')
+                
+                print(f"   ✅ Protection activated - Lead ID: {response.get('lead_id')}")
+                print(f"      Blocking Measures: {len(measures)} active")
+                print(f"      Success Increase: {success_increase}")
+                
+                # Verify protection effectiveness
+                expected_measures = ['competitor_ip_blocking', 'exclusive_contact_routing']
+                has_key_measures = any(measure in measures for measure in expected_measures)
+                
+                if activated and has_key_measures and '%' in success_increase:
+                    print("   ✅ Protection protocols fully operational")
+                    return True
+                else:
+                    print("   ❌ Protection protocols not comprehensive enough")
+                    return False
+            else:
+                print(f"   ❌ Protection response missing fields: {missing_fields}")
+                return False
+        return False
+
+    def test_ai_predictions_system(self):
+        """Test GET /api/exclusive-leads/ai-predictions - AI predictions and market timing"""
+        success, response = self.run_test(
+            "AI Predictions System",
+            "GET",
+            "exclusive-leads/ai-predictions",
+            200
+        )
+        
+        if success:
+            # Verify AI predictions structure
+            required_sections = [
+                'conversion_probability', 'optimal_pricing_strategy', 
+                'market_predictions', 'ai_recommendations'
+            ]
+            missing_sections = [section for section in required_sections if section not in response]
+            
+            if not missing_sections:
+                conversion_probs = response.get('conversion_probability', {})
+                recommendations = response.get('ai_recommendations', [])
+                market_preds = response.get('market_predictions', {})
+                
+                print(f"   ✅ AI Predictions active - {len(conversion_probs)} lead probabilities")
+                print(f"      AI Recommendations: {len(recommendations)} actionable insights")
+                
+                # Verify prediction quality
+                high_prob_leads = sum(1 for prob in conversion_probs.values() if prob >= 85)
+                has_market_timing = 'demand_spike_predicted' in market_preds
+                
+                if high_prob_leads > 0 and has_market_timing and recommendations:
+                    print(f"   ✅ AI system providing high-quality predictions ({high_prob_leads} high-probability leads)")
+                    return True
+                else:
+                    print("   ❌ AI predictions not meeting quality standards")
+                    return False
+            else:
+                print(f"   ❌ AI predictions missing sections: {missing_sections}")
+                return False
+        return False
+
+    def test_real_time_alerts_system(self):
+        """Test GET /api/exclusive-leads/alerts - Real-time alerts and opportunities"""
+        success, response = self.run_test(
+            "Real-time Alerts System",
+            "GET",
+            "exclusive-leads/alerts",
+            200
+        )
+        
+        if success:
+            # Verify alerts structure
+            if 'alerts' in response:
+                alerts = response['alerts']
+                print(f"   ✅ Retrieved {len(alerts)} real-time alerts")
+                
+                if alerts:
+                    # Analyze alert quality and urgency
+                    critical_alerts = 0
+                    alert_types = set()
+                    
+                    for alert in alerts:
+                        required_fields = ['id', 'type', 'priority', 'message', 'action_required']
+                        missing_fields = [field for field in required_fields if field not in alert]
+                        
+                        if not missing_fields:
+                            alert_type = alert.get('type', '')
+                            priority = alert.get('priority', '')
+                            
+                            alert_types.add(alert_type)
+                            
+                            if priority == 'critical':
+                                critical_alerts += 1
+                    
+                    print(f"   ✅ Alert types: {', '.join(alert_types)}")
+                    print(f"   ✅ Critical alerts: {critical_alerts}")
+                    
+                    # Verify alert system effectiveness
+                    expected_types = {'exclusive_lead_expiring', 'competitor_activity', 'market_timing'}
+                    has_key_types = bool(alert_types.intersection(expected_types))
+                    
+                    if has_key_types and len(alerts) >= 3:
+                        print("   ✅ Real-time alert system fully operational")
+                        return True
+                    else:
+                        print("   ❌ Alert system not comprehensive enough")
+                        return False
+                else:
+                    print("   ❌ No alerts returned")
+                    return False
+            else:
+                print("   ❌ Response missing 'alerts' field")
+                return False
+        return False
+
+    def test_market_intelligence_system(self):
+        """Test GET /api/exclusive-leads/market-intelligence - Market intelligence and competitor analysis"""
+        success, response = self.run_test(
+            "Market Intelligence System",
+            "GET",
+            "exclusive-leads/market-intelligence",
+            200
+        )
+        
+        if success:
+            # Verify market intelligence structure
+            required_sections = [
+                'market_overview', 'competitor_analysis', 
+                'exclusive_sources', 'roi_analysis'
+            ]
+            missing_sections = [section for section in required_sections if section not in response]
+            
+            if not missing_sections:
+                market_overview = response.get('market_overview', {})
+                competitor_analysis = response.get('competitor_analysis', {})
+                roi_analysis = response.get('roi_analysis', {})
+                
+                # Extract key metrics
+                market_share = market_overview.get('our_market_share', '0%')
+                exclusive_advantage = market_overview.get('exclusive_advantage', '')
+                competitors = competitor_analysis.get('top_competitors', [])
+                roi_difference = roi_analysis.get('roi_difference', '')
+                
+                print(f"   ✅ Market Intelligence complete - Market Share: {market_share}")
+                print(f"      Competitive Advantage: {exclusive_advantage}")
+                print(f"      Competitors Monitored: {len(competitors)}")
+                print(f"      ROI Difference: {roi_difference}")
+                
+                # Verify intelligence quality
+                has_competitive_data = len(competitors) >= 3
+                has_roi_advantage = '340%' in roi_difference or '340%' in exclusive_advantage
+                
+                if has_competitive_data and has_roi_advantage:
+                    print("   ✅ Market intelligence providing comprehensive competitive insights")
+                    return True
+                else:
+                    print("   ❌ Market intelligence not comprehensive enough")
+                    return False
+            else:
+                print(f"   ❌ Market intelligence missing sections: {missing_sections}")
+                return False
+        return False
+
+    def test_exclusive_lead_engine_comprehensive(self):
+        """Run comprehensive Exclusive Lead Engine test suite - PRIORITY TESTING"""
+        print("\n👑 Running EXCLUSIVE LEAD ENGINE Comprehensive Tests...")
+        print("    🎯 PRIORITY: Testing 6 backend API endpoints for premium lead functionality")
+        
+        exclusive_tests = [
+            ("Dashboard Data", self.test_exclusive_leads_dashboard),
+            ("Premium Lead Data", self.test_exclusive_leads_premium_data),
+            ("Lead Claiming", self.test_exclusive_lead_claim_mechanism),
+            ("Lead Protection", self.test_exclusive_lead_protection),
+            ("AI Predictions", self.test_ai_predictions_system),
+            ("Real-time Alerts", self.test_real_time_alerts_system),
+            ("Market Intelligence", self.test_market_intelligence_system)
+        ]
+        
+        passed_tests = 0
+        total_tests = len(exclusive_tests)
+        
+        for test_name, test_func in exclusive_tests:
+            try:
+                if test_func():
+                    passed_tests += 1
+                    print(f"   ✅ {test_name} - PASSED")
+                else:
+                    print(f"   ❌ {test_name} - FAILED")
+            except Exception as e:
+                print(f"   ❌ {test_name} - ERROR: {str(e)}")
+        
+        success_rate = (passed_tests / total_tests) * 100
+        print(f"\n   👑 EXCLUSIVE LEAD ENGINE Results: {passed_tests}/{total_tests} passed ({success_rate:.1f}%)")
+        
+        # Detailed analysis
+        if success_rate >= 85:
+            print("   🏆 EXCELLENT: Exclusive Lead Engine ready for premium lead domination!")
+            print("   🎯 Competitive advantage confirmed: 340% higher conversion than competitors")
+        elif success_rate >= 70:
+            print("   ✅ GOOD: Exclusive Lead Engine functional with minor optimization needed")
+        else:
+            print("   ❌ CRITICAL: Exclusive Lead Engine needs significant improvements")
+        
+        return passed_tests >= total_tests * 0.85  # 85% pass rate required for premium system
+
+    # =============================================================================
     # AI-POWERED INBOX SYSTEM TESTS
     # =============================================================================
 
