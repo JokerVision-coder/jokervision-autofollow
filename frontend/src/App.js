@@ -1826,6 +1826,7 @@ const Navigation = () => {
     { to: "/predictive-analytics", icon: Brain, label: "🧠 Predictive AI" },
     { to: "/ai-inbox", icon: Bot, label: "🤖 AI Inbox" },
     { to: "/workflow-automation", icon: Zap, label: "⚡ Workflow Automation" },
+    { to: "/facebook-marketplace", icon: Facebook, label: "📘 FB Marketplace AI" },
   ];
 
   return (
