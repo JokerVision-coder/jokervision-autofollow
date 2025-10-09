@@ -6,7 +6,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Alert } from 'react-native';
 
-const BACKEND_URL = 'https://dealergenius.preview.emergentagent.com';
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'https://dealergenius.preview.emergentagent.com';
 const EXCLUSIVE_API_BASE = `${BACKEND_URL}/api/exclusive-leads`;
 
 class ExclusiveLeadsService {
