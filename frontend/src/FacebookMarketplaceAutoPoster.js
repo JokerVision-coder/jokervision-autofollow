@@ -304,7 +304,7 @@ const FacebookMarketplaceAutoPoster = () => {
                 </CardDescription>
               </div>
             </div>
-            <Badge className="bg-gradient-to-r from-red-500 to-yellow-500 text-white text-lg px-4 py-2">
+            <Badge className="bg-gradient-to-r from-blue-600 to-cyan-600 text-white text-lg px-4 py-2">
               12.7x MORE POSTS
             </Badge>
           </div>
