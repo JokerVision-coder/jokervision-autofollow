@@ -62,7 +62,7 @@ import {
   Briefcase,
   Trophy,
   Flame,
-  Lightning,
+  Zap as Lightning,
   Rocket,
   ArrowRight,
   TrendingDown,
