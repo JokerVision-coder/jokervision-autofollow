@@ -1871,17 +1871,24 @@ const Navigation = () => {
               
               {showMainMenu && (
                 <div className="absolute right-0 mt-2 w-56 bg-glass backdrop-blur-lg border border-glass-muted rounded-xl shadow-lg py-2 z-50">
-                  {secondaryNavItems.map((item) => (
-                    <Link 
-                      key={item.to}
-                      to={item.to}
-                      onClick={() => setShowMainMenu(false)}
-                      className="flex items-center px-4 py-2 text-glass hover:text-glass-bright hover:bg-glass/10 transition-colors duration-200"
-                    >
-                      <item.icon className="w-4 h-4 mr-3" />
-                      {item.label}
-                    </Link>
-                  ))}
+                  {secondaryNavItems.map((item) => {
+                    const isActive = location.pathname === item.to;
+                    return (
+                      <Link 
+                        key={item.to}
+                        to={item.to}
+                        onClick={() => setShowMainMenu(false)}
+                        className={`flex items-center px-4 py-2 transition-colors duration-200 ${
+                          isActive 
+                            ? 'text-white bg-gradient-to-r from-purple-600 to-pink-600' 
+                            : 'text-glass hover:text-glass-bright hover:bg-glass/10'
+                        }`}
+                      >
+                        <item.icon className="w-4 h-4 mr-3" />
+                        {item.label}
+                      </Link>
+                    );
+                  })}
                 </div>
               )}
             </div>
