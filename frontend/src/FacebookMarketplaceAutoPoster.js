@@ -266,14 +266,14 @@ const FacebookMarketplaceAutoPoster = () => {
 
         <motion.div
           whileHover={{ scale: 1.02 }}
-          className="bg-gradient-to-br from-purple-900/40 to-purple-800/40 backdrop-blur-lg border border-purple-500/30 rounded-2xl p-6"
+          className="bg-gradient-to-br from-cyan-900/40 to-cyan-800/40 backdrop-blur-lg border border-cyan-500/30 rounded-2xl p-6"
         >
           <div className="flex items-center justify-between mb-4">
-            <MessageSquare className="w-8 h-8 text-purple-400" />
-            <Badge className="bg-purple-500 text-xs">Hot Leads</Badge>
+            <MessageSquare className="w-8 h-8 text-cyan-400" />
+            <Badge className="bg-cyan-500 text-xs">Hot Leads</Badge>
           </div>
           <h3 className="text-3xl font-bold text-white mb-2">{analytics.inquiriesToday}</h3>
-          <p className="text-purple-300 text-sm">Inquiries Today</p>
+          <p className="text-cyan-300 text-sm">Inquiries Today</p>
           <p className="text-gray-400 text-xs mt-1">{analytics.conversionRate}% conversion rate</p>
         </motion.div>
 
