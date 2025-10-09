@@ -591,6 +591,8 @@ const IntelligentDashboard = ({ inventory, selectedVehicles, setSelectedVehicles
                 }
                 setSelectedVehicles(newSelected);
               }}
+              setSelectedVehicleDetails={setSelectedVehicleDetails}
+              setShowVehicleDetails={setShowVehicleDetails}
             />
           ))}
         </div>
