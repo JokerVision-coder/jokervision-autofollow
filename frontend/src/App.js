@@ -1793,6 +1793,7 @@ const Navigation = () => {
   const [showCommunicationMenu, setShowCommunicationMenu] = useState(false);
   const [showMarketingMenu, setShowMarketingMenu] = useState(false);
   const [showManagementMenu, setShowManagementMenu] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
 
   // Close all menus when clicking outside
   useEffect(() => {
