@@ -622,9 +622,14 @@ const RevolutionaryVehicleCard = ({ vehicle, isSelected, onSelect }) => (
     </div>
 
     <CardContent className="p-4">
-      <h4 className="text-lg font-bold text-white mb-2">
-        {vehicle.year} {vehicle.make} {vehicle.model}
-      </h4>
+      <div className="mb-3">
+        <h4 className="text-lg font-bold text-white leading-tight">
+          {vehicle.year} {vehicle.make} {vehicle.model}
+        </h4>
+        {vehicle.trim && (
+          <p className="text-sm text-gray-300">{vehicle.trim}</p>
+        )}
+      </div>
       
       <div className="flex justify-between items-center mb-3">
         <div className="text-xl font-bold text-green-400">
