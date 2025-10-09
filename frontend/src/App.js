@@ -2005,7 +2005,7 @@ const Navigation = () => {
           {/* Mobile Menu Button */}
           <div className="lg:hidden">
             <button
-              onClick={() => setShowMainMenu(!showMainMenu)}
+              onClick={() => setShowMobileMenu(!showMobileMenu)}
               className="text-glass hover:text-glass-bright p-2"
             >
               <Menu className="w-6 h-6" />
@@ -2014,20 +2014,102 @@ const Navigation = () => {
         </div>
 
         {/* Mobile Navigation Menu */}
-        {showMainMenu && (
-          <div className="lg:hidden py-4 border-t border-glass-muted">
-            <div className="grid grid-cols-2 gap-2">
-              {[...primaryNavItems, ...secondaryNavItems, ...aiToolsItems].map((item) => (
-                <Link 
-                  key={item.to}
-                  to={item.to}
-                  onClick={() => setShowMainMenu(false)}
-                  className="flex items-center px-3 py-2 text-glass hover:text-glass-bright hover:bg-glass/10 rounded-lg transition-colors duration-200"
-                >
-                  <item.icon className="w-4 h-4 mr-2" />
-                  <span className="text-sm">{item.label}</span>
-                </Link>
-              ))}
+        {showMobileMenu && (
+          <div className="lg:hidden py-4 border-t border-glass-muted bg-slate-900/95 backdrop-blur-xl">
+            {/* Sales Rep Tools */}
+            <div className="mb-4">
+              <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 px-3">Sales Tools</h3>
+              <div className="grid grid-cols-2 gap-2 px-3">
+                {salesRepNavItems.map((item) => {
+                  const isActive = location.pathname === item.to;
+                  return (
+                    <Link 
+                      key={item.to}
+                      to={item.to}
+                      onClick={() => setShowMobileMenu(false)}
+                      className={`flex items-center px-3 py-2.5 rounded-lg transition-colors duration-200 ${
+                        isActive 
+                          ? 'text-white bg-gradient-to-r from-blue-600 to-cyan-600' 
+                          : 'text-slate-200 hover:text-white hover:bg-slate-700/50'
+                      }`}
+                    >
+                      <item.icon className="w-4 h-4 mr-2 flex-shrink-0" />
+                      <span className="text-xs">{item.label}</span>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Communication Tools */}
+            <div className="mb-4">
+              <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 px-3">Communication</h3>
+              <div className="grid grid-cols-2 gap-2 px-3">
+                {communicationItems.map((item) => {
+                  const isActive = location.pathname === item.to;
+                  return (
+                    <Link 
+                      key={item.to}
+                      to={item.to}
+                      onClick={() => setShowMobileMenu(false)}
+                      className={`flex items-center px-3 py-2.5 rounded-lg transition-colors duration-200 ${
+                        isActive 
+                          ? 'text-white bg-gradient-to-r from-blue-600 to-cyan-600' 
+                          : 'text-slate-200 hover:text-white hover:bg-slate-700/50'
+                      }`}
+                    >
+                      <item.icon className="w-4 h-4 mr-2 flex-shrink-0" />
+                      <span className="text-xs">{item.label}</span>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Quick Access Marketing & Management */}
+            <div className="grid grid-cols-2 gap-4 px-3">
+              <div>
+                <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Marketing</h3>
+                {marketingItems.slice(0, 3).map((item) => {
+                  const isActive = location.pathname === item.to;
+                  return (
+                    <Link 
+                      key={item.to}
+                      to={item.to}
+                      onClick={() => setShowMobileMenu(false)}
+                      className={`flex items-center px-2 py-2 mb-1 rounded-lg transition-colors duration-200 ${
+                        isActive 
+                          ? 'text-white bg-gradient-to-r from-blue-600 to-cyan-600' 
+                          : 'text-slate-200 hover:text-white hover:bg-slate-700/50'
+                      }`}
+                    >
+                      <item.icon className="w-3 h-3 mr-2 flex-shrink-0" />
+                      <span className="text-xs">{item.label}</span>
+                    </Link>
+                  );
+                })}
+              </div>
+              <div>
+                <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Management</h3>
+                {managementItems.slice(0, 3).map((item) => {
+                  const isActive = location.pathname === item.to;
+                  return (
+                    <Link 
+                      key={item.to}
+                      to={item.to}
+                      onClick={() => setShowMobileMenu(false)}
+                      className={`flex items-center px-2 py-2 mb-1 rounded-lg transition-colors duration-200 ${
+                        isActive 
+                          ? 'text-white bg-gradient-to-r from-blue-600 to-cyan-600' 
+                          : 'text-slate-200 hover:text-white hover:bg-slate-700/50'
+                      }`}
+                    >
+                      <item.icon className="w-3 h-3 mr-2 flex-shrink-0" />
+                      <span className="text-xs">{item.label}</span>
+                    </Link>
+                  );
+                })}
+              </div>
             </div>
           </div>
         )}
