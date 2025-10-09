@@ -1796,7 +1796,7 @@ const Navigation = () => {
   // Primary navigation items (most frequently used)
   const primaryNavItems = [
     { to: "/", icon: BarChart3, label: "Dashboard" },
-    { to: "/leads", icon: Target, label: "Leads" },
+    { to: "/lead-generation", icon: Target, label: "Lead Generation" },
     { to: "/inventory", icon: Car, label: "Inventory" },
     { to: "/creative", icon: Palette, label: "Creative Studio" },
     { to: "/integrations", icon: LinkIcon, label: "Integrations" },
