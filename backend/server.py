@@ -6246,6 +6246,14 @@ async def predict_sales_performance(
         ml_engine = await get_ml_engine()
         performance_prediction = await ml_engine.predict_sales_performance(salesperson_data)
         
+        # Calculate performance score based on multiple factors
+        performance_score = (
+            salesperson_data.get('conversion_rate', 0.16) * 100 * 0.4 +  # 40% weight
+            min(salesperson_data.get('voice_ai_usage_rate', 0.0) * 100, 100) * 0.3 +  # 30% weight
+            min(salesperson_data.get('customer_satisfaction', 4.0) * 20, 100) * 0.2 +  # 20% weight
+            max(0, 100 - salesperson_data.get('avg_response_time', 3.5) * 10) * 0.1  # 10% weight
+        )
+        
         # Add enhanced ML fields for integration
         performance_prediction["current_performance"] = {
             "score": int(performance_score),
