@@ -680,9 +680,16 @@ const RevolutionaryVehicleCard = ({ vehicle, isSelected, onSelect }) => (
       </div>
       
       <div className="flex gap-2">
-        <Button size="sm" className="flex-1 bg-gradient-to-r from-blue-500 to-cyan-500 text-white">
+        <Button 
+          size="sm" 
+          className="flex-1 bg-gradient-to-r from-blue-500 to-cyan-500 text-white"
+          onClick={() => {
+            setSelectedVehicleDetails(vehicle);
+            setShowVehicleDetails(true);
+          }}
+        >
           <Eye className="w-3 h-3 mr-1" />
-          View AI
+          View Details
         </Button>
         <Button size="sm" className="bg-gradient-to-r from-green-500 to-emerald-500 text-white">
           <Rocket className="w-3 h-3" />
