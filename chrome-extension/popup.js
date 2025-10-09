@@ -47,7 +47,7 @@ class JokerVisionExtension {
         document.querySelector('.container').appendChild(authDiv);
         
         document.getElementById('openDashboard').addEventListener('click', () => {
-            chrome.tabs.create({ url: 'https://dealergenius.preview.emergentagent.com' });
+            chrome.tabs.create({ url: window.JokerVisionConfig?.websiteUrl || 'https://dealergenius.preview.emergentagent.com' });
         });
     }
 
@@ -109,7 +109,7 @@ class JokerVisionExtension {
 
         // Footer actions
         document.getElementById('openDashboard')?.addEventListener('click', () => {
-            chrome.tabs.create({ url: 'https://dealergenius.preview.emergentagent.com' });
+            chrome.tabs.create({ url: window.JokerVisionConfig?.websiteUrl || 'https://dealergenius.preview.emergentagent.com' });
         });
 
         document.getElementById('openSettings')?.addEventListener('click', () => {
