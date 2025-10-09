@@ -1847,22 +1847,22 @@ const Navigation = () => {
             <span className="text-2xl font-bold joker-brand">JokerVision</span>
           </Link>
           
-          {/* Primary Navigation Items */}
-          <div className="hidden lg:flex items-center space-x-4">
-            {primaryNavItems.map((item) => {
+          {/* Sales Rep Navigation - Most used tools */}
+          <div className="hidden lg:flex items-center space-x-2">
+            {salesRepNavItems.map((item) => {
               const isActive = location.pathname === item.to;
               return (
-                <Link 
+                <Link
                   key={item.to}
                   to={item.to}
-                  className={`font-medium transition-colors duration-200 flex items-center px-3 py-2 rounded-lg ${
+                  className={`flex items-center space-x-2 px-3 py-2 rounded-lg font-medium transition-colors duration-200 ${
                     isActive 
-                      ? 'text-white bg-gradient-to-r from-blue-600 to-cyan-600 shadow-lg shadow-blue-500/30' 
+                      ? 'text-white bg-gradient-to-r from-blue-600 to-cyan-600 shadow-lg' 
                       : 'text-glass hover:text-glass-bright hover:bg-glass/10'
                   }`}
                 >
-                  <item.icon className="w-4 h-4 mr-2" />
-                  {item.label}
+                  <item.icon className="w-4 h-4" />
+                  <span className="text-sm">{item.label}</span>
                 </Link>
               );
             })}
