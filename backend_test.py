@@ -3630,13 +3630,6 @@ Vehicle Type: sedan"""
             print(f"      - If frontend sections are still empty, the issue is likely in frontend code")
         
         return passed_tests >= total_tests * 0.75  # 75% pass rate required
-                'create_hot_lead',
-                'send_personalized_offer',
-                'schedule_test_drive', 
-                'prepare_financing_options'
-            ]
-            
-            executed_action_types = [action.get('type') for action in actions_executed]
             
             print(f"   📊 Actions executed: {len(actions_executed)}")
             print(f"   📝 Action types: {executed_action_types}")
