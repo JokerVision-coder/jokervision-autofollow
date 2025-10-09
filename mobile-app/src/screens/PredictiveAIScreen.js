@@ -31,7 +31,7 @@ const PredictiveAIScreen = ({ navigation }) => {
       setLoading(true);
       
       // Load dashboard data
-      const dashboardResponse = await fetch('https://jokervision-app.preview.emergentagent.com/api/ml/predictive-dashboard');
+      const dashboardResponse = await fetch('https://dealergenius.preview.emergentagent.com/api/ml/predictive-dashboard');
       if (dashboardResponse.ok) {
         const data = await dashboardResponse.json();
         setDashboardData(data);
