@@ -563,7 +563,7 @@ const RevolutionaryStatCard = ({ icon, value, label, gradient, comparison }) => 
 );
 
 // Intelligent Dashboard Component
-const IntelligentDashboard = ({ inventory, selectedVehicles, setSelectedVehicles, aiOptimization, smartInsights }) => (
+const IntelligentDashboard = ({ inventory, selectedVehicles, setSelectedVehicles, aiOptimization, smartInsights, setSelectedVehicleDetails, setShowVehicleDetails }) => (
   <div className="space-y-6">
     <Card className="glass-card bg-gradient-to-r from-purple-900/20 to-blue-900/20">
       <CardHeader>
