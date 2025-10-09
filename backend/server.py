@@ -3512,6 +3512,18 @@ async def get_facebook_messages(lead_id: str):
     return result
 @api_router.get("/dashboard/stats")
 async def get_dashboard_stats():
+    """Get dashboard statistics with caching for performance"""
+    # Try to get from cache first
+    cache_key = "global_dashboard_stats"
+    cached_stats = await get_cached("dashboard_stats", cache_key)
+    
+    if cached_stats:
+        logger.debug("Dashboard stats served from cache")
+        return cached_stats
+    
+    # Calculate stats if not in cache
+    logger.debug("Calculating dashboard stats from database")
+    
     total_leads = await db.leads.count_documents({})
     new_leads = await db.leads.count_documents({"status": "new"})
     contacted_leads = await db.leads.count_documents({"status": "contacted"})
@@ -3530,14 +3542,21 @@ async def get_dashboard_stats():
         "created_at": {"$gte": week_ago.isoformat()}
     })
     
-    return {
+    stats = {
         "total_leads": total_leads,
         "new_leads": new_leads,
         "contacted_leads": contacted_leads,
         "scheduled_leads": scheduled_leads,
         "upcoming_appointments": upcoming_appointments,
-        "recent_leads": recent_leads
+        "recent_leads": recent_leads,
+        "cached_at": datetime.now(timezone.utc).isoformat()
     }
+    
+    # Cache the results for 5 minutes
+    await set_cached("dashboard_stats", cache_key, stats)
+    logger.debug("Dashboard stats cached for future requests")
+    
+    return stats
 
 # Chrome Extension Models and Endpoints
 class VehicleData(BaseModel):
