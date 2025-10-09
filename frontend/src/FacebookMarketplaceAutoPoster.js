@@ -296,7 +296,7 @@ const FacebookMarketplaceAutoPoster = () => {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Trophy className="w-8 h-8 text-yellow-400" />
+              <Trophy className="w-8 h-8 text-blue-400" />
               <div>
                 <CardTitle className="text-2xl text-white">🚀 CRUSHING COMPETITORS</CardTitle>
                 <CardDescription className="text-cyan-300">
