@@ -1441,14 +1441,33 @@ async def create_lead(lead_data: LeadCreate):
 
 @api_router.get("/leads", response_model=List[Lead])
 async def get_leads():
+    """Get leads list with caching for performance"""
+    # Try to get from cache first
+    cache_key = "all_leads_list"
+    cached_leads = await get_cached("lead_list", cache_key)
+    
+    if cached_leads:
+        logger.debug("Leads list served from cache")
+        # Convert cached data back to Lead models
+        return [Lead(**lead) for lead in cached_leads]
+    
+    # Fetch from database if not in cache
+    logger.debug("Fetching leads from database")
     leads = await db.leads.find().sort("created_at", -1).to_list(1000)
     result = []
+    
     for lead in leads:
         if isinstance(lead.get('created_at'), str):
             lead['created_at'] = datetime.fromisoformat(lead['created_at'])
         if isinstance(lead.get('last_contacted'), str) and lead.get('last_contacted'):
             lead['last_contacted'] = datetime.fromisoformat(lead['last_contacted'])
         result.append(Lead(**lead))
+    
+    # Cache the results (serialize to dict for caching)
+    cacheable_data = [lead.dict() for lead in result]
+    await set_cached("lead_list", cache_key, cacheable_data)
+    logger.debug("Leads list cached for future requests")
+    
     return result
 
 @api_router.get("/leads/{lead_id}", response_model=Lead)
