@@ -1793,6 +1793,25 @@ const Navigation = () => {
   const [showCommunicationMenu, setShowCommunicationMenu] = useState(false);
   const [showMarketingMenu, setShowMarketingMenu] = useState(false);
   const [showManagementMenu, setShowManagementMenu] = useState(false);
+
+  // Close all menus when clicking outside
+  useEffect(() => {
+    const closeMenus = () => {
+      setShowCommunicationMenu(false);
+      setShowMarketingMenu(false);
+      setShowManagementMenu(false);
+      setShowMobileMenu(false);
+    };
+
+    const handleClickOutside = (event) => {
+      if (!event.target.closest('.nav-dropdown')) {
+        closeMenus();
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, []);
   const location = useLocation();
 
   // Primary navigation items (most frequently used)
