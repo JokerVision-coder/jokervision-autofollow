@@ -554,7 +554,7 @@ const FacebookMarketplaceAutoPoster = () => {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-8"
         >
-          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent mb-4">
+          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-600 bg-clip-text text-transparent mb-4">
             📘 Facebook Marketplace Auto Poster
           </h1>
           <p className="text-xl text-gray-300 mb-2">Superior to DealerPromoter • Crushes ZenLite Pro • Destroys Glo3D</p>
