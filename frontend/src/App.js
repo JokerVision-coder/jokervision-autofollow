@@ -1797,7 +1797,7 @@ const Navigation = () => {
     { to: "/leads", icon: Target, label: "Leads" },
     { to: "/inventory", icon: Car, label: "Inventory" },
     { to: "/creative", icon: Palette, label: "Creative Studio" },
-    { to: "/communications", icon: MessageSquare, label: "Communications" },
+    { to: "/integrations", icon: LinkIcon, label: "Integrations" },
   ];
 
   // Secondary navigation items (dropdown menu)
