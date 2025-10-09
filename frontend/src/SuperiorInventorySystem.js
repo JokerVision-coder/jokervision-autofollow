@@ -187,38 +187,104 @@ const SuperiorInventorySystem = () => {
   };
 
   const generateRevolutionaryMockData = () => {
-    const makes = ['Toyota', 'Honda', 'Ford', 'Chevrolet', 'Nissan', 'BMW', 'Mercedes', 'Audi', 'Lexus', 'Acura'];
-    const models = ['Camry', 'Accord', 'F-150', 'Silverado', 'Altima', 'X3', 'C-Class', 'A4', 'ES', 'MDX'];
+    const vehicleDatabase = [
+      { make: 'Toyota', models: ['Camry', 'RAV4', 'Highlander', 'Prius', 'Corolla', 'Tundra', 'Tacoma'] },
+      { make: 'Honda', models: ['Accord', 'CR-V', 'Civic', 'Pilot', 'Ridgeline', 'Passport', 'HR-V'] },
+      { make: 'Ford', models: ['F-150', 'Explorer', 'Escape', 'Mustang', 'Edge', 'Expedition', 'Ranger'] },
+      { make: 'Chevrolet', models: ['Silverado', 'Equinox', 'Malibu', 'Traverse', 'Camaro', 'Tahoe', 'Suburban'] },
+      { make: 'BMW', models: ['X3', 'X5', '3 Series', '5 Series', 'X1', 'X7', '7 Series'] },
+      { make: 'Mercedes-Benz', models: ['C-Class', 'E-Class', 'GLE', 'GLC', 'S-Class', 'GLS', 'A-Class'] },
+      { make: 'Audi', models: ['A4', 'Q5', 'A6', 'Q3', 'Q7', 'A3', 'e-tron'] },
+      { make: 'Lexus', models: ['ES', 'RX', 'NX', 'GX', 'LS', 'LX', 'IS'] },
+      { make: 'Nissan', models: ['Altima', 'Rogue', 'Sentra', 'Pathfinder', 'Titan', 'Murano', 'Armada'] },
+      { make: 'Acura', models: ['MDX', 'RDX', 'TLX', 'ILX', 'NSX', 'RLX'] }
+    ];
+    
     const conditions = ['New', 'Used', 'Certified Pre-Owned'];
     const platforms = ['Facebook', 'Instagram', 'Cars.com', 'AutoTrader', 'CarGurus', 'Craigslist', 'TikTok', 'LinkedIn'];
     
-    return Array.from({ length: 36 }, (_, index) => {
-      const make = makes[Math.floor(Math.random() * makes.length)];
-      const model = models[Math.floor(Math.random() * models.length)];
-      const year = 2020 + Math.floor(Math.random() * 5);
+    return Array.from({ length: 120 }, (_, index) => {
+      const vehicleType = vehicleDatabase[Math.floor(Math.random() * vehicleDatabase.length)];
+      const make = vehicleType.make;
+      const model = vehicleType.models[Math.floor(Math.random() * vehicleType.models.length)];
+      const year = 2019 + Math.floor(Math.random() * 6); // 2019-2024
       const condition = conditions[Math.floor(Math.random() * conditions.length)];
-      const basePrice = 25000 + Math.floor(Math.random() * 50000);
+      const basePrice = 18000 + Math.floor(Math.random() * 80000); // $18k-$98k range
       
+      // Generate multiple high-quality images for gallery
+      const generateVehicleImages = (make, model, year) => {
+        const baseUrl = 'https://via.placeholder.com';
+        return [
+          `${baseUrl}/800x600/1a1a2e/ffffff?text=${year}+${make}+${model}+Exterior`,
+          `${baseUrl}/800x600/2a2a3e/ffffff?text=${make}+${model}+Interior`,
+          `${baseUrl}/800x600/3a3a4e/ffffff?text=${make}+Engine+Bay`,
+          `${baseUrl}/800x600/4a4a5e/ffffff?text=${model}+Side+Profile`,
+          `${baseUrl}/800x600/5a5a6e/ffffff?text=${make}+Rear+View`,
+          `${baseUrl}/800x600/6a6a7e/ffffff?text=${model}+Dashboard`
+        ];
+      };
+
+      // Comprehensive specifications based on vehicle type
+      const generateSpecs = (make, model, condition, year) => {
+        const engines = {
+          'Toyota': ['2.5L 4-Cylinder', '3.5L V6', '2.4L Turbo', 'Hybrid 2.5L'],
+          'Honda': ['2.0L Turbo', '3.5L V6', '1.5L Turbo', '2.4L 4-Cylinder'],
+          'Ford': ['2.3L EcoBoost', '3.5L V6', '5.0L V8', '2.0L EcoBoost'],
+          'BMW': ['2.0L TwinPower Turbo', '3.0L Inline-6', '4.4L V8', '2.0L Hybrid'],
+          'Mercedes-Benz': ['2.0L Turbo', '3.0L V6', '4.0L V8 BiTurbo', '2.0L Hybrid']
+        };
+
+        return {
+          engine: engines[make]?.[Math.floor(Math.random() * engines[make].length)] || '2.4L 4-Cylinder',
+          transmission: ['8-Speed Automatic', '10-Speed Automatic', 'CVT', '6-Speed Manual'][Math.floor(Math.random() * 4)],
+          drivetrain: ['Front-Wheel Drive', 'All-Wheel Drive', 'Rear-Wheel Drive'][Math.floor(Math.random() * 3)],
+          fuel_economy: `${20 + Math.floor(Math.random() * 15)} City / ${25 + Math.floor(Math.random() * 20)} Hwy`,
+          horsepower: `${180 + Math.floor(Math.random() * 320)} HP`,
+          torque: `${200 + Math.floor(Math.random() * 200)} lb-ft`,
+          seating: `${4 + Math.floor(Math.random() * 4)} Passengers`,
+          cargo_space: `${15 + Math.floor(Math.random() * 50)}.${Math.floor(Math.random() * 9)} cu ft`,
+          towing_capacity: `${2000 + Math.floor(Math.random() * 6000)} lbs`,
+          warranty: condition === 'New' ? '4yr/50,000 miles' : '2yr/24,000 miles'
+        };
+      };
+
+      // Premium features based on vehicle class
+      const generateFeatures = (make, model, year, condition) => {
+        const luxuryFeatures = [
+          'Advanced Safety Suite', 'Premium Audio System', 'Leather-Appointed Seating',
+          'Panoramic Sunroof', 'Wireless Charging Pad', 'Adaptive Cruise Control',
+          'Lane Departure Warning', 'Blind Spot Monitoring', 'Rear Cross Traffic Alert',
+          '360° Camera System', 'Heated & Ventilated Seats', 'Dual-Zone Climate Control',
+          'Navigation System', 'Premium Paint Protection', 'Extended Warranty Available',
+          'Remote Start System', 'Keyless Entry & Start', 'LED Headlights',
+          'Premium Wheels', 'Tow Package', 'Roof Rails', 'Running Boards'
+        ];
+
+        const numFeatures = condition === 'New' ? 12 + Math.floor(Math.random() * 8) : 8 + Math.floor(Math.random() * 6);
+        return luxuryFeatures.sort(() => Math.random() - 0.5).slice(0, numFeatures);
+      };
+
       return {
-        id: `rev_veh_${index + 1}`,
-        vin: `REV${String(index + 100000).slice(-6)}`,
-        stock_number: `RV${String(index + 1000).slice(-4)}`,
+        id: `dealership_veh_${String(index + 1).padStart(4, '0')}`,
+        vin: `JV${year}${String(Math.floor(Math.random() * 1000000)).padStart(6, '0')}`,
+        stock_number: `JV${String(index + 1001).slice(-4)}`,
         year,
         make,
         model,
-        trim: ['Base', 'LX', 'EX', 'Limited', 'Sport', 'Platinum'][Math.floor(Math.random() * 6)],
+        trim: ['Base', 'LX', 'EX', 'Limited', 'Sport', 'Platinum', 'Premium', 'Touring'][Math.floor(Math.random() * 8)],
         condition,
         price: basePrice,
-        original_price: basePrice + Math.floor(Math.random() * 8000),
-        mileage: condition === 'New' ? Math.floor(Math.random() * 50) : 10000 + Math.floor(Math.random() * 90000),
-        exterior_color: ['White', 'Black', 'Silver', 'Blue', 'Red', 'Gray'][Math.floor(Math.random() * 6)],
-        interior_color: ['Black', 'Gray', 'Beige', 'Brown'][Math.floor(Math.random() * 4)],
-        fuel_type: ['Gasoline', 'Hybrid', 'Electric', 'Diesel'][Math.floor(Math.random() * 4)],
-        transmission: ['Automatic', 'Manual', 'CVT'][Math.floor(Math.random() * 3)],
-        engine: ['2.4L 4-Cyl', '3.5L V6', '2.0L Turbo', 'Electric Motor'][Math.floor(Math.random() * 4)],
-        features: ['Bluetooth', 'Backup Camera', 'Apple CarPlay', 'Heated Seats', 'Sunroof', 'Navigation'],
-        images: [`https://via.placeholder.com/400x300/1a1a2e/eee?text=${year}+${make}+${model}`],
-        status: ['Available', 'Marketplace Listed', 'Pending Sale'][Math.floor(Math.random() * 3)],
+        original_price: condition === 'New' ? basePrice : basePrice + Math.floor(Math.random() * 12000),
+        mileage: condition === 'New' ? Math.floor(Math.random() * 50) : 5000 + Math.floor(Math.random() * 120000),
+        exterior_color: ['Pearl White', 'Jet Black', 'Metallic Silver', 'Ocean Blue', 'Ruby Red', 'Charcoal Gray', 'Bronze', 'Green'][Math.floor(Math.random() * 8)],
+        interior_color: ['Black Leather', 'Gray Fabric', 'Beige Leather', 'Brown Leather', 'Charcoal'][Math.floor(Math.random() * 5)],
+        fuel_type: ['Gasoline', 'Hybrid', 'Electric', 'Plug-in Hybrid'][Math.floor(Math.random() * 4)],
+        
+        // Enhanced specifications and features
+        specifications: generateSpecs(make, model, condition, year),
+        features: generateFeatures(make, model, year, condition),
+        images: generateVehicleImages(make, model, year),
+        status: ['Available', 'Marketplace Listed', 'Pending Sale', 'Sold'][Math.floor(Math.random() * 4)],
         
         // Revolutionary AI Features
         aiScore: 75 + Math.floor(Math.random() * 25), // AI optimization score
