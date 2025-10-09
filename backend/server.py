@@ -1,6 +1,11 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Query, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, APIRouter, HTTPException, Query, WebSocket, WebSocketDisconnect, Request, Depends
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
