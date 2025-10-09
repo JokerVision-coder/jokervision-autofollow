@@ -410,7 +410,7 @@ const SuperiorInventorySystem = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-blue-900 to-cyan-900">
         <div className="text-center">
           <div className="w-20 h-20 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <h2 className="text-2xl font-bold text-white mb-2">🚀 Loading Revolutionary AI System</h2>
