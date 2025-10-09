@@ -9266,7 +9266,7 @@ async def get_follow_up_queue():
             "customer_name": "Amanda Davis",
             "phone": "+1 (555) 789-0123",
             "action_type": "sms",
-            "scheduled_time": (datetime.now() + timedelta(minutes=15)).isostring(),
+            "scheduled_time": (datetime.now() + timedelta(minutes=15)).isoformat(),
             "priority": "medium",
             "message_template": "Hi Amanda! Following up on your Subaru interest. Great financing deals available today!"
         }
