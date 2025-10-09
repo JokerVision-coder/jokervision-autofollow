@@ -75,6 +75,9 @@ const JokerVisionMobileApp = () => {
       const backendStatus = await connectToBackend();
       setConnectionStatus(backendStatus ? 'connected' : 'offline');
       
+      // Initialize Exclusive Leads Service
+      await exclusiveLeadsService.initialize();
+      
       // Load saved preferences
       await loadUserPreferences();
       
