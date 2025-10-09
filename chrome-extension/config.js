@@ -19,8 +19,12 @@ const ENVIRONMENTS = {
   }
 };
 
-// Set current environment
-const CURRENT_ENVIRONMENT = 'development'; // Change this for different deployments
+// Detect environment or use override
+const CURRENT_ENVIRONMENT = window.location.hostname.includes('jokervision.emergent.host') 
+  ? 'production' 
+  : window.location.hostname.includes('staging')
+  ? 'staging'
+  : 'development';
 
 // Export configuration
 window.JokerVisionConfig = ENVIRONMENTS[CURRENT_ENVIRONMENT];
