@@ -23,7 +23,7 @@
     "https://facebook.com/*",
     "https://marketplace.facebook.com/*",
     "https://graph.facebook.com/*",
-    "https://jokervision-app.preview.emergentagent.com/*",
+    "https://autolead-pro.preview.emergentagent.com/*",
     "https://*.cars.com/*",
     "https://*.autotrader.com/*",
     "https://*.carvana.com/*"
@@ -83,7 +83,7 @@
   
   "externally_connectable": {
     "matches": [
-      "https://jokervision-app.preview.emergentagent.com/*"
+      "https://autolead-pro.preview.emergentagent.com/*"
     ]
   },
   
