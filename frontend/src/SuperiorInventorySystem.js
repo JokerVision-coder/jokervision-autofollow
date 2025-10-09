@@ -486,6 +486,8 @@ const SuperiorInventorySystem = () => {
               setSelectedVehicles={setSelectedVehicles}
               aiOptimization={aiOptimization}
               smartInsights={smartInsights}
+              setSelectedVehicleDetails={setSelectedVehicleDetails}
+              setShowVehicleDetails={setShowVehicleDetails}
             />
           </TabsContent>
           
