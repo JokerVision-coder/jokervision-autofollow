@@ -11869,7 +11869,8 @@ async def get_real_time_alerts(tenant_id: str = "default"):
         raise HTTPException(status_code=500, detail="Failed to fetch real-time alerts")
 
 @api_router.post("/exclusive-leads/claim/{lead_id}")
-async def claim_exclusive_lead(lead_id: str, tenant_id: str = "default"):
+@limiter.limit("10/minute")
+async def claim_exclusive_lead(request: Request, lead_id: str, tenant_id: str = "default", user: dict = Depends(verify_token)):
     """Claim exclusive access to a premium lead"""
     try:
         logger.info(f"Claiming exclusive lead {lead_id} for tenant: {tenant_id}")
