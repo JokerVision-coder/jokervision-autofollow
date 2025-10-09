@@ -1888,7 +1888,7 @@ const Navigation = () => {
             })}
 
             {/* Communications & Tools */}
-            <div className="relative">
+            <div className="relative nav-dropdown">
               <button
                 onClick={() => setShowCommunicationMenu(!showCommunicationMenu)}
                 className="text-glass hover:text-glass-bright font-medium transition-colors duration-200 flex items-center px-3 py-2 rounded-lg hover:bg-glass/10"
