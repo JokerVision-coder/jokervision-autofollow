@@ -11598,6 +11598,7 @@ async def facebook_messenger_webhook(request: dict):
 async def get_exclusive_leads(request: Request, tenant_id: str = "default", user: dict = Depends(verify_token)):
     """Get high-value exclusive leads unavailable to competitors"""
     try:
+        tenant_id = validate_tenant_id(tenant_id)
         logger.info(f"Fetching exclusive leads for tenant: {tenant_id}")
         
         # Ultra-high quality exclusive leads that competitors can't access
