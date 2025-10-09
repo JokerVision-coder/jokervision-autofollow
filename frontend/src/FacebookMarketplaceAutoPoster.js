@@ -483,7 +483,7 @@ const FacebookMarketplaceAutoPoster = () => {
       <Card className="bg-gradient-to-br from-gray-900/60 to-gray-800/60 backdrop-blur-lg border border-gray-500/30">
         <CardHeader>
           <CardTitle className="text-2xl text-white flex items-center">
-            <Brain className="w-6 h-6 mr-3 text-purple-400" />
+            <Brain className="w-6 h-6 mr-3 text-indigo-400" />
             AI Facebook Optimization Settings
           </CardTitle>
           <CardDescription className="text-gray-300">
