@@ -1787,6 +1787,7 @@ const AddUserForm = ({ onSuccess }) => {
 const Navigation = () => {
   const [showMainMenu, setShowMainMenu] = useState(false);
   const [showToolsMenu, setShowToolsMenu] = useState(false);
+  const location = useLocation();
 
   // Primary navigation items (most frequently used)
   const primaryNavItems = [
