@@ -1798,6 +1798,7 @@ const Navigation = () => {
   const primaryNavItems = [
     { to: "/", icon: BarChart3, label: "Dashboard" },
     { to: "/lead-generation", icon: Target, label: "Lead Generation" },
+    { to: "/exclusive-lead-engine", icon: Crown, label: "👑 Exclusive Leads" },
     { to: "/inventory", icon: Car, label: "Inventory" },
     { to: "/creative", icon: Palette, label: "Creative Studio" },
     { to: "/integrations", icon: LinkIcon, label: "Integrations" },
