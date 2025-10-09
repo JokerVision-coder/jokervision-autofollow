@@ -1783,8 +1783,49 @@ const AddUserForm = ({ onSuccess }) => {
   );
 };
 
-// Navigation Component
+// Navigation Component with Dropdown Menu
 const Navigation = () => {
+  const [showMainMenu, setShowMainMenu] = useState(false);
+  const [showToolsMenu, setShowToolsMenu] = useState(false);
+
+  // Primary navigation items (most frequently used)
+  const primaryNavItems = [
+    { to: "/", icon: BarChart3, label: "Dashboard" },
+    { to: "/leads", icon: Target, label: "Leads" },
+    { to: "/inventory", icon: Car, label: "Inventory" },
+    { to: "/creative", icon: Palette, label: "Creative Studio" },
+    { to: "/communications", icon: MessageSquare, label: "Communications" },
+  ];
+
+  // Secondary navigation items (dropdown menu)
+  const secondaryNavItems = [
+    { to: "/sales", icon: Car, label: "Sales" },
+    { to: "/team", icon: Users, label: "Team" },
+    { to: "/websites", icon: Globe, label: "Websites" },
+    { to: "/ads", icon: Target, label: "Ads Manager" },
+    { to: "/pipeline", icon: TrendingUp, label: "Pipeline" },
+    { to: "/marketing", icon: Send, label: "Mass Marketing" },
+    { to: "/social", icon: MessageSquare, label: "Social Media" },
+    { to: "/reviews", icon: Star, label: "Reviews" },
+    { to: "/calendar", icon: Calendar, label: "Calendar" },
+    { to: "/workflows", icon: Zap, label: "Workflows" },
+    { to: "/subscription", icon: CreditCard, label: "Subscription" },
+    { to: "/advanced-websites", icon: Globe, label: "Advanced Sites" },
+    { to: "/voice", icon: Phone, label: "Voice AI" },
+    { to: "/analytics", icon: BarChart3, label: "Analytics Pro" },
+    { to: "/mobile-app", icon: Smartphone, label: "Mobile App" },
+    { to: "/walk-in-tracker", icon: UserX, label: "Walk-In Tracker" },
+    { to: "/vehicle-wishlist", icon: Bell, label: "Vehicle Alerts" },
+  ];
+
+  // AI Tools navigation items  
+  const aiToolsItems = [
+    { to: "/ai-toolkit", icon: Brain, label: "AI Toolkit" },
+    { to: "/predictive-analytics", icon: Brain, label: "🧠 Predictive AI" },
+    { to: "/ai-inbox", icon: Bot, label: "🤖 AI Inbox" },
+    { to: "/workflow-automation", icon: Zap, label: "⚡ Workflow Automation" },
+  ];
+
   return (
     <nav className="nav-glass sticky top-0 z-50">
       <div className="container mx-auto px-6">
@@ -1795,7 +1836,124 @@ const Navigation = () => {
             </div>
             <span className="text-2xl font-bold joker-brand">JokerVision</span>
           </Link>
-          <div className="flex space-x-6">
+          
+          {/* Primary Navigation Items */}
+          <div className="hidden lg:flex items-center space-x-4">
+            {primaryNavItems.map((item) => (
+              <Link 
+                key={item.to}
+                to={item.to}
+                className="text-glass hover:text-glass-bright font-medium transition-colors duration-200 flex items-center px-3 py-2 rounded-lg hover:bg-glass/10"
+              >
+                <item.icon className="w-4 h-4 mr-2" />
+                {item.label}
+              </Link>
+            ))}
+
+            {/* More Menu Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setShowMainMenu(!showMainMenu)}
+                className="text-glass hover:text-glass-bright font-medium transition-colors duration-200 flex items-center px-3 py-2 rounded-lg hover:bg-glass/10"
+              >
+                <Menu className="w-4 h-4 mr-2" />
+                More
+                <ChevronDown className="w-4 h-4 ml-1" />
+              </button>
+              
+              {showMainMenu && (
+                <div className="absolute right-0 mt-2 w-56 bg-glass backdrop-blur-lg border border-glass-muted rounded-xl shadow-lg py-2 z-50">
+                  {secondaryNavItems.map((item) => (
+                    <Link 
+                      key={item.to}
+                      to={item.to}
+                      onClick={() => setShowMainMenu(false)}
+                      className="flex items-center px-4 py-2 text-glass hover:text-glass-bright hover:bg-glass/10 transition-colors duration-200"
+                    >
+                      <item.icon className="w-4 h-4 mr-3" />
+                      {item.label}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* AI Tools Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setShowToolsMenu(!showToolsMenu)}
+                className="text-glass hover:text-glass-bright font-medium transition-colors duration-200 flex items-center px-3 py-2 rounded-lg hover:bg-glass/10"
+              >
+                <Brain className="w-4 h-4 mr-2" />
+                AI Tools
+                <ChevronDown className="w-4 h-4 ml-1" />
+              </button>
+              
+              {showToolsMenu && (
+                <div className="absolute right-0 mt-2 w-56 bg-glass backdrop-blur-lg border border-glass-muted rounded-xl shadow-lg py-2 z-50">
+                  {aiToolsItems.map((item) => (
+                    <Link 
+                      key={item.to}
+                      to={item.to}
+                      onClick={() => setShowToolsMenu(false)}
+                      className="flex items-center px-4 py-2 text-glass hover:text-glass-bright hover:bg-glass/10 transition-colors duration-200"
+                    >
+                      <item.icon className="w-4 h-4 mr-3" />
+                      {item.label}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Mobile Menu Button */}
+          <div className="lg:hidden">
+            <button
+              onClick={() => setShowMainMenu(!showMainMenu)}
+              className="text-glass hover:text-glass-bright p-2"
+            >
+              <Menu className="w-6 h-6" />
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile Navigation Menu */}
+        {showMainMenu && (
+          <div className="lg:hidden py-4 border-t border-glass-muted">
+            <div className="grid grid-cols-2 gap-2">
+              {[...primaryNavItems, ...secondaryNavItems, ...aiToolsItems].map((item) => (
+                <Link 
+                  key={item.to}
+                  to={item.to}
+                  onClick={() => setShowMainMenu(false)}
+                  className="flex items-center px-3 py-2 text-glass hover:text-glass-bright hover:bg-glass/10 rounded-lg transition-colors duration-200"
+                >
+                  <item.icon className="w-4 h-4 mr-2" />
+                  <span className="text-sm">{item.label}</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </nav>
+  );
+};
+
+// Updated Navigation Component End - Continue with original navigation menu structure for backward compatibility  
+const OriginalNavigation = () => {
+  return (
+    <nav className="nav-glass sticky top-0 z-50">
+      <div className="container mx-auto px-6">
+        <div className="flex items-center justify-between h-16">
+          <Link to="/" className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg flex items-center justify-center pulse-neon">
+              <Trophy className="w-6 h-6 text-white" />
+            </div>
+            <span className="text-2xl font-bold joker-brand">JokerVision</span>
+          </Link>
+          <div className="flex space-x-6 overflow-x-auto hidden">
             <Link 
               to="/" 
               className="text-glass hover:text-glass-bright font-medium transition-colors duration-200 flex items-center"
