@@ -366,6 +366,18 @@ const ExclusiveLeadEngine = () => {
   };
 
   const fetchAIPredictions = async () => {
+    try {
+      // Try to fetch from backend API first
+      const response = await fetch(`${API}/exclusive-leads/ai-predictions`);
+      if (response.ok) {
+        const data = await response.json();
+        setAiPredictions(data || {});
+        return;
+      }
+    } catch (error) {
+      console.log('Using mock predictions data as fallback');
+    }
+    
     const mockPredictions = {
       next_hour_leads: 12,
       next_hour_quality: 'high',
