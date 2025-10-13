@@ -178,6 +178,40 @@ const MassMarketing = () => {
     ]);
   };
 
+  const handleBulkUpload = async () => {
+    if (!uploadFile) {
+      toast.error('Please select a CSV file to upload');
+      return;
+    }
+
+    setUploading(true);
+    setUploadResult(null);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', uploadFile);
+
+      const response = await axios.post(
+        `${API}/marketing/leads/bulk-upload?tenant_id=default_dealership&source=Mass Marketing Import`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
+
+      setUploadResult(response.data);
+      toast.success(`Successfully uploaded ${response.data.summary.leads_created} leads!`);
+      setUploadFile(null);
+    } catch (error) {
+      console.error('Error uploading leads:', error);
+      toast.error(error.response?.data?.detail || 'Failed to upload leads');
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const loadMockStats = () => {
     setCampaignStats({
       total_campaigns: 47,
