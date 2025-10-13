@@ -259,7 +259,7 @@ const ExclusiveLeadEngine = () => {
     try {
       const response = await fetch(`${API}/exclusive-leads/market-timing?tenant_id=default`);
       const data = await response.json();
-      setMarketTiming(data.market_timing);
+      setMarketTiming(data?.market_timing || {});
     } catch (error) {
       console.error('Error fetching market timing:', error);
       // Fallback to empty object if API fails  
