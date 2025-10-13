@@ -801,6 +801,21 @@ frontend:
         - agent: "main"
         - comment: "✅ CRISP METHODOLOGY FULLY INTEGRATED: Extracted complete CRISP sales methodology from PDF and integrated into both AI chat and voice agents. CRISP PRINCIPLES IMPLEMENTED: C=Connect (engage immediately), R=Request (ask for appointment EVERY time), I=Invite (invite to dealership), S=Set (specific date/time), P=Pursue (follow up). KEY TECHNIQUES ADDED: 1) Transition/Disrupt/Ask (TDA) for ALL objections - 3-step process with transition phrases, pattern disruption, and time offers. 2) Whittle & Shepherd for timing objections - start broad, narrow to specific ('Today or tomorrow?' → 'Morning or afternoon?' → '3pm or 5pm?'). 3) Onion Technique for price objections - 4 progressive layers (Value, Defer to Authority, Presence as Leverage, Wedge of Doubt) to avoid giving total price remotely. 4) Feel/Felt/Found empathy framework. 5) Verbal Contract - repeat appointment time 4+ times. 6) Paint the Picture - describe arrival process to increase show rate. AGENT UPDATES: Chat AI (lines 1955-2048) - comprehensive CRISP system message with all techniques, objection handling, appointment confirmation process. Voice AI (line 6149) - condensed CRISP instructions optimized for real-time conversation. DOCUMENTATION: Created /app/CRISP_INTEGRATION_GUIDE.md with complete methodology, examples, test scenarios, and success metrics. Both agents now follow proven automotive sales best practices focusing on appointment setting over remote selling."
 
+  - task: "Voice Integration Settings Button Fix"
+    implemented: true
+    working: true
+    file: "VoiceIntegration.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: false
+        - agent: "user"
+        - comment: "USER REPORTED: Under Voice Integration section, the Settings button is not reacting."
+        - working: true
+        - agent: "main"
+        - comment: "✅ VOICE INTEGRATION SETTINGS BUTTON FIX COMPLETE: Fixed non-responsive Settings button in Voice Integration page. ISSUE: There were 2 Settings buttons on the page - a top-right action button (line 190-193) with no onClick handler, and a tab button (line 226-232) with correct handler. Users were clicking the top-right button which did nothing. SOLUTION: Added onClick handler to top-right Settings button: onClick={() => setActiveTab('settings')} to switch to settings tab when clicked. TESTING RESULTS: ✅ Settings button now functional, ✅ Settings tab becomes active (purple highlight), ✅ Settings content displays correctly with 2 sections. SETTINGS SECTIONS VISIBLE: 1) AI Assistant Configuration (Enable AI Assistant toggle, AI Personality Name field showing 'Alex', Greeting Message textarea with default greeting, Save Settings button). 2) Twilio Configuration (Phone Number field showing '+1-555-DEALER1', Call Recording toggle for compliance). Both Settings buttons (top-right and tab) now correctly display settings content."
+
   - task: "Inventory System Backend API Testing"
     implemented: true
     working: false
