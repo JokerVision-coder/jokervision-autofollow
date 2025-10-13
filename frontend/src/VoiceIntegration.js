@@ -187,7 +187,7 @@ const VoiceIntegration = () => {
               <PhoneCall className="w-4 h-4 mr-2" />
               Make Call
             </Button>
-            <Button variant="outline" className="text-glass-bright">
+            <Button onClick={() => setActiveTab('settings')} variant="outline" className="text-glass-bright">
               <Settings className="w-4 h-4 mr-2" />
               Settings
             </Button>
