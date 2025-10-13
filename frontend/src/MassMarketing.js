@@ -800,7 +800,14 @@ const CreateSegmentModal = ({ onClose, onSegmentCreated }) => {
             </div>
 
             <div className="flex gap-3 mt-6">
-              <Button type="submit" className="btn-neon flex-1">
+              <Button 
+                type="button" 
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleSubmit();
+                }}
+                className="btn-neon flex-1"
+              >
                 <Plus className="w-4 h-4 mr-2" />
                 Create Segment
               </Button>
