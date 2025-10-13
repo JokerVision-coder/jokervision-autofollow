@@ -1055,6 +1055,7 @@ class Lead(BaseModel):
     address: Optional[str] = None
     reference_number: Optional[str] = None
     status: str = Field(default="new")
+    source: str = Field(default="manual")  # Lead source (e.g., "Mass Marketing Import", "Exclusive Lead Engine", "Website", "Walk-In", etc.)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     last_contacted: Optional[datetime] = None
     notes: Optional[str] = None
