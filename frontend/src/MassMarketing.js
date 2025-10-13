@@ -59,7 +59,19 @@ const MassMarketing = () => {
   const fetchAudienceSegments = async () => {
     try {
       const response = await axios.get(`${API}/marketing/segments?tenant_id=default_dealership`);
-      setAudienceSegments(response.data.segments || []);
+      const segments = response.data?.segments || [];
+      
+      // Filter out any duplicate or test segments
+      const uniqueSegments = segments.filter((seg, index, self) => 
+        index === self.findIndex((s) => s.id === seg.id)
+      );
+      
+      setAudienceSegments(uniqueSegments.length > 0 ? uniqueSegments : []);
+      
+      // If no segments or all have same name, load mock data
+      if (uniqueSegments.length === 0 || uniqueSegments.every(s => s.name === uniqueSegments[0].name)) {
+        loadMockSegments();
+      }
     } catch (error) {
       console.error('Error fetching segments:', error);
       loadMockSegments();
