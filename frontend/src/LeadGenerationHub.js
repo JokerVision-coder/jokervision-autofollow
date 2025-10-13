@@ -837,7 +837,10 @@ const LeadGenerationHub = () => {
                           {rule.status} • {rule.success_rate}% success
                         </Badge>
                       </div>
-                      <Switch checked={rule.status === 'active'} />
+                      <Switch 
+                        checked={rule.status === 'active'} 
+                        onCheckedChange={() => toggleAutomationRule(rule.id)}
+                      />
                     </div>
                   ))}
                 </div>
