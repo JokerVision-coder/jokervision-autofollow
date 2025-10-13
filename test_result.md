@@ -873,6 +873,20 @@ test_plan:
     working: true
     file: "CreativeStudio.js"
     stuck_count: 0
+
+
+  - task: "Unified Lead Management System - CSV Upload & All Leads Dashboard"
+    implemented: true
+    working: "NA"
+    file: "server.py, MassMarketing.js, AllLeadsDashboard.js, App.js"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+        - agent: "main"
+        - comment: "🚀 UNIFIED LEAD MANAGEMENT IMPLEMENTATION IN PROGRESS: BACKEND: Added 'source' field to Lead and LeadCreate models to track lead origin. Created POST /api/marketing/leads/bulk-upload endpoint supporting CSV file upload with fields (first_name, last_name, phone, mobile, email). Endpoint validates data, checks for duplicates, creates leads with source='Mass Marketing Import', and returns detailed upload results (total_processed, leads_created, leads_failed, duplicates_skipped). Created GET /api/leads/dashboard/all-sources endpoint that returns unified leads view with source/status filtering, source statistics, status statistics, and available sources list. Added necessary imports (File, UploadFile, csv, io, codecs). FRONTEND: Updated MassMarketing.js to add 'Bulk Upload' tab with comprehensive upload interface including file selection, drag-drop area, CSV format instructions, upload button, and detailed results display showing created/failed leads. Created new AllLeadsDashboard.js component displaying unified leads from all sources with source badges (color-coded by source: Mass Marketing Import=purple, Exclusive Lead Engine=yellow, Website=blue, Walk-In=green), status badges, search functionality, source/status filters, statistics cards, and lead source breakdown. Updated App.js to add /all-leads route and navigation link in salesRepNavItems. INTEGRATION PLAN: Need to update other lead generation sections (Exclusive Lead Engine, Walk-In Tracker, Website Builder, Facebook Auto Poster, Social Media Hub) to set appropriate 'source' field when creating leads. This will ensure all leads flow into the central database with proper source tracking for unified management."
+
     priority: "high"
     needs_retesting: false
     status_history:
