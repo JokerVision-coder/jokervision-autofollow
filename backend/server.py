@@ -88,6 +88,7 @@ class LeadCreate(BaseModel):
     employer: Optional[str] = None
     address: Optional[str] = None
     reference_number: Optional[str] = None
+    source: Optional[str] = "manual"  # Track lead source (e.g., "Mass Marketing Import", "Exclusive Lead Engine", "Website", "Walk-In", etc.)
 
 class LeadUpdate(BaseModel):
     status: Optional[str] = None
