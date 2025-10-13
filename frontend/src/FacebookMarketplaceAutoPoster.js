@@ -56,6 +56,9 @@ const FacebookMarketplaceAutoPoster = () => {
   const [selectedVehicles, setSelectedVehicles] = useState(new Set());
   const [salesReps, setSalesReps] = useState([]);
   const [postingQueue, setPostingQueue] = useState([]);
+  const [facebookGroups, setFacebookGroups] = useState([]);
+  const [showAddGroupModal, setShowAddGroupModal] = useState(false);
+  const [showBulkScheduleModal, setShowBulkScheduleModal] = useState(false);
   const [analytics, setAnalytics] = useState({});
   const [aiSettings, setAiSettings] = useState({});
   const [isAutoPosting, setIsAutoPosting] = useState(false);
