@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Canvas, IText, Rect, Circle, Line, Image as FabricImage } from 'fabric';
+import { Canvas as FabricCanvas, IText, Rect as FabricRect, Circle as FabricCircle, Line as FabricLine, Image as FabricImage } from 'fabric';
 import { ChromePicker } from 'react-color';
 import axios from 'axios';
 import { Card, CardContent } from './components/ui/card';
