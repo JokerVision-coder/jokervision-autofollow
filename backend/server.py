@@ -6819,6 +6819,10 @@ async def get_marketing_segments(tenant_id: str = "default_dealership"):
         segments = await segments_collection.find({"tenant_id": tenant_id}).to_list(100)
         
         if segments:
+            # Remove MongoDB ObjectId fields for JSON serialization
+            for segment in segments:
+                if "_id" in segment:
+                    del segment["_id"]
             return {"segments": segments}
     except Exception:
         pass
