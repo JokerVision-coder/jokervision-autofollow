@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JokerVision Setup Guides</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #667eea;
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            font-size: 1.2em;
+            margin-bottom: 40px;
+        }
+        .guide-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+            color: white;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .guide-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .guide-title {
+            font-size: 1.8em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .guide-description {
+            font-size: 1.1em;
+            opacity: 0.9;
+            margin-bottom: 15px;
+        }
+        .guide-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9em;
+            opacity: 0.8;
+            border-top: 1px solid rgba(255,255,255,0.3);
+            padding-top: 15px;
+            margin-top: 15px;
+        }
+        .download-btn {
+            background: white;
+            color: #667eea;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            display: inline-block;
+            text-decoration: none;
+            margin-top: 10px;
+            transition: background 0.3s;
+        }
+        .download-btn:hover {
+            background: #f0f0f0;
+        }
+        .quick-start {
+            background: #f8f9fa;
+            border-left: 5px solid #28a745;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 30px 0;
+        }
+        .quick-start h2 {
+            color: #28a745;
+            margin-top: 0;
+        }
+        .step {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        .emoji {
+            font-size: 1.5em;
+            margin-right: 10px;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.3);
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 JokerVision AutoFollow</h1>
+        <div class="subtitle">Setup Guides & Documentation</div>
+
+        <div class="quick-start">
+            <h2>🎯 Quick Access Instructions</h2>
+            <div class="step">
+                <strong>📍 You are here:</strong> https://carsync-1.preview.emergentagent.com/setup-guides.html
+            </div>
+            <div class="step">
+                <strong>💡 Tip:</strong> Bookmark this page! Press <kbd>Ctrl+D</kbd> (or <kbd>Cmd+D</kbd> on Mac)
+            </div>
+            <div class="step">
+                <strong>📥 Download All:</strong> Click the download buttons below to save guides to your computer
+            </div>
+            <div class="step">
+                <strong>📖 Read Online:</strong> Click "View Online" to read in your browser
+            </div>
+        </div>
+
+        <div class="guide-card" onclick="window.open('https://raw.githubusercontent.com/yourusername/yourrepo/main/EXTERNAL_SETUP_COMPLETE_GUIDE.md', '_blank')">
+            <div class="guide-title">
+                <span class="emoji">📖</span>
+                Complete External Setup Guide
+            </div>
+            <div class="guide-description">
+                Detailed step-by-step instructions for Twilio, Facebook, Chrome Extension, and all other integrations. 70+ pages with screenshots.
+            </div>
+            <div class="guide-meta">
+                <span><span class="emoji">⏱️</span> 45 minutes</span>
+                <span><span class="emoji">📄</span> Main Guide</span>
+                <span class="status-badge">PRIORITY 1</span>
+            </div>
+            <a href="/api/download/guide/external-setup" class="download-btn" onclick="event.stopPropagation();">
+                📥 Download Guide
+            </a>
+        </div>
+
+        <div class="guide-card" onclick="window.open('/quick-reference.html', '_blank')">
+            <div class="guide-title">
+                <span class="emoji">⚡</span>
+                Quick Setup Reference
+            </div>
+            <div class="guide-description">
+                One-page cheat sheet with commands, credentials template, and quick troubleshooting. Perfect for printing!
+            </div>
+            <div class="guide-meta">
+                <span><span class="emoji">⏱️</span> 5 minutes</span>
+                <span><span class="emoji">📄</span> Reference Card</span>
+                <span class="status-badge">QUICK ACCESS</span>
+            </div>
+            <a href="/api/download/guide/quick-reference" class="download-btn" onclick="event.stopPropagation();">
+                📥 Download Reference
+            </a>
+        </div>
+
+        <div class="guide-card" onclick="window.open('/checklist.html', '_blank')">
+            <div class="guide-title">
+                <span class="emoji">✅</span>
+                Setup Checklist
+            </div>
+            <div class="guide-description">
+                Interactive checklist to track your progress. Print and check off items as you complete them!
+            </div>
+            <div class="guide-meta">
+                <span><span class="emoji">⏱️</span> Track Progress</span>
+                <span><span class="emoji">📄</span> Checklist</span>
+                <span class="status-badge">PRINTABLE</span>
+            </div>
+            <a href="/api/download/guide/checklist" class="download-btn" onclick="event.stopPropagation();">
+                📥 Download Checklist
+            </a>
+        </div>
+
+        <div class="guide-card" onclick="window.open('/production-guide.html', '_blank')">
+            <div class="guide-title">
+                <span class="emoji">🎉</span>
+                Production Ready Guide
+            </div>
+            <div class="guide-description">
+                Complete testing guide with step-by-step instructions for testing with real leads. Includes AI bot setup!
+            </div>
+            <div class="guide-meta">
+                <span><span class="emoji">⏱️</span> 30 minutes</span>
+                <span><span class="emoji">📄</span> Testing Guide</span>
+                <span class="status-badge">AFTER SETUP</span>
+            </div>
+            <a href="/api/download/guide/production" class="download-btn" onclick="event.stopPropagation();">
+                📥 Download Guide
+            </a>
+        </div>
+
+        <div class="guide-card" onclick="window.open('/api-credentials.html', '_blank')">
+            <div class="guide-title">
+                <span class="emoji">🔐</span>
+                API Credentials Setup
+            </div>
+            <div class="guide-description">
+                Security-focused guide for managing API keys and credentials. Shows exactly where to get each key.
+            </div>
+            <div class="guide-meta">
+                <span><span class="emoji">⏱️</span> 20 minutes</span>
+                <span><span class="emoji">📄</span> Security Guide</span>
+                <span class="status-badge">REFERENCE</span>
+            </div>
+            <a href="/api/download/guide/api-credentials" class="download-btn" onclick="event.stopPropagation();">
+                📥 Download Guide
+            </a>
+        </div>
+
+        <div class="quick-start" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none;">
+            <h2 style="color: white;">🚀 Start Here - Your 3-Step Quick Start</h2>
+            <div class="step" style="background: rgba(255,255,255,0.2); border-left: 4px solid white; color: white;">
+                <strong>Step 1:</strong> Download "Complete External Setup Guide" above
+            </div>
+            <div class="step" style="background: rgba(255,255,255,0.2); border-left: 4px solid white; color: white;">
+                <strong>Step 2:</strong> Open it on your computer (any text editor works!)
+            </div>
+            <div class="step" style="background: rgba(255,255,255,0.2); border-left: 4px solid white; color: white;">
+                <strong>Step 3:</strong> Follow Section 1: Twilio SMS Setup (15 minutes)
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 40px; padding: 20px; background: #f8f9fa; border-radius: 10px;">
+            <h3>📞 Need Help?</h3>
+            <p>All guides include troubleshooting sections and step-by-step instructions.</p>
+            <p><strong>Total Setup Time:</strong> 30-45 minutes</p>
+            <p><strong>Cost to Start:</strong> $0 (Free trials available)</p>
+        </div>
+    </div>
+
+    <script>
+        // Add download functionality (placeholder - will be implemented in backend)
+        console.log('JokerVision Setup Guides loaded successfully!');
+    </script>
+</body>
+</html>
