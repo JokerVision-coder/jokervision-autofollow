@@ -4818,6 +4818,347 @@ Vehicle Type: sedan"""
         
         return passed_tests >= total_tests * 0.8  # 80% pass rate required
 
+    # =============================================================================
+    # NEW LEAD MANAGEMENT & AI COMMUNICATION TESTS
+    # =============================================================================
+    
+    def test_csv_bulk_upload(self):
+        """Test CSV bulk upload endpoint for lead management"""
+        print("\n📄 Testing CSV Bulk Upload...")
+        
+        # Create test CSV content
+        csv_content = """first_name,last_name,primary_phone,email,budget,vehicle_type,source
+John,Smith,555-123-4567,john.smith@email.com,25000-35000,sedan,CSV Import
+Jane,Doe,555-987-6543,jane.doe@email.com,30000-40000,SUV,CSV Import
+Mike,Johnson,555-555-5555,mike.johnson@email.com,20000-30000,truck,CSV Import"""
+        
+        # Create file-like object for upload
+        import io
+        csv_file = io.StringIO(csv_content)
+        
+        # Test the bulk upload endpoint
+        files = {'file': ('test_leads.csv', csv_content, 'text/csv')}
+        data = {'tenant_id': 'default_dealership'}
+        
+        try:
+            url = f"{self.api_url}/marketing/leads/bulk-upload"
+            response = requests.post(url, files=files, data=data)
+            
+            self.tests_run += 1
+            print(f"🔍 Testing CSV Bulk Upload...")
+            print(f"   URL: {url}")
+            
+            if response.status_code == 200:
+                self.tests_passed += 1
+                result = response.json()
+                print(f"✅ Passed - Status: {response.status_code}")
+                print(f"   Leads processed: {result.get('leads_processed', 0)}")
+                print(f"   Duplicates detected: {result.get('duplicates_detected', 0)}")
+                print(f"   Success rate: {result.get('success_rate', 0)}%")
+                return True
+            else:
+                print(f"❌ Failed - Expected 200, got {response.status_code}")
+                print(f"   Error: {response.text}")
+                return False
+                
+        except Exception as e:
+            print(f"❌ Failed - Error: {str(e)}")
+            return False
+    
+    def test_unified_leads_dashboard(self):
+        """Test unified leads dashboard with source filtering"""
+        print("\n📊 Testing Unified Leads Dashboard...")
+        
+        test_cases = [
+            ("All Sources", None),
+            ("CSV Import Filter", "CSV Import"),
+            ("Manual Filter", "manual"),
+            ("Walk-In Filter", "walk-in")
+        ]
+        
+        passed_tests = 0
+        
+        for test_name, source_filter in test_cases:
+            try:
+                params = {"tenant_id": "default_dealership"}
+                if source_filter:
+                    params["source_filter"] = source_filter
+                
+                success, response = self.run_test(
+                    f"Unified Dashboard - {test_name}",
+                    "GET",
+                    f"leads/dashboard/all-sources?" + "&".join([f"{k}={v}" for k, v in params.items()]),
+                    200
+                )
+                
+                if success:
+                    # Verify response structure
+                    required_fields = ['success', 'leads', 'total_count', 'source_statistics', 'status_statistics']
+                    missing_fields = [field for field in required_fields if field not in response]
+                    
+                    if not missing_fields:
+                        passed_tests += 1
+                        print(f"   ✅ {test_name} - Total: {response['total_count']}, Filtered: {response['filtered_count']}")
+                        print(f"      Sources: {list(response['source_statistics'].keys())}")
+                    else:
+                        print(f"   ❌ {test_name} - Missing fields: {missing_fields}")
+                else:
+                    print(f"   ❌ {test_name} - API call failed")
+                    
+            except Exception as e:
+                print(f"   ❌ {test_name} - ERROR: {str(e)}")
+        
+        print(f"   📊 Dashboard Tests: {passed_tests}/{len(test_cases)} passed")
+        return passed_tests >= len(test_cases) * 0.75  # 75% pass rate
+    
+    def test_ai_communication_enablement(self):
+        """Test AI communication enablement for leads"""
+        print("\n🤖 Testing AI Communication Enablement...")
+        
+        if not self.created_lead_id:
+            print("❌ No lead ID available for testing")
+            return False
+        
+        # Test single lead AI enablement
+        ai_config = {
+            "ai_type": "both",  # sms, voice, both
+            "enabled": True,
+            "settings": {
+                "response_delay": 30,
+                "escalation_threshold": 3,
+                "business_hours_only": False
+            }
+        }
+        
+        success1, response1 = self.run_test(
+            "Enable AI Communication (Single Lead)",
+            "POST",
+            f"leads/{self.created_lead_id}/enable-ai",
+            200,
+            data=ai_config
+        )
+        
+        # Test bulk AI enablement
+        bulk_config = {
+            "lead_ids": [self.created_lead_id],
+            "ai_type": "sms",
+            "enabled": True,
+            "settings": {
+                "response_delay": 60,
+                "escalation_threshold": 2
+            }
+        }
+        
+        success2, response2 = self.run_test(
+            "Enable AI Communication (Bulk)",
+            "POST",
+            "leads/bulk-enable-ai",
+            200,
+            data=bulk_config
+        )
+        
+        if success1 and success2:
+            print("   ✅ AI Communication enablement working for both single and bulk operations")
+            return True
+        else:
+            print("   ❌ AI Communication enablement failed")
+            return False
+    
+    def test_walk_in_lead_integration(self):
+        """Test walk-in lead integration endpoints"""
+        print("\n🚶 Testing Walk-In Lead Integration...")
+        
+        # Test creating walk-in customer
+        customer_data = {
+            "tenant_id": "default_dealership",
+            "first_name": "Walk-In",
+            "last_name": "Customer",
+            "phone": "555-WALK-IN",
+            "email": "walkin@test.com",
+            "visit_purpose": "Browse inventory",
+            "interested_vehicles": ["Toyota Camry", "Honda Accord"],
+            "source": "walk-in"
+        }
+        
+        success1, response1 = self.run_test(
+            "Create Walk-In Customer",
+            "POST",
+            "walk-in-tracker/customers",
+            200,
+            data=customer_data
+        )
+        
+        if success1 and 'customer_id' in response1:
+            customer_id = response1['customer_id']
+            
+            # Test converting customer to lead
+            conversion_data = {
+                "tenant_id": "default_dealership",
+                "lead_data": {
+                    "budget": "25000-35000",
+                    "vehicle_type": "sedan",
+                    "notes": "Converted from walk-in customer"
+                }
+            }
+            
+            success2, response2 = self.run_test(
+                "Convert Walk-In to Lead",
+                "POST",
+                f"walk-in-tracker/convert-to-lead/{customer_id}",
+                200,
+                data=conversion_data
+            )
+            
+            if success2:
+                print("   ✅ Walk-in integration working - customer creation and lead conversion")
+                return True
+            else:
+                print("   ❌ Walk-in lead conversion failed")
+                return False
+        else:
+            print("   ❌ Walk-in customer creation failed")
+            return False
+    
+    def test_lead_source_tracking(self):
+        """Test lead creation with proper source tracking"""
+        print("\n🏷️ Testing Lead Source Tracking...")
+        
+        test_sources = [
+            ("Website Form", "website"),
+            ("Facebook Ad", "facebook_ad"),
+            ("Google Ad", "google_ad"),
+            ("Referral", "referral"),
+            ("Walk-In", "walk-in"),
+            ("Phone Call", "phone_call")
+        ]
+        
+        passed_tests = 0
+        created_leads = []
+        
+        for source_name, source_code in test_sources:
+            lead_data = {
+                "tenant_id": "default_dealership",
+                "first_name": f"Test_{source_code}",
+                "last_name": "Lead",
+                "primary_phone": f"555-{len(created_leads):03d}-{len(created_leads):04d}",
+                "email": f"test_{source_code}@example.com",
+                "budget": "20000-30000",
+                "vehicle_type": "sedan",
+                "source": source_code
+            }
+            
+            success, response = self.run_test(
+                f"Create Lead - {source_name}",
+                "POST",
+                "leads",
+                200,
+                data=lead_data
+            )
+            
+            if success and 'source' in response and response['source'] == source_code:
+                passed_tests += 1
+                created_leads.append(response['id'])
+                print(f"   ✅ {source_name} - Source tracked correctly")
+            else:
+                print(f"   ❌ {source_name} - Source tracking failed")
+        
+        print(f"   📊 Source Tracking: {passed_tests}/{len(test_sources)} passed")
+        return passed_tests >= len(test_sources) * 0.8  # 80% pass rate
+    
+    def test_sms_sending_for_ai_leads(self):
+        """Test SMS sending functionality for AI-enabled leads"""
+        print("\n📱 Testing SMS Sending for AI-Enabled Leads...")
+        
+        if not self.created_lead_id:
+            print("❌ No lead ID available for testing")
+            return False
+        
+        # Test different SMS scenarios
+        sms_tests = [
+            {
+                "name": "Initial Contact SMS",
+                "data": {
+                    "lead_id": self.created_lead_id,
+                    "message": "Hi! Thanks for your interest in our vehicles. I'm here to help you find the perfect car. When would be a good time to chat?",
+                    "message_type": "initial_contact",
+                    "ai_enabled": True
+                }
+            },
+            {
+                "name": "Follow-up SMS",
+                "data": {
+                    "lead_id": self.created_lead_id,
+                    "message": "Just following up on your vehicle inquiry. Do you have any specific questions about our Toyota inventory?",
+                    "message_type": "follow_up",
+                    "ai_enabled": True
+                }
+            },
+            {
+                "name": "Appointment Reminder SMS",
+                "data": {
+                    "lead_id": self.created_lead_id,
+                    "message": "Reminder: Your appointment is scheduled for tomorrow at 2 PM. Looking forward to meeting you!",
+                    "message_type": "appointment_reminder",
+                    "ai_enabled": True
+                }
+            }
+        ]
+        
+        passed_tests = 0
+        
+        for test in sms_tests:
+            success, response = self.run_test(
+                test["name"],
+                "POST",
+                "sms/send",
+                200,
+                data=test["data"]
+            )
+            
+            if success:
+                # Verify SMS was processed correctly
+                if response.get('status') == 'sent' or response.get('status') == 'queued':
+                    passed_tests += 1
+                    print(f"   ✅ {test['name']} - SMS sent successfully")
+                else:
+                    print(f"   ❌ {test['name']} - SMS status: {response.get('status')}")
+            else:
+                print(f"   ❌ {test['name']} - SMS sending failed")
+        
+        print(f"   📊 SMS Tests: {passed_tests}/{len(sms_tests)} passed")
+        return passed_tests >= len(sms_tests) * 0.75  # 75% pass rate
+    
+    def test_lead_management_comprehensive(self):
+        """Run comprehensive lead management and AI communication test suite"""
+        print("\n🎯 Running Comprehensive Lead Management & AI Communication Tests...")
+        
+        lead_tests = [
+            ("CSV Bulk Upload", self.test_csv_bulk_upload),
+            ("Unified Leads Dashboard", self.test_unified_leads_dashboard),
+            ("AI Communication Enablement", self.test_ai_communication_enablement),
+            ("Walk-In Lead Integration", self.test_walk_in_lead_integration),
+            ("Lead Source Tracking", self.test_lead_source_tracking),
+            ("SMS Sending for AI Leads", self.test_sms_sending_for_ai_leads)
+        ]
+        
+        passed_tests = 0
+        total_tests = len(lead_tests)
+        
+        for test_name, test_func in lead_tests:
+            try:
+                if test_func():
+                    passed_tests += 1
+                    print(f"   ✅ {test_name} - PASSED")
+                else:
+                    print(f"   ❌ {test_name} - FAILED")
+            except Exception as e:
+                print(f"   ❌ {test_name} - ERROR: {str(e)}")
+        
+        success_rate = (passed_tests / total_tests) * 100
+        print(f"\n   📊 Lead Management Test Suite: {passed_tests}/{total_tests} passed ({success_rate:.1f}%)")
+        
+        return passed_tests >= total_tests * 0.8  # 80% pass rate required
+
 def main():
     print("🃏 JokerVision AutoFollow API Testing Suite")
     print("=" * 50)
