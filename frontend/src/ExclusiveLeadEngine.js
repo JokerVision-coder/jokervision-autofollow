@@ -170,7 +170,7 @@ const ExclusiveLeadEngine = () => {
     try {
       const response = await fetch(`${API}/exclusive-leads/leads?tenant_id=default`);
       const data = await response.json();
-      setExclusiveLeads(data.exclusive_leads);
+      setExclusiveLeads(data?.exclusive_leads || []);
     } catch (error) {
       console.error('Error fetching exclusive leads:', error);
       // Fallback to demo exclusive leads if API fails
