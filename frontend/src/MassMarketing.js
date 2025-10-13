@@ -39,6 +39,9 @@ const MassMarketing = () => {
   const [loading, setLoading] = useState(true);
   const [showCreateCampaign, setShowCreateCampaign] = useState(false);
   const [campaignStats, setCampaignStats] = useState({});
+  const [uploadFile, setUploadFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadResult, setUploadResult] = useState(null);
 
   useEffect(() => {
     fetchCampaigns();
