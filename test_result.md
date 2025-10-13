@@ -786,6 +786,21 @@ frontend:
         - agent: "main"
         - comment: "✅ CALENDAR SETTINGS MODAL IMPLEMENTED: Created comprehensive settings modal for calendar integrations. ISSUE: Settings button existed but had no onClick handler and no modal component was implemented. SOLUTION: Added showSettings state, created complete SettingsModal component with calendar connection management, sync settings, and notification preferences. Connected Settings button to open modal. FEATURES IMPLEMENTED: Calendar Connections (Google Calendar, Microsoft Outlook, Apple Calendar/iCloud with Connect/Disconnect functionality), Sync Settings (Two-Way Sync, Auto Sync every 15 minutes, Sync Reminders with checkboxes), Notifications (Email and SMS notification preferences), Professional UI (glass-effect cards, gradient backgrounds, proper modal overlay). TESTING RESULTS: ✅ Settings button opens modal correctly, ✅ All 3 calendar providers visible with Connect buttons, ✅ Connection toggles work (Connect changes to Disconnect with status update '✅ Connected - Syncing appointments'), ✅ All sync settings visible with checkboxes, ✅ Email and SMS notification toggles present, ✅ Save Settings and Cancel buttons functional, ✅ Modal scrollable to show all content. Users can now properly connect external calendars and configure sync preferences."
 
+  - task: "CRISP Sales Methodology Integration - AI Chat & Voice Agents"
+    implemented: true
+    working: true
+    file: "server.py, CRISP_INTEGRATION_GUIDE.md"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+        - agent: "user"
+        - comment: "USER REQUESTED: Make sure JokerVision app and AI voice/chat agents are trained to follow the CRISP technique from PDF (CARWARS CRISP CERTIFICATION)."
+        - working: true
+        - agent: "main"
+        - comment: "✅ CRISP METHODOLOGY FULLY INTEGRATED: Extracted complete CRISP sales methodology from PDF and integrated into both AI chat and voice agents. CRISP PRINCIPLES IMPLEMENTED: C=Connect (engage immediately), R=Request (ask for appointment EVERY time), I=Invite (invite to dealership), S=Set (specific date/time), P=Pursue (follow up). KEY TECHNIQUES ADDED: 1) Transition/Disrupt/Ask (TDA) for ALL objections - 3-step process with transition phrases, pattern disruption, and time offers. 2) Whittle & Shepherd for timing objections - start broad, narrow to specific ('Today or tomorrow?' → 'Morning or afternoon?' → '3pm or 5pm?'). 3) Onion Technique for price objections - 4 progressive layers (Value, Defer to Authority, Presence as Leverage, Wedge of Doubt) to avoid giving total price remotely. 4) Feel/Felt/Found empathy framework. 5) Verbal Contract - repeat appointment time 4+ times. 6) Paint the Picture - describe arrival process to increase show rate. AGENT UPDATES: Chat AI (lines 1955-2048) - comprehensive CRISP system message with all techniques, objection handling, appointment confirmation process. Voice AI (line 6149) - condensed CRISP instructions optimized for real-time conversation. DOCUMENTATION: Created /app/CRISP_INTEGRATION_GUIDE.md with complete methodology, examples, test scenarios, and success metrics. Both agents now follow proven automotive sales best practices focusing on appointment setting over remote selling."
+
   - task: "Inventory System Backend API Testing"
     implemented: true
     working: false
