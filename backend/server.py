@@ -6820,7 +6820,7 @@ async def get_marketing_segments(tenant_id: str = "default_dealership"):
         
         if segments:
             return {"segments": segments}
-    except:
+    except Exception:
         pass
     
     # Mock data for demonstration
