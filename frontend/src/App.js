@@ -20,6 +20,7 @@ import AdsManager from './AdsManager';
 import Communications from './Communications';
 import SalesPipeline from './SalesPipeline';
 import MassMarketing from './MassMarketing';
+import AllLeadsDashboard from './AllLeadsDashboard';
 import SocialMediaHub from './SocialMediaHub';
 import ReviewsManager from './ReviewsManager';
 import CalendarIntegration from './CalendarIntegration';
