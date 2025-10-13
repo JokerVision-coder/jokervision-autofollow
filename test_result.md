@@ -756,6 +756,21 @@ frontend:
         - agent: "main"
         - comment: "✅ DASHBOARD STATS ERROR FIX COMPLETE: Fixed critical runtime error on main dashboard. ISSUE: fetchSalesStats function was not providing fallback data when API call failed, causing undefined property access errors and error bubbles. SOLUTION: Added comprehensive fallback data to fetchSalesStats (similar to fetchStats fix) including total_units: 12, total_revenue: 425000, total_commission: 8160, and salesperson_breakdown with 2 sample salespeople. TESTING RESULTS: ✅ No error messages or toasts detected, ✅ Dashboard loads gracefully without crashes, ✅ All 11 navigation elements working, ✅ Stats display correctly with fallback data when API fails, ✅ Professional UI maintained. The 'failed to load dashboard stats' error bubble is now resolved. Dashboard is stable and resilient to API failures."
 
+  - task: "Lead Generation Hub Automation Toggle Fix"
+    implemented: true
+    working: true
+    file: "LeadGenerationHub.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: false
+        - agent: "user"
+        - comment: "USER REPORTED: Automation buttons under Lead Generation & Appointment Hub not working - can't disable them. All 3 automation rules (5-Minute Response Rule, High-Value Lead Alert, Appointment Reminder Sequence) stuck in 'active' state."
+        - working: true
+        - agent: "main"
+        - comment: "✅ AUTOMATION TOGGLE FIX COMPLETE: Fixed non-functional automation rule toggles in Lead Generation Hub. ISSUE: Switch components had no onCheckedChange handler, making them display-only without actual toggle functionality. SOLUTION: Added toggleAutomationRule function that updates state by toggling rule.status between 'active' and 'inactive', shows toast notifications for feedback, and connected function to Switch via onCheckedChange prop. TESTING RESULTS: ✅ All 3 switches can be toggled OFF (state changes to 'unchecked', badges change to gray 'inactive'), ✅ All 3 switches can be toggled back ON (state changes to 'checked', badges change to green 'active'), ✅ Toast notifications appear for each action ('✅ Rule activated' or '⏸️ Rule disabled'), ✅ State changes are immediate with clear visual feedback. Automation rules can now be enabled/disabled as expected."
+
   - task: "Inventory System Backend API Testing"
     implemented: true
     working: false
