@@ -422,6 +422,23 @@ const LeadGenerationHub = () => {
     }
   };
 
+  const toggleAutomationRule = (ruleId) => {
+    setAutomationRules(prevRules => 
+      prevRules.map(rule => {
+        if (rule.id === ruleId) {
+          const newStatus = rule.status === 'active' ? 'inactive' : 'active';
+          toast.success(
+            newStatus === 'active' 
+              ? `✅ ${rule.name} activated` 
+              : `⏸️ ${rule.name} disabled`
+          );
+          return { ...rule, status: newStatus };
+        }
+        return rule;
+      })
+    );
+  };
+
   const scheduleAppointment = async (leadId, appointmentData) => {
     try {
       const newAppointment = {
