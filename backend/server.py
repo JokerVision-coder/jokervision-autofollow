@@ -1624,6 +1624,105 @@ async def get_all_leads_with_sources(
         logger.error(f"Error fetching unified leads dashboard: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to fetch leads dashboard")
 
+
+# ====================================================
+# AI COMMUNICATION ENABLEMENT FOR LEADS
+# ====================================================
+@api_router.post("/leads/{lead_id}/enable-ai")
+async def enable_lead_ai_communication(lead_id: str, config: dict):
+    """Enable AI communication (SMS bot, Voice AI) for a specific lead"""
+    try:
+        lead = await db.leads.find_one({"id": lead_id})
+        if not lead:
+            raise HTTPException(status_code=404, detail="Lead not found")
+        
+        ai_type = config.get("ai_type", "both")  # 'sms', 'voice', or 'both'
+        tenant_id = config.get("tenant_id", "default_dealership")
+        
+        # Update lead with AI communication settings
+        ai_settings = {
+            "ai_communication_enabled": True,
+            "ai_sms_enabled": ai_type in ['sms', 'both'],
+            "ai_voice_enabled": ai_type in ['voice', 'both'],
+            "ai_enabled_at": datetime.now(timezone.utc).isoformat(),
+            "ai_personality": "professional_car_salesman",
+            "ai_methodology": "CRISP"
+        }
+        
+        await db.leads.update_one(
+            {"id": lead_id},
+            {"$set": ai_settings}
+        )
+        
+        # Invalidate cache
+        await invalidate_cache("lead_list")
+        
+        logger.info(f"AI communication ({ai_type}) enabled for lead {lead_id}")
+        
+        return {
+            "success": True,
+            "lead_id": lead_id,
+            "ai_type": ai_type,
+            "message": f"AI {ai_type} communication enabled successfully",
+            "settings": ai_settings
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error enabling AI for lead: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to enable AI communication")
+
+@api_router.post("/leads/bulk-enable-ai")
+async def bulk_enable_ai_communication(request: dict):
+    """Enable AI communication for multiple leads at once"""
+    try:
+        lead_ids = request.get("lead_ids", [])
+        ai_type = request.get("ai_type", "both")
+        source_filter = request.get("source_filter")  # Optional: enable AI for all leads from a specific source
+        tenant_id = request.get("tenant_id", "default_dealership")
+        
+        # Build filter query
+        filter_query = {"tenant_id": tenant_id}
+        
+        if source_filter:
+            filter_query["source"] = source_filter
+        elif lead_ids:
+            filter_query["id"] = {"$in": lead_ids}
+        
+        # AI settings to apply
+        ai_settings = {
+            "ai_communication_enabled": True,
+            "ai_sms_enabled": ai_type in ['sms', 'both'],
+            "ai_voice_enabled": ai_type in ['voice', 'both'],
+            "ai_enabled_at": datetime.now(timezone.utc).isoformat(),
+            "ai_personality": "professional_car_salesman",
+            "ai_methodology": "CRISP"
+        }
+        
+        # Update all matching leads
+        result = await db.leads.update_many(
+            filter_query,
+            {"$set": ai_settings}
+        )
+        
+        # Invalidate cache
+        await invalidate_cache("lead_list")
+        
+        logger.info(f"AI communication ({ai_type}) enabled for {result.modified_count} leads")
+        
+        return {
+            "success": True,
+            "leads_updated": result.modified_count,
+            "ai_type": ai_type,
+            "message": f"AI {ai_type} enabled for {result.modified_count} leads"
+        }
+        
+    except Exception as e:
+        logger.error(f"Error bulk enabling AI: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to bulk enable AI")
+
+
     
     return Lead(**updated_lead)
 
