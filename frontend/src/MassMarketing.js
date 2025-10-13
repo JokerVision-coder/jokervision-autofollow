@@ -446,21 +446,44 @@ const CampaignCard = ({ campaign }) => {
 
 // Audience Segments Section Component
 const AudienceSegmentsSection = ({ segments, onRefresh }) => {
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-xl font-semibold text-glass-bright">Audience Segments</h2>
-        <Button className="btn-neon">
+        <Button className="btn-neon" onClick={() => setShowCreateModal(true)}>
           <Plus className="w-4 h-4 mr-2" />
           Create Segment
         </Button>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {segments.map((segment) => (
-          <SegmentCard key={segment.id} segment={segment} />
-        ))}
+        {segments.length > 0 ? (
+          segments.map((segment) => (
+            <SegmentCard key={segment.id} segment={segment} />
+          ))
+        ) : (
+          <div className="col-span-3 text-center py-12">
+            <Target className="w-16 h-16 text-gray-500 mx-auto mb-4" />
+            <p className="text-gray-400 mb-4">No audience segments yet</p>
+            <Button className="btn-neon" onClick={() => setShowCreateModal(true)}>
+              <Plus className="w-4 h-4 mr-2" />
+              Create Your First Segment
+            </Button>
+          </div>
+        )}
       </div>
+      
+      {showCreateModal && (
+        <CreateSegmentModal
+          onClose={() => setShowCreateModal(false)}
+          onSegmentCreated={(segment) => {
+            onRefresh();
+            setShowCreateModal(false);
+          }}
+        />
+      )}
     </div>
   );
 };
