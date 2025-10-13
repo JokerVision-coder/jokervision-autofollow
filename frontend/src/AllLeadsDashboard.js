@@ -366,7 +366,11 @@ const AllLeadsDashboard = () => {
                 </div>
               ) : (
                 filteredLeads.map(lead => (
-                  <div key={lead.id} className="bg-glass/20 rounded-lg p-4 hover:bg-glass/30 transition-colors">
+                  <div 
+                    key={lead.id} 
+                    onClick={() => setSelectedLead(lead)}
+                    className="bg-glass/20 rounded-lg p-4 hover:bg-glass/30 transition-colors cursor-pointer"
+                  >
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
@@ -379,6 +383,12 @@ const AllLeadsDashboard = () => {
                           <Badge className={`${getStatusBadgeColor(lead.status)} border`}>
                             {lead.status}
                           </Badge>
+                          {lead.ai_communication_enabled && (
+                            <Badge className="bg-green-500/20 text-green-400 border border-green-500/30">
+                              <Bot className="w-3 h-3 inline mr-1" />
+                              AI Enabled
+                            </Badge>
+                          )}
                         </div>
                         
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm text-glass-muted">
