@@ -12351,14 +12351,52 @@ async def get_real_time_alerts(tenant_id: str = "default"):
 
 @api_router.post("/exclusive-leads/claim/{lead_id}")
 @limiter.limit("10/minute")
-async def claim_exclusive_lead(request: Request, lead_id: str, tenant_id: str = "default", user: dict = Depends(verify_token)):
-    """Claim exclusive access to a premium lead"""
+async def claim_exclusive_lead(request: Request, lead_id: str, lead_data: dict, tenant_id: str = "default", user: dict = Depends(verify_token)):
+    """Claim exclusive access to a premium lead and create in central database"""
     try:
         logger.info(f"Claiming exclusive lead {lead_id} for tenant: {tenant_id}")
         
-        # In production, this would update the lead status in database
+        # Check if lead already exists
+        existing_lead = await db.leads.find_one({
+            "tenant_id": tenant_id,
+            "$or": [
+                {"email": lead_data.get("email")},
+                {"reference_number": lead_id}
+            ]
+        })
+        
+        if not existing_lead:
+            # Create lead in central database
+            name_parts = lead_data.get("name", "").split(" ", 1)
+            lead_create_data = LeadCreate(
+                tenant_id=tenant_id,
+                first_name=name_parts[0] if len(name_parts) > 0 else "Exclusive",
+                last_name=name_parts[1] if len(name_parts) > 1 else "Lead",
+                primary_phone=lead_data.get("phone", ""),
+                email=lead_data.get("email", f"exclusive_{lead_id}@lead.com"),
+                budget=lead_data.get("budget", ""),
+                vehicle_type=lead_data.get("vehicle_interest", ""),
+                reference_number=lead_id,
+                source="Exclusive Lead Engine",
+                notes=f"Exclusive lead claimed. Exclusivity level: {lead_data.get('exclusivity_level', 'premium')}. Conversion probability: {lead_data.get('conversion_probability', 'high')}"
+            )
+            
+            lead = Lead(**lead_create_data.dict())
+            lead_doc = lead.dict()
+            lead_doc['created_at'] = lead_doc['created_at'].isoformat()
+            if lead_doc.get('last_contacted'):
+                lead_doc['last_contacted'] = lead_doc['last_contacted'].isoformat()
+            
+            await db.leads.insert_one(lead_doc)
+            created_lead_id = lead.id
+            logger.info(f"Exclusive lead {lead_id} created in database as {created_lead_id}")
+        else:
+            created_lead_id = existing_lead["id"]
+            logger.info(f"Exclusive lead {lead_id} already exists as {created_lead_id}")
+        
         claim_result = {
             "lead_id": lead_id,
+            "database_lead_id": created_lead_id,
             "claimed": True,
             "claimed_at": datetime.now(timezone.utc).isoformat(),
             "exclusivity_duration_hours": 2,
