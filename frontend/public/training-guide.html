@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JokerVision - Training & Operations Guide</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .document {
+            background: white;
+            padding: 60px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+            padding-bottom: 30px;
+            border-bottom: 3px solid #667eea;
+        }
+        h1 {
+            color: #667eea;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #666;
+            font-size: 1.1em;
+        }
+        .toc {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 40px;
+        }
+        .toc h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .toc ul {
+            list-style: none;
+            padding: 0;
+        }
+        .toc li {
+            padding: 8px 0;
+        }
+        .toc a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .toc a:hover {
+            text-decoration: underline;
+        }
+        h2 {
+            color: #333;
+            font-size: 2em;
+            margin-top: 50px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #eee;
+        }
+        h3 {
+            color: #667eea;
+            font-size: 1.5em;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+        h4 {
+            color: #555;
+            font-size: 1.2em;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+        p {
+            color: #555;
+            margin-bottom: 15px;
+        }
+        ul, ol {
+            color: #555;
+            margin-bottom: 20px;
+            padding-left: 30px;
+        }
+        li {
+            margin-bottom: 8px;
+        }
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            color: #d63384;
+        }
+        pre {
+            background: #f4f4f4;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            border-left: 4px solid #667eea;
+        }
+        .workflow-box {
+            background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .tip {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+        .warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+        .checklist {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .checklist li {
+            list-style: none;
+            padding: 8px 0;
+        }
+        .checklist li:before {
+            content: "☐ ";
+            font-size: 1.2em;
+            color: #667eea;
+            margin-right: 10px;
+        }
+        .back-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #667eea;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            text-decoration: none;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            transition: all 0.3s;
+        }
+        .back-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+        @media print {
+            .back-button { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <a href="/documentation.html" class="back-button">← Back to Docs</a>
+    
+    <div class="document">
+        <div class="header">
+            <h1>📚 JokerVision AutoFollow</h1>
+            <div class="subtitle">Complete Training & Operations Guide</div>
+            <div style="color: #999; margin-top: 10px;">Version 2.0 | Last Updated: October 2025</div>
+        </div>
+
+        <div class="toc">
+            <h2>📋 Table of Contents</h2>
+            <ul>
+                <li><a href="#getting-started">1. Getting Started</a></li>
+                <li><a href="#daily-operations">2. Daily Operations Guide</a></li>
+                <li><a href="#lead-training">3. Lead Management Training</a></li>
+                <li><a href="#ai-management">4. AI Communication Management</a></li>
+                <li><a href="#facebook-ops">5. Facebook Marketing Operations</a></li>
+                <li><a href="#social-media">6. Social Media Management</a></li>
+                <li><a href="#pipeline-ops">7. Sales Pipeline Operations</a></li>
+                <li><a href="#reporting">8. Reporting & Analytics</a></li>
+                <li><a href="#best-practices">9. Best Practices</a></li>
+                <li><a href="#troubleshooting">10. Troubleshooting</a></li>
+                <li><a href="#advanced">11. Advanced Tips & Tricks</a></li>
+                <li><a href="#roles">12. Role-Specific Guides</a></li>
+            </ul>
+        </div>
+
+        <h2 id="getting-started">🚀 Getting Started</h2>
+        
+        <h3>First Time Login</h3>
+        
+        <div class="workflow-box">
+            <h4>Step 1: Access the System</h4>
+            <pre>URL: https://carsync-1.preview.emergentagent.com</pre>
+        </div>
+
+        <h4>Step 2: Dashboard Overview</h4>
+        <p>When you first log in, you'll see the main dashboard with:</p>
+        <ul>
+            <li>📊 <strong>Top Section:</strong> Key metrics (Total Leads, Today's Appointments, Sales This Month)</li>
+            <li>📈 <strong>Middle Section:</strong> Charts and graphs</li>
+            <li>📱 <strong>Left Sidebar:</strong> Navigation menu</li>
+            <li>🔔 <strong>Top Right:</strong> Notifications and Profile</li>
+        </ul>
+
+        <h4>Step 3: Navigation</h4>
+        <p><strong>Main Menu Structure:</strong></p>
+        <pre>├── 🏠 Dashboard - Overview and KPIs
+├── 👑 Exclusive Leads - Premium lead access
+├── 🎯 Leads - Lead Generation Hub
+├── 📊 All Leads - Unified lead dashboard (NEW!)
+├── 🚗 Inventory - Vehicle management
+├── 💼 Pipeline - Sales CRM
+├── 📅 Calendar - Appointments
+├── 💬 Communications - Unified inbox
+├── 📱 Social Media - Social hub
+├── 📘 Facebook Marketplace - Auto-poster
+├── 📢 Marketing - Mass marketing & campaigns
+├── ⚙️ Workflow - Automation
+├── 🤖 AI Toolkit - AI settings
+└── ⚙️ Settings - System configuration</pre>
+
+        <h2 id="daily-operations">📅 Daily Operations Guide</h2>
+
+        <h3>Morning Routine (15 minutes)</h3>
+
+        <div class="workflow-box">
+            <h4>Step 1: Check Dashboard (2 min)</h4>
+            <ol>
+                <li>Go to Dashboard</li>
+                <li>Review key metrics:
+                    <ul>
+                        <li>New leads overnight</li>
+                        <li>Appointments for today</li>
+                        <li>Missed messages</li>
+                        <li>AI performance</li>
+                    </ul>
+                </li>
+                <li>Check notifications (🔔 icon)</li>
+            </ol>
+        </div>
+
+        <div class="workflow-box">
+            <h4>Step 2: Review AI Inbox (5 min)</h4>
+            <ol>
+                <li>Go to Communications → AI Inbox</li>
+                <li>Scan AI conversations from last 12 hours</li>
+                <li>Look for:
+                    <ul>
+                        <li>✅ Successfully booked appointments</li>
+                        <li>⚠️ Leads needing human attention</li>
+                        <li>❌ Conversations with issues</li>
+                    </ul>
+                </li>
+                <li>Take over any conversation that needs human touch</li>
+            </ol>
+        </div>
+
+        <div class="workflow-box">
+            <h4>Step 3: Check Today's Appointments (3 min)</h4>
+            <ol>
+                <li>Go to Calendar</li>
+                <li>Review today's schedule</li>
+                <li>Verify:
+                    <ul>
+                        <li>All appointments confirmed</li>
+                        <li>No conflicts</li>
+                        <li>Notes prepared for each</li>
+                    </ul>
+                </li>
+                <li>Send manual reminders if needed</li>
+            </ol>
+        </div>
+
+        <div class="workflow-box">
+            <h4>Step 4: Process New Leads (5 min)</h4>
+            <ol>
+                <li>Go to All Leads</li>
+                <li>Filter: Status = "New"</li>
+                <li>Review each new lead:
+                    <ul>
+                        <li>Check source</li>
+                        <li>Read any notes</li>
+                        <li>Verify AI is enabled</li>
+                        <li>Assign to sales rep if needed</li>
+                    </ul>
+                </li>
+                <li>Priority: Exclusive leads & walk-ins</li>
+            </ol>
+        </div>
+
+        <h3>Midday Check (10 minutes)</h3>
+
+        <div class="workflow-box">
+            <h4>Step 1: Monitor Active Conversations (5 min)</h4>
+            <ol>
+                <li>Communications → AI Inbox</li>
+                <li>Check response times</li>
+                <li>Look for escalations</li>
+                <li>Take over hot leads</li>
+            </ol>
+        </div>
+
+        <div class="workflow-box">
+            <h4>Step 2: Update Pipeline (5 min)</h4>
+            <ol>
+                <li>Go to Pipeline</li>
+                <li>Move deals between stages:
+                    <ul>
+                        <li>Contacted → Qualified (after discovery call)</li>
+                        <li>Test Drive → Negotiation (after drive)</li>
+                        <li>Negotiation → Closed Won (sale complete!)</li>
+                    </ul>
+                </li>
+                <li>Update deal values</li>
+                <li>Add notes</li>
+            </ol>
+        </div>
+
+        <h2 id="lead-training">🎯 Lead Management Training</h2>
+
+        <h3>Section 1: Understanding Lead Sources</h3>
+
+        <p><strong>8 Automatic Lead Sources:</strong></p>
+
+        <ol>
+            <li><strong>Mass Marketing Import</strong> (Purple badge) - Leads from CSV upload</li>
+            <li><strong>Exclusive Lead Engine</strong> (Yellow badge) - Premium, high-intent buyers</li>
+            <li><strong>Website</strong> (Blue badge) - Form submissions from your website</li>
+            <li><strong>Walk-In</strong> (Green badge) - Physical dealership visitors</li>
+            <li><strong>Facebook Messenger</strong> (Pink badge) - Leads from FB messages</li>
+            <li><strong>Facebook Marketplace</strong> (Indigo badge) - Direct marketplace leads</li>
+            <li><strong>Lead Generation Hub</strong> (Cyan badge) - Various lead gen campaigns</li>
+            <li><strong>Manual</strong> (Gray badge) - Manually created leads</li>
+        </ol>
+
+        <h3>Section 2: Bulk Lead Upload</h3>
+
+        <p><strong>When to use:</strong> When you have a list of contacts to import (Excel, CSV)</p>
+
+        <h4>Step-by-Step:</h4>
+
+        <div class="workflow-box">
+            <h4>Step 1: Prepare Your File</h4>
+            <pre>Create a CSV file with these columns:
+- first_name (required)
+- last_name (required)
+- phone (required if no email)
+- mobile (optional - alternate phone)
+- email (required if no phone)
+
+Example:
+first_name,last_name,phone,email
+John,Doe,555-123-4567,john@email.com
+Jane,Smith,555-234-5678,jane@email.com</pre>
+        </div>
+
+        <div class="workflow-box">
+            <h4>Step 2: Upload</h4>
+            <ol>
+                <li>Go to Marketing → Bulk Upload tab</li>
+                <li>Click "Select CSV file"</li>
+                <li>Choose your file</li>
+                <li>Click "Upload Leads"</li>
+                <li>Wait for processing (usually 10-30 seconds)</li>
+            </ol>
+        </div>
+
+        <div class="workflow-box">
+            <h4>Step 3: Review Results</h4>
+            <p>You'll see:</p>
+            <ul>
+                <li>✅ <strong>Total Processed:</strong> How many rows read</li>
+                <li>✅ <strong>Leads Created:</strong> Successfully imported</li>
+                <li>⚠️ <strong>Duplicates Skipped:</strong> Already in system</li>
+                <li>❌ <strong>Failed:</strong> Errors (with reasons)</li>
+            </ul>
+        </div>
+
+        <div class="tip">
+            <h4>Pro Tips:</h4>
+            <ul style="margin: 0;">
+                <li>✅ Test with 3-5 leads first</li>
+                <li>✅ Remove duplicates in Excel before upload</li>
+                <li>✅ Use consistent phone format (xxx-xxx-xxxx)</li>
+                <li>✅ Clean data (no special characters in names)</li>
+                <li>❌ Don't upload more than 10,000 at once</li>
+            </ul>
+        </div>
+
+        <h2 id="ai-management">🤖 AI Communication Management</h2>
+
+        <h3>Section 1: Enabling AI for Leads</h3>
+
+        <h4>Individual Lead AI Enablement:</h4>
+
+        <div class="workflow-box">
+            <h4>Step-by-Step:</h4>
+            <ol>
+                <li>Go to All Leads</li>
+                <li>Click on a lead</li>
+                <li>Go to "AI Setup" tab</li>
+                <li>You'll see two options:
+                    <ul>
+                        <li>📱 <strong>SMS AI Bot</strong> (Blue card) - Auto-responds to texts</li>
+                        <li>🎤 <strong>Voice AI</strong> (Purple card) - Handles phone calls</li>
+                    </ul>
+                </li>
+                <li>Click "Enable Both SMS & Voice AI" (recommended!)</li>
+                <li>Confirmation message appears</li>
+                <li>Lead now has green "AI Enabled" badge</li>
+            </ol>
+        </div>
+
+        <h4>Bulk AI Enablement (Recommended for new uploads):</h4>
+
+        <div class="workflow-box">
+            <h4>Step-by-Step:</h4>
+            <ol>
+                <li>Go to All Leads</li>
+                <li>Use Source Filter</li>
+                <li>Select "Mass Marketing Import" (or your source)</li>
+                <li>Button appears: "Enable AI for Mass Marketing Import"</li>
+                <li>Click it</li>
+                <li>Confirm in popup</li>
+                <li>Wait 2-3 seconds</li>
+                <li>Success message: "AI enabled for 50 leads!"</li>
+                <li>All leads now have AI</li>
+            </ol>
+        </div>
+
+        <div class="tip">
+            <h4>Pro Tips:</h4>
+            <ul style="margin: 0;">
+                <li>✅ Enable AI for all new lead batches immediately</li>
+                <li>✅ Enable SMS first if budget-conscious (cheaper than voice)</li>
+                <li>✅ Monitor AI performance for first week</li>
+                <li>❌ Don't enable AI for leads who explicitly asked for human contact</li>
+            </ul>
+        </div>
+
+        <p style="text-align: center; margin-top: 60px; color: #999;">
+            📄 This is a preview of the Training Guide.<br>
+            The complete document contains 70+ pages of detailed training content.<br>
+            <br>
+            <strong>For the full document:</strong> Download the markdown file or view in a markdown viewer.<br>
+            <a href="/JOKERVISION_TRAINING_GUIDE.md" style="color: #667eea;">Download Complete Training Guide</a>
+        </p>
+
+        <div style="background: #f8f9fa; padding: 30px; border-radius: 10px; margin-top: 40px; text-align: center;">
+            <h3 style="margin-top: 0;">📚 Complete Training Guide Includes:</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 20px;">
+                <div>✅ Daily Workflows</div>
+                <div>✅ Step-by-Step Procedures</div>
+                <div>✅ Best Practices</div>
+                <div>✅ Troubleshooting</div>
+                <div>✅ Role-Specific Guides</div>
+                <div>✅ Advanced Tips</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
