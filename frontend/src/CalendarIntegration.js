@@ -211,7 +211,7 @@ const CalendarIntegration = () => {
               <RefreshCw className="w-4 h-4 mr-2" />
               Refresh
             </Button>
-            <Button variant="outline" className="text-glass-bright">
+            <Button onClick={() => setShowSettings(true)} variant="outline" className="text-glass-bright">
               <Settings className="w-4 h-4 mr-2" />
               Settings
             </Button>
