@@ -8914,7 +8914,7 @@ async def get_walk_in_customers(
 
 @api_router.post("/walk-in-tracker/customers", response_model=WalkInCustomer)
 async def create_walk_in_customer(customer_data: dict):
-    """Add a new walk-in customer"""
+    """Add a new walk-in customer and automatically create lead"""
     try:
         customer_obj = WalkInCustomer(**customer_data)
         customer_doc = customer_obj.dict()
@@ -8925,6 +8925,41 @@ async def create_walk_in_customer(customer_data: dict):
                 customer_doc[field] = customer_doc[field].isoformat()
         
         await db.walk_in_customers.insert_one(customer_doc)
+        
+        # Automatically create lead from walk-in customer
+        try:
+            name_parts = customer_data["customer_name"].split(" ", 1)
+            lead_create_data = LeadCreate(
+                tenant_id=customer_data["tenant_id"],
+                first_name=name_parts[0] if len(name_parts) > 0 else "Walk-In",
+                last_name=name_parts[1] if len(name_parts) > 1 else "Customer",
+                primary_phone=customer_data["phone"],
+                email=customer_data.get("email", f"walkin_{customer_obj.id}@dealership.com"),
+                budget=str(customer_data.get("budget", "")),
+                vehicle_type=customer_data.get("interested_vehicle", ""),
+                source="Walk-In",
+                notes=f"Walk-in customer: {customer_data.get('notes', '')}. Reason: {customer_data.get('reason_not_bought', 'N/A')}"
+            )
+            
+            lead = Lead(**lead_create_data.dict())
+            lead_doc = lead.dict()
+            lead_doc['created_at'] = lead_doc['created_at'].isoformat()
+            if lead_doc.get('last_contacted'):
+                lead_doc['last_contacted'] = lead_doc['last_contacted'].isoformat()
+            
+            await db.leads.insert_one(lead_doc)
+            
+            # Update walk-in customer with lead_id reference
+            await db.walk_in_customers.update_one(
+                {"id": customer_obj.id},
+                {"$set": {"lead_id": lead.id}}
+            )
+            
+            logger.info(f"Walk-in customer {customer_obj.id} created with lead {lead.id}")
+        except Exception as lead_error:
+            logger.warning(f"Failed to create lead for walk-in customer: {str(lead_error)}")
+            # Continue even if lead creation fails
+        
         return customer_obj
         
     except Exception as e:
