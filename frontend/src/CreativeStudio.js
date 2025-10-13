@@ -1,861 +1,967 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Canvas as FabricCanvas, IText, Rect as FabricRect, Circle as FabricCircle, Line as FabricLine, Image as FabricImage } from 'fabric';
-import { ChromePicker } from 'react-color';
+import React, { useState, useEffect, useCallback } from 'react';
+import { isMobile, isTablet, isDesktop } from 'react-device-detect';
+import { useDropzone } from 'react-dropzone';
+import * as XLSX from 'xlsx';
+import Papa from 'papaparse';
 import axios from 'axios';
-import { Card, CardContent } from './components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './components/ui/card';
 import { Button } from './components/ui/button';
 import { Input } from './components/ui/input';
 import { Label } from './components/ui/label';
 import { Textarea } from './components/ui/textarea';
 import { Badge } from './components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from './components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from './components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './components/ui/select';
 import { toast } from 'sonner';
-import {
-  Palette, Type, Image, Square, Circle, Minus, Pencil, Eraser,
-  Undo, Redo, Download, Save, Upload, Trash2, Eye, Layers,
-  ZoomIn, ZoomOut, Maximize2, Sparkles, Wand2, TrendingUp,
-  Hash, Calendar, Target, Plus, Copy, AlignLeft, AlignCenter,
-  AlignRight, Bold, Italic, Underline, Globe, Smartphone,
-  Monitor, Tablet, FileText, Search, Star, FolderOpen, Layout,
-  BarChart3, Lightbulb, Camera, Instagram, Facebook, Music
+import { 
+  Palette, Wand2, TrendingUp, Hash, Calendar, BarChart3, Upload, 
+  FileImage, FileVideo, FileText, Folder, Download, Eye, Copy,
+  Smartphone, Monitor, Tablet, Sparkles, Target, Lightbulb,
+  Camera, Video, Music, Type, Layout, Zap, Star, Globe, Plus
 } from 'lucide-react';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
-// Automotive-specific templates
-const AUTOMOTIVE_TEMPLATES = [
-  {
-    id: 'new-arrival',
-    name: 'New Arrival',
-    category: 'inventory',
-    description: 'Showcase new vehicle arrivals',
-    thumbnail: '🚗',
-    elements: [
-      { type: 'text', text: 'JUST ARRIVED', fontSize: 48, fontWeight: 'bold', top: 50, left: 50 },
-      { type: 'text', text: '2024 Model', fontSize: 32, top: 120, left: 50 },
-      { type: 'text', text: 'Visit us today!', fontSize: 24, top: 400, left: 50 }
-    ]
-  },
-  {
-    id: 'sale-promo',
-    name: 'Sale Promotion',
-    category: 'marketing',
-    description: 'Big sale event promotion',
-    thumbnail: '💰',
-    elements: [
-      { type: 'text', text: 'HUGE SALE', fontSize: 56, fontWeight: 'bold', fill: '#ff0000', top: 100, left: 100 },
-      { type: 'text', text: 'UP TO 30% OFF', fontSize: 42, top: 180, left: 100 },
-      { type: 'text', text: 'Limited Time Only', fontSize: 28, top: 350, left: 100 }
-    ]
-  },
-  {
-    id: 'service-special',
-    name: 'Service Special',
-    category: 'service',
-    description: 'Promote service specials',
-    thumbnail: '🔧',
-    elements: [
-      { type: 'text', text: 'SERVICE SPECIAL', fontSize: 44, fontWeight: 'bold', top: 80, left: 80 },
-      { type: 'text', text: 'Oil Change $29.99', fontSize: 36, top: 150, left: 80 },
-      { type: 'text', text: 'Schedule Now!', fontSize: 28, top: 380, left: 80 }
-    ]
-  },
-  {
-    id: 'financing',
-    name: 'Financing Offer',
-    category: 'financing',
-    description: 'Promote financing options',
-    thumbnail: '📊',
-    elements: [
-      { type: 'text', text: '0% APR', fontSize: 64, fontWeight: 'bold', fill: '#00aa00', top: 120, left: 120 },
-      { type: 'text', text: 'for 60 months', fontSize: 32, top: 200, left: 120 },
-      { type: 'text', text: 'On select models', fontSize: 24, top: 360, left: 120 }
-    ]
-  },
-  {
-    id: 'testimonial',
-    name: 'Customer Testimonial',
-    category: 'social',
-    description: 'Share customer reviews',
-    thumbnail: '⭐',
-    elements: [
-      { type: 'text', text: '⭐⭐⭐⭐⭐', fontSize: 48, top: 100, left: 150 },
-      { type: 'text', text: '"Best experience ever!"', fontSize: 28, fontStyle: 'italic', top: 180, left: 80 },
-      { type: 'text', text: '- Happy Customer', fontSize: 22, top: 350, left: 150 }
-    ]
-  },
-  {
-    id: 'instagram-story',
-    name: 'Instagram Story',
-    category: 'social',
-    description: 'Vertical Instagram story',
-    thumbnail: '📱',
-    size: { width: 1080, height: 1920 },
-    elements: [
-      { type: 'text', text: 'SWIPE UP', fontSize: 48, fontWeight: 'bold', top: 1700, left: 400 }
-    ]
-  }
-];
-
-// Growth strategies content
-const GROWTH_STRATEGIES = {
-  contentIdeas: [
-    { id: 1, title: 'Behind the Scenes', description: 'Show your dealership team at work', engagement: 'High' },
-    { id: 2, title: 'Customer Spotlights', description: 'Feature happy customers with their new cars', engagement: 'Very High' },
-    { id: 3, title: 'Vehicle Features', description: 'Highlight unique features of new models', engagement: 'High' },
-    { id: 4, title: 'Maintenance Tips', description: 'Share valuable car care advice', engagement: 'Medium' },
-    { id: 5, title: 'Community Events', description: 'Showcase local sponsorships and events', engagement: 'High' },
-    { id: 6, title: 'Staff Introductions', description: 'Introduce your sales team members', engagement: 'Medium' },
-    { id: 7, title: 'Before & After', description: 'Show trade-in transformations', engagement: 'High' },
-    { id: 8, title: 'Quick Tours', description: '60-second vehicle walkarounds', engagement: 'Very High' }
-  ],
-  bestTimes: [
-    { platform: 'Instagram', time: '11:00 AM - 1:00 PM', days: 'Wed, Thu, Fri', engagement: '2.3x' },
-    { platform: 'Facebook', time: '1:00 PM - 3:00 PM', days: 'Wed, Thu', engagement: '1.8x' },
-    { platform: 'TikTok', time: '6:00 PM - 9:00 PM', days: 'Tue, Wed, Fri', engagement: '3.1x' },
-    { platform: 'LinkedIn', time: '7:00 AM - 9:00 AM', days: 'Tue, Wed, Thu', engagement: '1.5x' }
-  ],
-  hashtags: [
-    { tag: '#CarDeals', volume: '125K', competition: 'Medium' },
-    { tag: '#NewCarDay', volume: '89K', competition: 'Low' },
-    { tag: '#DealershipLife', volume: '45K', competition: 'Low' },
-    { tag: '#AutoSales', volume: '203K', competition: 'High' },
-    { tag: '#CarShopping', volume: '156K', competition: 'Medium' },
-    { tag: '#TestDrive', volume: '67K', competition: 'Low' },
-    { tag: '#FinancingAvailable', volume: '34K', competition: 'Low' },
-    { tag: '#TradeIn', volume: '52K', competition: 'Medium' }
-  ],
-  engagementTactics: [
-    { tactic: 'Ask Questions', example: 'What\'s your dream car?', effectiveness: '4.5/5' },
-    { tactic: 'Run Polls', example: 'Sedan or SUV?', effectiveness: '4.2/5' },
-    { tactic: 'Share User Content', example: 'Repost customer photos', effectiveness: '4.8/5' },
-    { tactic: 'Go Live', example: 'Live inventory tours', effectiveness: '4.6/5' },
-    { tactic: 'Use CTAs', example: 'Schedule test drive today!', effectiveness: '4.3/5' },
-    { tactic: 'Create Urgency', example: 'Limited time offer', effectiveness: '4.4/5' }
-  ]
-};
-
-const CreativeStudioNew = () => {
-  const canvasRef = useRef(null);
-  const [canvas, setCanvas] = useState(null);
-  const [activeTab, setActiveTab] = useState('canvas');
-  const [selectedTool, setSelectedTool] = useState('select');
-  const [selectedObject, setSelectedObject] = useState(null);
-  const [showColorPicker, setShowColorPicker] = useState(false);
-  const [currentColor, setCurrentColor] = useState('#000000');
-  const [layers, setLayers] = useState([]);
-  const [templates, setTemplates] = useState(AUTOMOTIVE_TEMPLATES);
-  const [showTemplateDialog, setShowTemplateDialog] = useState(false);
-  const [showAIDialog, setShowAIDialog] = useState(false);
-  const [aiPrompt, setAiPrompt] = useState('');
-  const [canvasSize, setCanvasSize] = useState({ width: 1080, height: 1080 });
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
-
-  // Initialize canvas
-  useEffect(() => {
-    if (canvasRef.current && !canvas) {
-      const fabricCanvas = new FabricCanvas(canvasRef.current, {
-        width: canvasSize.width,
-        height: canvasSize.height,
-        backgroundColor: '#ffffff'
-      });
-
-      // Add selection event handlers
-      fabricCanvas.on('selection:created', (e) => {
-        setSelectedObject(e.selected[0]);
-      });
-
-      fabricCanvas.on('selection:updated', (e) => {
-        setSelectedObject(e.selected[0]);
-      });
-
-      fabricCanvas.on('selection:cleared', () => {
-        setSelectedObject(null);
-      });
-
-      fabricCanvas.on('object:modified', updateLayers);
-      fabricCanvas.on('object:added', updateLayers);
-      fabricCanvas.on('object:removed', updateLayers);
-
-      setCanvas(fabricCanvas);
-    }
-  }, []);
-
-  const updateLayers = () => {
-    if (canvas) {
-      const objects = canvas.getObjects();
-      setLayers(objects.map((obj, index) => ({
-        id: obj.id || `layer-${index}`,
-        type: obj.type,
-        name: obj.name || `${obj.type} ${index + 1}`
-      })));
-    }
-  };
-
-  // Tool handlers
-  const addText = () => {
-    if (!canvas) return;
-    const text = new IText('Double click to edit', {
-      left: 100,
-      top: 100,
-      fontSize: 32,
-      fill: currentColor,
-      fontFamily: 'Arial'
-    });
-    canvas.add(text);
-    canvas.setActiveObject(text);
-  };
-
-  const addShape = (shape) => {
-    if (!canvas) return;
-    let obj;
-    
-    switch (shape) {
-      case 'rectangle':
-        obj = new FabricRect({
-          left: 100,
-          top: 100,
-          width: 200,
-          height: 150,
-          fill: currentColor,
-          stroke: '#000',
-          strokeWidth: 2
-        });
-        break;
-      case 'circle':
-        obj = new FabricCircle({
-          left: 100,
-          top: 100,
-          radius: 75,
-          fill: currentColor,
-          stroke: '#000',
-          strokeWidth: 2
-        });
-        break;
-      case 'line':
-        obj = new FabricLine([50, 100, 250, 100], {
-          stroke: currentColor,
-          strokeWidth: 3
-        });
-        break;
-    }
-    
-    if (obj) {
-      canvas.add(obj);
-      canvas.setActiveObject(obj);
-    }
-  };
-
-  const uploadImage = (e) => {
-    const file = e.target.files[0];
-    if (file && canvas) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        FabricImage.fromURL(event.target.result).then((img) => {
-          img.scaleToWidth(300);
-          canvas.add(img);
-          canvas.setActiveObject(img);
-        });
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const deleteSelected = () => {
-    if (canvas && selectedObject) {
-      canvas.remove(selectedObject);
-      setSelectedObject(null);
-    }
-  };
-
-  const clearCanvas = () => {
-    if (canvas) {
-      canvas.clear();
-      canvas.backgroundColor = '#ffffff';
-      canvas.renderAll();
-    }
-  };
-
-  const exportCanvas = (format = 'png') => {
-    if (!canvas) return;
-    
-    const dataURL = canvas.toDataURL({
-      format: format,
-      quality: 1.0,
-      multiplier: 2
-    });
-
-    const link = document.createElement('a');
-    link.download = `design-${Date.now()}.${format}`;
-    link.href = dataURL;
-    link.click();
-    
-    toast.success('Design exported successfully!');
-  };
-
-  const applyTemplate = (template) => {
-    if (!canvas) return;
-    
-    canvas.clear();
-    canvas.backgroundColor = '#ffffff';
-    
-    if (template.size) {
-      canvas.setWidth(template.size.width);
-      canvas.setHeight(template.size.height);
-      setCanvasSize(template.size);
-    }
-    
-    template.elements.forEach(element => {
-      if (element.type === 'text') {
-        const text = new IText(element.text, {
-          left: element.left,
-          top: element.top,
-          fontSize: element.fontSize,
-          fill: element.fill || '#000000',
-          fontWeight: element.fontWeight || 'normal',
-          fontStyle: element.fontStyle || 'normal'
-        });
-        canvas.add(text);
-      }
-    });
-    
-    canvas.renderAll();
-    setShowTemplateDialog(false);
-    toast.success(`Template "${template.name}" applied!`);
-  };
-
-  const generateAIContent = async () => {
-    if (!aiPrompt.trim()) {
-      toast.error('Please enter a description');
-      return;
-    }
-
-    try {
-      toast.info('Generating AI content...');
-      
-      // Simulate AI generation (replace with actual API call)
-      setTimeout(() => {
-        if (canvas) {
-          const aiText = new IText(`AI Generated: ${aiPrompt}`, {
-            left: 100,
-            top: 100,
-            fontSize: 36,
-            fill: '#4F46E5',
-            fontWeight: 'bold'
-          });
-          canvas.add(aiText);
-        }
-        
-        setShowAIDialog(false);
-        setAiPrompt('');
-        toast.success('AI content generated!');
-      }, 2000);
-    } catch (error) {
-      toast.error('Failed to generate AI content');
-    }
-  };
-
-  const resizeCanvas = (preset) => {
-    if (!canvas) return;
-    
-    const sizes = {
-      'instagram-post': { width: 1080, height: 1080, name: 'Instagram Post (1:1)' },
-      'instagram-story': { width: 1080, height: 1920, name: 'Instagram Story (9:16)' },
-      'facebook-post': { width: 1200, height: 630, name: 'Facebook Post (1.91:1)' },
-      'youtube-thumbnail': { width: 1280, height: 720, name: 'YouTube Thumbnail (16:9)' }
-    };
-    
-    const size = sizes[preset];
-    if (size) {
-      canvas.setWidth(size.width);
-      canvas.setHeight(size.height);
-      setCanvasSize({ width: size.width, height: size.height });
-      toast.success(`Resized to ${size.name}`);
-    }
-  };
-
-  // Render different tabs
-  const renderCanvasTab = () => (
-    <div className="flex gap-4 h-full">
-      {/* Left Toolbar */}
-      <div className="w-20 bg-gray-800/50 backdrop-blur-lg rounded-xl p-2 space-y-2">
-        <Button
-          variant={selectedTool === 'select' ? 'default' : 'ghost'}
-          className="w-full h-14 flex flex-col items-center justify-center"
-          onClick={() => setSelectedTool('select')}
-        >
-          <Maximize2 className="w-5 h-5" />
-          <span className="text-xs mt-1">Select</span>
-        </Button>
-        
-        <Button
-          variant={selectedTool === 'text' ? 'default' : 'ghost'}
-          className="w-full h-14 flex flex-col items-center justify-center"
-          onClick={() => {
-            setSelectedTool('text');
-            addText();
-          }}
-        >
-          <Type className="w-5 h-5" />
-          <span className="text-xs mt-1">Text</span>
-        </Button>
-        
-        <Button
-          variant="ghost"
-          className="w-full h-14 flex flex-col items-center justify-center"
-          onClick={() => document.getElementById('image-upload').click()}
-        >
-          <Image className="w-5 h-5" />
-          <span className="text-xs mt-1">Image</span>
-        </Button>
-        <input
-          id="image-upload"
-          type="file"
-          accept="image/*"
-          onChange={uploadImage}
-          className="hidden"
-        />
-        
-        <Button
-          variant="ghost"
-          className="w-full h-14 flex flex-col items-center justify-center"
-          onClick={() => addShape('rectangle')}
-        >
-          <Square className="w-5 h-5" />
-          <span className="text-xs mt-1">Shape</span>
-        </Button>
-        
-        <div className="border-t border-gray-600 my-2"></div>
-        
-        <Button
-          variant="ghost"
-          className="w-full h-14 flex flex-col items-center justify-center"
-          onClick={() => setShowColorPicker(!showColorPicker)}
-        >
-          <Palette className="w-5 h-5" />
-          <div 
-            className="w-6 h-2 rounded mt-1" 
-            style={{ backgroundColor: currentColor }}
-          ></div>
-        </Button>
-        
-        <Button
-          variant="ghost"
-          className="w-full h-14 flex flex-col items-center justify-center"
-          onClick={deleteSelected}
-          disabled={!selectedObject}
-        >
-          <Trash2 className="w-5 h-5" />
-          <span className="text-xs mt-1">Delete</span>
-        </Button>
-      </div>
-
-      {/* Canvas Area */}
-      <div className="flex-1 flex flex-col">
-        {/* Top Toolbar */}
-        <div className="bg-gray-800/50 backdrop-blur-lg rounded-xl p-3 mb-4 flex items-center justify-between">
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={() => setShowTemplateDialog(true)}>
-              <Layout className="w-4 h-4 mr-2" />
-              Templates
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => setShowAIDialog(true)}>
-              <Sparkles className="w-4 h-4 mr-2" />
-              AI Generate
-            </Button>
-            <Button variant="outline" size="sm" onClick={clearCanvas}>
-              <Eraser className="w-4 h-4 mr-2" />
-              Clear
-            </Button>
-          </div>
-          
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={() => exportCanvas('png')}>
-              <Download className="w-4 h-4 mr-2" />
-              Export
-            </Button>
-          </div>
+// Responsive Layout Component
+const ResponsiveLayout = ({ children, sidebar, header }) => {
+  if (isMobile) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
+        {header}
+        <div className="p-4">
+          {children}
         </div>
-
-        {/* Canvas Container */}
-        <div className="flex-1 bg-gray-800/30 rounded-xl p-6 flex items-center justify-center overflow-auto">
-          <div className="bg-white shadow-2xl" style={{ 
-            width: canvasSize.width, 
-            height: canvasSize.height,
-            maxWidth: '100%',
-            maxHeight: '100%'
-          }}>
-            <canvas ref={canvasRef} />
-          </div>
-        </div>
-
-        {/* Bottom Toolbar - Platform Presets */}
-        <div className="bg-gray-800/50 backdrop-blur-lg rounded-xl p-3 mt-4 flex items-center gap-2 overflow-x-auto">
-          <span className="text-sm text-gray-300 mr-2">Quick Resize:</span>
-          <Button variant="ghost" size="sm" onClick={() => resizeCanvas('instagram-post')}>
-            <Instagram className="w-4 h-4 mr-1" />
-            IG Post
-          </Button>
-          <Button variant="ghost" size="sm" onClick={() => resizeCanvas('instagram-story')}>
-            <Smartphone className="w-4 h-4 mr-1" />
-            IG Story
-          </Button>
-          <Button variant="ghost" size="sm" onClick={() => resizeCanvas('facebook-post')}>
-            <Facebook className="w-4 h-4 mr-1" />
-            FB Post
-          </Button>
-          <Button variant="ghost" size="sm" onClick={() => resizeCanvas('youtube-thumbnail')}>
-            <Monitor className="w-4 h-4 mr-1" />
-            YouTube
-          </Button>
-        </div>
-      </div>
-
-      {/* Right Properties Panel */}
-      <div className="w-80 bg-gray-800/50 backdrop-blur-lg rounded-xl p-4 space-y-4 overflow-y-auto">
-        <h3 className="text-lg font-semibold text-white">Properties</h3>
-        
-        {selectedObject ? (
-          <div className="space-y-4">
-            <div>
-              <Label className="text-gray-300">Type</Label>
-              <Badge className="mt-1">{selectedObject.type}</Badge>
-            </div>
-            
-            {selectedObject.type === 'i-text' && (
-              <>
-                <div>
-                  <Label className="text-gray-300">Font Size</Label>
-                  <Input
-                    type="number"
-                    value={selectedObject.fontSize || 16}
-                    onChange={(e) => {
-                      selectedObject.set('fontSize', parseInt(e.target.value));
-                      canvas.renderAll();
-                    }}
-                    className="mt-1"
-                  />
-                </div>
-                
-                <div className="flex gap-2">
-                  <Button
-                    variant={selectedObject.fontWeight === 'bold' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => {
-                      selectedObject.set('fontWeight', selectedObject.fontWeight === 'bold' ? 'normal' : 'bold');
-                      canvas.renderAll();
-                    }}
-                  >
-                    <Bold className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    variant={selectedObject.fontStyle === 'italic' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => {
-                      selectedObject.set('fontStyle', selectedObject.fontStyle === 'italic' ? 'normal' : 'italic');
-                      canvas.renderAll();
-                    }}
-                  >
-                    <Italic className="w-4 h-4" />
-                  </Button>
-                </div>
-              </>
-            )}
-            
-            <div>
-              <Label className="text-gray-300">Opacity</Label>
-              <Input
-                type="range"
-                min="0"
-                max="1"
-                step="0.1"
-                value={selectedObject.opacity || 1}
-                onChange={(e) => {
-                  selectedObject.set('opacity', parseFloat(e.target.value));
-                  canvas.renderAll();
-                }}
-                className="mt-1"
-              />
-            </div>
-          </div>
-        ) : (
-          <div className="text-center text-gray-400 py-8">
-            <p>Select an object to edit properties</p>
+        {sidebar && (
+          <div className="fixed bottom-0 left-0 right-0 bg-glass backdrop-blur-lg p-4 border-t border-glass-muted">
+            {sidebar}
           </div>
         )}
+      </div>
+    );
+  }
 
-        <div className="border-t border-gray-600 pt-4">
-          <h4 className="text-sm font-semibold text-white mb-2">Layers</h4>
-          <div className="space-y-1">
-            {layers.map((layer, index) => (
-              <div
-                key={layer.id}
-                className="bg-gray-700/50 p-2 rounded cursor-pointer hover:bg-gray-700"
-                onClick={() => {
-                  const obj = canvas.getObjects()[index];
-                  canvas.setActiveObject(obj);
-                  canvas.renderAll();
-                }}
-              >
-                <span className="text-sm text-gray-300">{layer.name}</span>
-              </div>
-            ))}
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
+      {header}
+      <div className="flex">
+        {sidebar && (
+          <div className="w-80 bg-glass backdrop-blur-lg border-r border-glass-muted p-6 min-h-screen">
+            {sidebar}
           </div>
+        )}
+        <div className="flex-1 p-6">
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Creative Studio Main Component
+const CreativeStudio = () => {
+  const [activeTab, setActiveTab] = useState('templates');
+  const [templates, setTemplates] = useState([]);
+  const [contentIdeas, setContentIdeas] = useState([]);
+  const [hashtagSuggestions, setHashtagSuggestions] = useState([]);
+  const [assets, setAssets] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const fetchTemplates = async () => {
+    try {
+      const response = await axios.get(`${API}/creative/templates?tenant_id=default`);
+      setTemplates([...response.data.custom_templates, ...response.data.builtin_templates]);
+    } catch (error) {
+      console.error('Error fetching templates:', error);
+      toast.error('Failed to load templates');
+    }
+  };
+
+  const generateContentIdeas = async (platform, objective = 'engagement') => {
+    try {
+      setLoading(true);
+      const response = await axios.post(`${API}/creative/generate-ideas`, {
+        tenant_id: 'default',
+        platform,
+        objective,
+        count: 10
+      });
+      setContentIdeas(response.data.ideas);
+      toast.success(`Generated ${response.data.ideas_generated} content ideas!`);
+    } catch (error) {
+      console.error('Error generating ideas:', error);
+      toast.error('Failed to generate content ideas');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const researchHashtags = async (keywords, platform) => {
+    try {
+      setLoading(true);
+      const response = await axios.post(`${API}/organic/hashtag-research`, {
+        tenant_id: 'default',
+        keywords: keywords.split(',').map(k => k.trim()),
+        platform
+      });
+      setHashtagSuggestions(response.data.hashtag_suggestions);
+      toast.success('Hashtag research completed!');
+    } catch (error) {
+      console.error('Error researching hashtags:', error);
+      toast.error('Failed to research hashtags');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTemplates();
+  }, []);
+
+  const sidebar = (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-xl font-bold text-glass-bright mb-4">Creative Studio</h2>
+        <div className="flex items-center space-x-2 text-sm text-glass-muted mb-4">
+          {isDesktop && <Monitor className="w-4 h-4" />}
+          {isTablet && <Tablet className="w-4 h-4" />}
+          {isMobile && <Smartphone className="w-4 h-4" />}
+          <span>{isDesktop ? 'Desktop' : isTablet ? 'Tablet' : 'Mobile'} Mode</span>
         </div>
       </div>
 
-      {/* Color Picker Dialog */}
-      {showColorPicker && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowColorPicker(false)}>
-          <div className="bg-gray-800 p-4 rounded-xl" onClick={(e) => e.stopPropagation()}>
-            <ChromePicker
-              color={currentColor}
-              onChange={(color) => setCurrentColor(color.hex)}
-            />
-            <Button className="w-full mt-4" onClick={() => setShowColorPicker(false)}>
-              Done
-            </Button>
-          </div>
+      <div className="space-y-3">
+        <Button
+          variant={activeTab === 'templates' ? 'default' : 'ghost'}
+          onClick={() => setActiveTab('templates')}
+          className={`w-full justify-start ${activeTab === 'templates' ? 'bg-purple-600 text-white' : 'text-glass-bright hover:text-white hover:bg-glass'}`}
+        >
+          <Layout className="w-4 h-4 mr-2" />
+          Templates
+        </Button>
+        <Button
+          variant={activeTab === 'ideas' ? 'default' : 'ghost'}
+          onClick={() => setActiveTab('ideas')}
+          className={`w-full justify-start ${activeTab === 'ideas' ? 'bg-purple-600 text-white' : 'text-glass-bright hover:text-white hover:bg-glass'}`}
+        >
+          <Lightbulb className="w-4 h-4 mr-2" />
+          Content Ideas
+        </Button>
+        <Button
+          variant={activeTab === 'hashtags' ? 'default' : 'ghost'}
+          onClick={() => setActiveTab('hashtags')}
+          className={`w-full justify-start ${activeTab === 'hashtags' ? 'bg-purple-600 text-white' : 'text-glass-bright hover:text-white hover:bg-glass'}`}
+        >
+          <Hash className="w-4 h-4 mr-2" />
+          Hashtag Research
+        </Button>
+        <Button
+          variant={activeTab === 'assets' ? 'default' : 'ghost'}
+          onClick={() => setActiveTab('assets')}
+          className={`w-full justify-start ${activeTab === 'assets' ? 'bg-purple-600 text-white' : 'text-glass-bright hover:text-white hover:bg-glass'}`}
+        >
+          <Folder className="w-4 h-4 mr-2" />
+          Asset Library
+        </Button>
+        <Button
+          variant={activeTab === 'strategy' ? 'default' : 'ghost'}
+          onClick={() => setActiveTab('strategy')}
+          className={`w-full justify-start ${activeTab === 'strategy' ? 'bg-purple-600 text-white' : 'text-glass-bright hover:text-white hover:bg-glass'}`}
+        >
+          <Target className="w-4 h-4 mr-2" />
+          Growth Strategy
+        </Button>
+      </div>
+
+      <div className="pt-6 border-t border-glass-muted">
+        <h3 className="font-semibold text-glass-bright mb-3">Quick Actions</h3>
+        <div className="space-y-2">
+          <Button
+            size="sm"
+            variant="outline"
+            className="w-full justify-start text-glass"
+            onClick={() => generateContentIdeas('instagram')}
+          >
+            <Sparkles className="w-4 h-4 mr-2" />
+            AI Ideas
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            className="w-full justify-start text-glass"
+          >
+            <BarChart3 className="w-4 h-4 mr-2" />
+            Analytics
+          </Button>
         </div>
-      )}
+      </div>
     </div>
   );
 
-  const renderTemplatesTab = () => {
-    const filteredTemplates = templates.filter(t => {
-      const matchesSearch = t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          t.description.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesCategory = selectedCategory === 'all' || t.category === selectedCategory;
-      return matchesSearch && matchesCategory;
-    });
-
-    return (
-      <div className="space-y-4">
-        <div className="flex gap-4">
-          <div className="flex-1">
-            <Input
-              placeholder="Search templates..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="bg-gray-800/50"
-            />
-          </div>
-          <select
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            className="px-4 py-2 bg-gray-800/50 text-white rounded-lg border border-gray-600"
-          >
-            <option value="all">All Categories</option>
-            <option value="inventory">Inventory</option>
-            <option value="marketing">Marketing</option>
-            <option value="service">Service</option>
-            <option value="financing">Financing</option>
-            <option value="social">Social Media</option>
-          </select>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredTemplates.map(template => (
-            <Card key={template.id} className="bg-gray-800/50 backdrop-blur-lg border-gray-600 hover:border-purple-500 transition cursor-pointer" onClick={() => applyTemplate(template)}>
-              <CardContent className="p-6">
-                <div className="text-6xl text-center mb-4">{template.thumbnail}</div>
-                <h3 className="text-lg font-semibold text-white mb-2">{template.name}</h3>
-                <p className="text-sm text-gray-400 mb-4">{template.description}</p>
-                <Badge>{template.category}</Badge>
-              </CardContent>
-            </Card>
-          ))}
+  const header = (
+    <div className="bg-glass backdrop-blur-lg border-b border-glass-muted p-4">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-glass-bright joker-brand">Creative Studio</h1>
+        <div className="flex items-center space-x-3">
+          <Badge className="badge-neon neon-purple">
+            Pro Tools
+          </Badge>
+          {isMobile && (
+            <Button size="sm" variant="outline" className="text-glass-bright">
+              <Eye className="w-4 h-4" />
+            </Button>
+          )}
         </div>
       </div>
-    );
-  };
-
-  const renderGrowthTab = () => (
-    <div className="space-y-6">
-      {/* Content Ideas */}
-      <Card className="bg-gray-800/50 backdrop-blur-lg border-gray-600">
-        <CardContent className="p-6">
-          <div className="flex items-center gap-3 mb-4">
-            <Lightbulb className="w-6 h-6 text-yellow-400" />
-            <h3 className="text-xl font-bold text-white">Content Ideas</h3>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {GROWTH_STRATEGIES.contentIdeas.map(idea => (
-              <div key={idea.id} className="bg-gray-700/50 p-4 rounded-lg">
-                <h4 className="font-semibold text-white mb-2">{idea.title}</h4>
-                <p className="text-sm text-gray-400 mb-2">{idea.description}</p>
-                <Badge variant={idea.engagement === 'Very High' ? 'default' : 'secondary'}>
-                  {idea.engagement} Engagement
-                </Badge>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Best Times to Post */}
-      <Card className="bg-gray-800/50 backdrop-blur-lg border-gray-600">
-        <CardContent className="p-6">
-          <div className="flex items-center gap-3 mb-4">
-            <Calendar className="w-6 h-6 text-blue-400" />
-            <h3 className="text-xl font-bold text-white">Best Times to Post</h3>
-          </div>
-          <div className="space-y-3">
-            {GROWTH_STRATEGIES.bestTimes.map((time, index) => (
-              <div key={index} className="flex items-center justify-between bg-gray-700/50 p-4 rounded-lg">
-                <div>
-                  <h4 className="font-semibold text-white">{time.platform}</h4>
-                  <p className="text-sm text-gray-400">{time.time}</p>
-                  <p className="text-xs text-gray-500">{time.days}</p>
-                </div>
-                <Badge className="bg-green-600">{time.engagement} higher engagement</Badge>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Hashtag Research */}
-      <Card className="bg-gray-800/50 backdrop-blur-lg border-gray-600">
-        <CardContent className="p-6">
-          <div className="flex items-center gap-3 mb-4">
-            <Hash className="w-6 h-6 text-purple-400" />
-            <h3 className="text-xl font-bold text-white">Trending Hashtags</h3>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {GROWTH_STRATEGIES.hashtags.map((hashtag, index) => (
-              <div key={index} className="bg-gray-700/50 p-3 rounded-lg">
-                <p className="font-semibold text-white mb-1">{hashtag.tag}</p>
-                <p className="text-xs text-gray-400">{hashtag.volume} posts</p>
-                <Badge variant="outline" className="mt-2 text-xs">
-                  {hashtag.competition} competition
-                </Badge>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Engagement Tactics */}
-      <Card className="bg-gray-800/50 backdrop-blur-lg border-gray-600">
-        <CardContent className="p-6">
-          <div className="flex items-center gap-3 mb-4">
-            <Target className="w-6 h-6 text-red-400" />
-            <h3 className="text-xl font-bold text-white">Engagement Tactics</h3>
-          </div>
-          <div className="space-y-3">
-            {GROWTH_STRATEGIES.engagementTactics.map((tactic, index) => (
-              <div key={index} className="bg-gray-700/50 p-4 rounded-lg">
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="font-semibold text-white">{tactic.tactic}</h4>
-                  <div className="flex items-center gap-1">
-                    <Star className="w-4 h-4 text-yellow-400" />
-                    <span className="text-sm text-gray-300">{tactic.effectiveness}</span>
-                  </div>
-                </div>
-                <p className="text-sm text-gray-400 italic">"{tactic.example}"</p>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 p-6">
-      <div className="container mx-auto">
-        {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-4xl font-bold text-white mb-2">Creative Studio</h1>
-          <p className="text-gray-400">Professional design tools for automotive marketing</p>
-        </div>
+    <ResponsiveLayout header={header} sidebar={!isMobile ? sidebar : null}>
+      <div className="space-y-6">
+        {isMobile && (
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-5 glass-card">
+              <TabsTrigger value="templates" className="text-xs">
+                <Layout className="w-4 h-4" />
+              </TabsTrigger>
+              <TabsTrigger value="ideas" className="text-xs">
+                <Lightbulb className="w-4 h-4" />
+              </TabsTrigger>
+              <TabsTrigger value="hashtags" className="text-xs">
+                <Hash className="w-4 h-4" />
+              </TabsTrigger>
+              <TabsTrigger value="assets" className="text-xs">
+                <Folder className="w-4 h-4" />
+              </TabsTrigger>
+              <TabsTrigger value="strategy" className="text-xs">
+                <Target className="w-4 h-4" />
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        )}
 
-        {/* Tabs */}
-        <div className="bg-gray-800/50 backdrop-blur-lg rounded-xl p-2 mb-6 flex gap-2">
-          <Button
-            variant={activeTab === 'canvas' ? 'default' : 'ghost'}
-            className="flex-1"
-            onClick={() => setActiveTab('canvas')}
-          >
-            <Palette className="w-4 h-4 mr-2" />
-            Design Canvas
-          </Button>
-          <Button
-            variant={activeTab === 'templates' ? 'default' : 'ghost'}
-            className="flex-1"
-            onClick={() => setActiveTab('templates')}
-          >
-            <Layout className="w-4 h-4 mr-2" />
-            Templates
-          </Button>
-          <Button
-            variant={activeTab === 'growth' ? 'default' : 'ghost'}
-            className="flex-1"
-            onClick={() => setActiveTab('growth')}
-          >
-            <TrendingUp className="w-4 h-4 mr-2" />
-            Growth Strategies
-          </Button>
-        </div>
+        {activeTab === 'templates' && <TemplatesSection templates={templates} />}
+        {activeTab === 'ideas' && <ContentIdeasSection ideas={contentIdeas} onGenerate={generateContentIdeas} loading={loading} />}
+        {activeTab === 'hashtags' && <HashtagResearchSection suggestions={hashtagSuggestions} onResearch={researchHashtags} loading={loading} />}
+        {activeTab === 'assets' && <AssetLibrarySection assets={assets} />}
+        {activeTab === 'strategy' && <GrowthStrategySection />}
+      </div>
+    </ResponsiveLayout>
+  );
+};
 
-        {/* Content */}
-        <div className="min-h-[600px]">
-          {activeTab === 'canvas' && renderCanvasTab()}
-          {activeTab === 'templates' && renderTemplatesTab()}
-          {activeTab === 'growth' && renderGrowthTab()}
-        </div>
+// Templates Section
+const TemplatesSection = ({ templates }) => {
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold text-glass-bright">Creative Templates</h2>
+        <Button className="btn-neon">
+          <Plus className="w-4 h-4 mr-2" />
+          Create Template
+        </Button>
+      </div>
 
-        {/* Template Selection Dialog */}
-        <Dialog open={showTemplateDialog} onOpenChange={setShowTemplateDialog}>
-          <DialogContent className="max-w-4xl bg-gray-800 text-white">
-            <DialogHeader>
-              <DialogTitle>Choose a Template</DialogTitle>
-            </DialogHeader>
-            <div className="grid grid-cols-3 gap-4 max-h-96 overflow-y-auto">
-              {templates.map(template => (
-                <div
-                  key={template.id}
-                  className="bg-gray-700 p-4 rounded-lg cursor-pointer hover:bg-gray-600 transition"
-                  onClick={() => applyTemplate(template)}
-                >
-                  <div className="text-4xl text-center mb-2">{template.thumbnail}</div>
-                  <h4 className="text-sm font-semibold text-center">{template.name}</h4>
-                </div>
-              ))}
-            </div>
-          </DialogContent>
-        </Dialog>
-
-        {/* AI Generation Dialog */}
-        <Dialog open={showAIDialog} onOpenChange={setShowAIDialog}>
-          <DialogContent className="bg-gray-800 text-white">
-            <DialogHeader>
-              <DialogTitle>AI Content Generator</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <Label>Describe what you want to create</Label>
-                <Textarea
-                  placeholder="e.g., Create a bold car sale promotion with red and yellow colors..."
-                  value={aiPrompt}
-                  onChange={(e) => setAiPrompt(e.target.value)}
-                  rows={4}
-                  className="mt-2 bg-gray-700 text-white"
-                />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {templates.map((template) => (
+          <Card key={template.id} className="glass-card glass-card-hover">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-glass-bright">{template.name}</CardTitle>
+                <Badge className={`badge-neon ${template.platform === 'instagram' ? 'neon-pink' : 
+                  template.platform === 'facebook' ? 'neon-blue' : 
+                  template.platform === 'tiktok' ? 'neon-purple' : 'neon-cyan'}`}>
+                  {template.platform}
+                </Badge>
               </div>
-              <Button onClick={generateAIContent} className="w-full">
-                <Sparkles className="w-4 h-4 mr-2" />
-                Generate
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+              <CardDescription className="text-glass-muted">
+                {template.type} template for {template.platform}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <div className="bg-glass rounded-lg p-4 min-h-32 flex items-center justify-center">
+                  <div className="text-center text-glass-muted">
+                    <Layout className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm">Template Preview</p>
+                  </div>
+                </div>
+                <div className="flex space-x-2">
+                  <Button size="sm" variant="outline" className="flex-1">
+                    <Eye className="w-4 h-4 mr-1" />
+                    Preview
+                  </Button>
+                  <Button size="sm" className="flex-1 btn-neon">
+                    <Wand2 className="w-4 h-4 mr-1" />
+                    Use Template
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
     </div>
   );
 };
 
-export default CreativeStudioNew;
+// Content Ideas Section
+const ContentIdeasSection = ({ ideas, onGenerate, loading }) => {
+  const [selectedPlatform, setSelectedPlatform] = useState('instagram');
+  const [selectedObjective, setSelectedObjective] = useState('engagement');
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold text-glass-bright">AI Content Ideas</h2>
+        <div className="flex space-x-3">
+          <Select value={selectedPlatform} onValueChange={setSelectedPlatform}>
+            <SelectTrigger className="w-32 glass-card text-glass">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="modal-glass">
+              <SelectItem value="instagram">Instagram</SelectItem>
+              <SelectItem value="facebook">Facebook</SelectItem>
+              <SelectItem value="tiktok">TikTok</SelectItem>
+              <SelectItem value="linkedin">LinkedIn</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={selectedObjective} onValueChange={setSelectedObjective}>
+            <SelectTrigger className="w-32 glass-card text-glass">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="modal-glass">
+              <SelectItem value="engagement">Engagement</SelectItem>
+              <SelectItem value="awareness">Awareness</SelectItem>
+              <SelectItem value="traffic">Traffic</SelectItem>
+              <SelectItem value="leads">Leads</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button 
+            onClick={() => onGenerate(selectedPlatform, selectedObjective)}
+            disabled={loading}
+            className="btn-neon"
+          >
+            <Sparkles className="w-4 h-4 mr-2" />
+            {loading ? 'Generating...' : 'Generate Ideas'}
+          </Button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {ideas.map((idea) => (
+          <Card key={idea.id} className="glass-card glass-card-hover">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-glass-bright">{idea.title}</CardTitle>
+                <Badge className={`badge-neon ${
+                  idea.estimated_engagement === 'high' ? 'neon-green' :
+                  idea.estimated_engagement === 'medium' ? 'neon-orange' : 'neon-cyan'
+                }`}>
+                  {idea.estimated_engagement} engagement
+                </Badge>
+              </div>
+              <CardDescription className="text-glass-muted">
+                {idea.content_type} content for {idea.platform}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <p className="text-glass text-sm">{idea.description}</p>
+                <div className="bg-glass rounded-lg p-3">
+                  <p className="text-glass-bright text-sm font-medium mb-2">Suggested Copy:</p>
+                  <p className="text-glass text-sm italic">"{idea.suggested_copy}"</p>
+                </div>
+                <div className="flex flex-wrap gap-1">
+                  {idea.hashtags.slice(0, 5).map((tag, index) => (
+                    <Badge key={index} className="badge-neon neon-purple text-xs">
+                      {tag}
+                    </Badge>
+                  ))}
+                  {idea.hashtags.length > 5 && (
+                    <Badge className="badge-neon text-xs">
+                      +{idea.hashtags.length - 5} more
+                    </Badge>
+                  )}
+                </div>
+                <div className="flex space-x-2">
+                  <Button size="sm" variant="outline" className="flex-1">
+                    <Copy className="w-4 h-4 mr-1" />
+                    Copy
+                  </Button>
+                  <Button size="sm" className="flex-1 btn-neon">
+                    <Wand2 className="w-4 h-4 mr-1" />
+                    Create Post
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {ideas.length === 0 && !loading && (
+        <div className="text-center py-12">
+          <Lightbulb className="w-16 h-16 mx-auto mb-4 text-glass-muted opacity-50" />
+          <h3 className="text-xl font-semibold text-glass-bright mb-2">Ready to spark creativity?</h3>
+          <p className="text-glass-muted mb-6">Generate AI-powered content ideas tailored to your platform and goals.</p>
+          <Button onClick={() => onGenerate(selectedPlatform, selectedObjective)} className="btn-neon">
+            <Sparkles className="w-4 h-4 mr-2" />
+            Generate Your First Ideas
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Hashtag Research Section
+const HashtagResearchSection = ({ suggestions, onResearch, loading }) => {
+  const [keywords, setKeywords] = useState('');
+  const [selectedPlatform, setSelectedPlatform] = useState('instagram');
+
+  const handleResearch = () => {
+    if (!keywords.trim()) {
+      toast.error('Please enter keywords to research');
+      return;
+    }
+    onResearch(keywords, selectedPlatform);
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold text-glass-bright">Hashtag Research</h2>
+      </div>
+
+      <Card className="glass-card">
+        <CardHeader>
+          <CardTitle className="text-glass-bright flex items-center">
+            <Hash className="w-5 h-5 mr-2 neon-purple" />
+            Research Hashtags
+          </CardTitle>
+          <CardDescription className="text-glass-muted">
+            Find the perfect hashtags to maximize your reach and engagement
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div className="md:col-span-2">
+              <Label className="text-glass">Keywords (comma-separated)</Label>
+              <Input
+                value={keywords}
+                onChange={(e) => setKeywords(e.target.value)}
+                placeholder="e.g., Toyota, car sales, automotive"
+                className="text-glass"
+              />
+            </div>
+            <div>
+              <Label className="text-glass">Platform</Label>
+              <Select value={selectedPlatform} onValueChange={setSelectedPlatform}>
+                <SelectTrigger className="glass-card text-glass">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="modal-glass">
+                  <SelectItem value="instagram">Instagram</SelectItem>
+                  <SelectItem value="facebook">Facebook</SelectItem>
+                  <SelectItem value="tiktok">TikTok</SelectItem>
+                  <SelectItem value="linkedin">LinkedIn</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <Button 
+            onClick={handleResearch}
+            disabled={loading || !keywords.trim()}
+            className="btn-neon w-full"
+          >
+            <Hash className="w-4 h-4 mr-2" />
+            {loading ? 'Researching...' : 'Research Hashtags'}
+          </Button>
+        </CardContent>
+      </Card>
+
+      {suggestions.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {suggestions.slice(0, 30).map((hashtag) => (
+            <Card key={hashtag.id} className="glass-card glass-card-hover">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-semibold text-glass-bright">{hashtag.hashtag}</h3>
+                  <Badge className={`badge-neon ${
+                    hashtag.difficulty === 'low' ? 'neon-green' :
+                    hashtag.difficulty === 'medium' ? 'neon-orange' : 'neon-red'
+                  }`}>
+                    {hashtag.difficulty}
+                  </Badge>
+                </div>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-glass-muted">Volume:</span>
+                    <span className="text-glass-bright">{hashtag.volume.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-glass-muted">Relevance:</span>
+                    <span className="text-glass-bright">{(hashtag.relevance_score * 100).toFixed(0)}%</span>
+                  </div>
+                  {hashtag.trending && (
+                    <Badge className="badge-neon neon-green text-xs">
+                      <TrendingUp className="w-3 h-3 mr-1" />
+                      Trending
+                    </Badge>
+                  )}
+                </div>
+                <Button size="sm" variant="outline" className="w-full mt-3">
+                  <Copy className="w-4 h-4 mr-1" />
+                  Copy
+                </Button>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Asset Library Section
+const AssetLibrarySection = ({ assets }) => {
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold text-glass-bright">Asset Library</h2>
+        <BulkUploadComponent />
+      </div>
+
+      <Tabs defaultValue="all" className="w-full">
+        <TabsList className="glass-card">
+          <TabsTrigger value="all">All Assets</TabsTrigger>
+          <TabsTrigger value="images">Images</TabsTrigger>
+          <TabsTrigger value="videos">Videos</TabsTrigger>
+          <TabsTrigger value="contacts">Contacts</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="all" className="space-y-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            {[...Array(12)].map((_, i) => (
+              <Card key={i} className="glass-card glass-card-hover">
+                <CardContent className="p-4">
+                  <div className="aspect-square bg-glass rounded-lg flex items-center justify-center mb-3">
+                    <FileImage className="w-8 h-8 text-glass-muted opacity-50" />
+                  </div>
+                  <p className="text-sm text-glass-bright truncate">Asset {i + 1}</p>
+                  <p className="text-xs text-glass-muted">Image • 1.2MB</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="contacts">
+          <ContactsManagement />
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+};
+
+// Bulk Upload Component with Excel/CSV Support
+const BulkUploadComponent = () => {
+  const [showUploadDialog, setShowUploadDialog] = useState(false);
+  const [uploadType, setUploadType] = useState('assets');
+
+  const onDrop = useCallback((acceptedFiles) => {
+    acceptedFiles.forEach((file) => {
+      const reader = new FileReader();
+      
+      reader.onabort = () => console.log('file reading was aborted');
+      reader.onerror = () => console.log('file reading has failed');
+      reader.onload = () => {
+        const binaryStr = reader.result;
+        
+        if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
+          // Handle Excel files
+          const workbook = XLSX.read(binaryStr, { type: 'binary' });
+          const sheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[sheetName];
+          const data = XLSX.utils.sheet_to_json(worksheet);
+          
+          console.log('Excel data:', data);
+          processContactData(data);
+          
+        } else if (file.name.endsWith('.csv')) {
+          // Handle CSV files
+          Papa.parse(file, {
+            header: true,
+            complete: function(results) {
+              console.log('CSV data:', results.data);
+              processContactData(results.data);
+            }
+          });
+        }
+      };
+      
+      if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
+        reader.readAsBinaryString(file);
+      } else {
+        reader.readAsText(file);
+      }
+    });
+  }, []);
+
+  const processContactData = async (data) => {
+    try {
+      // Map common field variations to our standard fields
+      const mappedData = data.map(row => ({
+        first_name: row['First Name'] || row['first_name'] || row['FirstName'] || '',
+        last_name: row['Last Name'] || row['last_name'] || row['LastName'] || '',
+        primary_phone: row['Phone'] || row['phone'] || row['Phone Number'] || row['primary_phone'] || '',
+        email: row['Email'] || row['email'] || row['Email Address'] || '',
+        budget: row['Budget'] || row['budget'] || '',
+        vehicle_type: row['Vehicle Type'] || row['vehicle_type'] || row['Interest'] || '',
+        address: row['Address'] || row['address'] || '',
+        notes: row['Notes'] || row['notes'] || row['Comments'] || ''
+      })).filter(contact => contact.first_name && contact.last_name); // Filter out empty rows
+
+      if (mappedData.length > 0) {
+        // Process leads in batches
+        const batchSize = 50;
+        let processed = 0;
+        
+        for (let i = 0; i < mappedData.length; i += batchSize) {
+          const batch = mappedData.slice(i, i + batchSize);
+          
+          for (const contact of batch) {
+            try {
+              await axios.post(`${API}/leads`, {
+                tenant_id: 'default',
+                ...contact
+              });
+              processed++;
+            } catch (error) {
+              console.error('Error creating lead:', error);
+            }
+          }
+        }
+        
+        toast.success(`Successfully imported ${processed} contacts!`);
+        setShowUploadDialog(false);
+      } else {
+        toast.error('No valid contact data found in the file');
+      }
+    } catch (error) {
+      console.error('Error processing contact data:', error);
+      toast.error('Failed to process contact data');
+    }
+  };
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: {
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
+      'application/vnd.ms-excel': ['.xls'],
+      'text/csv': ['.csv'],
+      'image/*': ['.png', '.jpg', '.jpeg', '.gif'],
+      'video/*': ['.mp4', '.mov', '.avi']
+    }
+  });
+
+  return (
+    <Dialog open={showUploadDialog} onOpenChange={setShowUploadDialog}>
+      <DialogTrigger asChild>
+        <Button className="btn-neon">
+          <Upload className="w-4 h-4 mr-2" />
+          Bulk Upload
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="modal-glass max-w-2xl">
+        <DialogHeader>
+          <DialogTitle className="text-glass-bright">Bulk Upload</DialogTitle>
+          <DialogDescription className="text-glass-muted">
+            Upload contacts via Excel/CSV or creative assets
+          </DialogDescription>
+        </DialogHeader>
+        
+        <Tabs value={uploadType} onValueChange={setUploadType}>
+          <TabsList className="glass-card w-full">
+            <TabsTrigger value="assets" className="flex-1">Creative Assets</TabsTrigger>
+            <TabsTrigger value="contacts" className="flex-1">Contacts (Excel/CSV)</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="assets" className="space-y-4">
+            <div {...getRootProps()} className={`border-2 border-dashed border-glass-muted rounded-lg p-8 text-center transition-colors ${isDragActive ? 'border-neon-purple bg-glass' : ''}`}>
+              <input {...getInputProps()} />
+              <Upload className="w-12 h-12 mx-auto mb-4 text-glass-muted" />
+              <h3 className="text-lg font-semibold text-glass-bright mb-2">
+                {isDragActive ? 'Drop files here' : 'Upload Creative Assets'}
+              </h3>
+              <p className="text-glass-muted mb-4">
+                Drag & drop images, videos, or click to browse
+              </p>
+              <p className="text-sm text-glass-muted">
+                Supports: PNG, JPG, GIF, MP4, MOV, AVI
+              </p>
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="contacts" className="space-y-4">
+            <div {...getRootProps()} className={`border-2 border-dashed border-glass-muted rounded-lg p-8 text-center transition-colors ${isDragActive ? 'border-neon-green bg-glass' : ''}`}>
+              <input {...getInputProps()} />
+              <FileText className="w-12 h-12 mx-auto mb-4 text-glass-muted" />
+              <h3 className="text-lg font-semibold text-glass-bright mb-2">
+                {isDragActive ? 'Drop contact files here' : 'Upload Contact List'}
+              </h3>
+              <p className="text-glass-muted mb-4">
+                Drag & drop Excel or CSV files with contact information
+              </p>
+              <p className="text-sm text-glass-muted">
+                Supports: XLSX, XLS, CSV
+              </p>
+            </div>
+            
+            <div className="bg-glass rounded-lg p-4">
+              <h4 className="font-semibold text-glass-bright mb-2">Expected Columns:</h4>
+              <div className="grid grid-cols-2 gap-2 text-sm text-glass">
+                <div>• First Name</div>
+                <div>• Last Name</div>
+                <div>• Phone</div>
+                <div>• Email</div>
+                <div>• Budget (optional)</div>
+                <div>• Vehicle Type (optional)</div>
+                <div>• Address (optional)</div>
+                <div>• Notes (optional)</div>
+              </div>
+            </div>
+          </TabsContent>
+        </Tabs>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+// Contacts Management Component
+const ContactsManagement = () => {
+  const [contacts, setContacts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchContacts();
+  }, []);
+
+  const fetchContacts = async () => {
+    try {
+      const response = await axios.get(`${API}/leads`);
+      setContacts(response.data);
+    } catch (error) {
+      console.error('Error fetching contacts:', error);
+      toast.error('Failed to load contacts');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="spinner-neon"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h3 className="text-xl font-bold text-glass-bright">Contact Management</h3>
+        <Button className="btn-neon" size="sm">
+          <Download className="w-4 h-4 mr-2" />
+          Export Contacts
+        </Button>
+      </div>
+
+      <Card className="glass-card">
+        <CardContent className="p-0">
+          <div className="table-glass">
+            <table className="w-full">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Phone</th>
+                  <th>Email</th>
+                  <th>Budget</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {contacts.slice(0, 10).map((contact) => (
+                  <tr key={contact.id}>
+                    <td className="font-semibold text-glass-bright">
+                      {contact.first_name} {contact.last_name}
+                    </td>
+                    <td className="text-glass">{contact.primary_phone}</td>
+                    <td className="text-glass">{contact.email}</td>
+                    <td className="text-glass">{contact.budget || 'N/A'}</td>
+                    <td>
+                      <Badge className={`badge-neon ${
+                        contact.status === 'new' ? 'neon-blue' :
+                        contact.status === 'contacted' ? 'neon-orange' :
+                        contact.status === 'scheduled' ? 'neon-green' : 'neon-gray'
+                      }`}>
+                        {contact.status}
+                      </Badge>
+                    </td>
+                    <td>
+                      <Button size="sm" variant="outline">
+                        <Eye className="w-4 h-4" />
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+// Growth Strategy Section
+const GrowthStrategySection = () => {
+  const [strategies, setStrategies] = useState([]);
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold text-glass-bright">Organic Growth Strategy</h2>
+        <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+          <DialogTrigger asChild>
+            <Button className="btn-neon">
+              <Target className="w-4 h-4 mr-2" />
+              Create Strategy
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="modal-glass max-w-2xl">
+            <DialogHeader>
+              <DialogTitle className="text-glass-bright">Create Growth Strategy</DialogTitle>
+              <DialogDescription className="text-glass-muted">
+                Build a comprehensive organic social media strategy
+              </DialogDescription>
+            </DialogHeader>
+            <StrategyCreationForm onSuccess={() => setShowCreateDialog(false)} />
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <Card className="glass-card glass-card-hover">
+          <CardHeader>
+            <CardTitle className="text-glass-bright flex items-center">
+              <Globe className="w-5 h-5 mr-2 neon-blue" />
+              Instagram Growth
+            </CardTitle>
+            <CardDescription className="text-glass-muted">
+              Awareness & Engagement Strategy
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              <div className="flex justify-between text-sm">
+                <span className="text-glass-muted">Duration:</span>
+                <span className="text-glass-bright">30 days</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-glass-muted">Posts/Week:</span>
+                <span className="text-glass-bright">7</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-glass-muted">Target Growth:</span>
+                <span className="text-glass-bright">+10%</span>
+              </div>
+              <Badge className="badge-neon neon-green">Active</Badge>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+};
+
+// Strategy Creation Form
+const StrategyCreationForm = ({ onSuccess }) => {
+  const [formData, setFormData] = useState({
+    platform: 'instagram',
+    objective: 'awareness',
+    duration_days: 30,
+    target_audience: {}
+  });
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.post(`${API}/organic/strategy`, {
+        tenant_id: 'default',
+        ...formData
+      });
+      toast.success('Growth strategy created successfully!');
+      onSuccess();
+    } catch (error) {
+      console.error('Error creating strategy:', error);
+      toast.error('Failed to create strategy');
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <Label className="text-glass">Platform</Label>
+          <Select value={formData.platform} onValueChange={(value) => setFormData({...formData, platform: value})}>
+            <SelectTrigger className="glass-card text-glass">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="modal-glass">
+              <SelectItem value="instagram">Instagram</SelectItem>
+              <SelectItem value="facebook">Facebook</SelectItem>
+              <SelectItem value="tiktok">TikTok</SelectItem>
+              <SelectItem value="linkedin">LinkedIn</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Label className="text-glass">Objective</Label>
+          <Select value={formData.objective} onValueChange={(value) => setFormData({...formData, objective: value})}>
+            <SelectTrigger className="glass-card text-glass">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="modal-glass">
+              <SelectItem value="awareness">Brand Awareness</SelectItem>
+              <SelectItem value="engagement">Engagement</SelectItem>
+              <SelectItem value="traffic">Website Traffic</SelectItem>
+              <SelectItem value="leads">Lead Generation</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+      
+      <div>
+        <Label className="text-glass">Duration (Days)</Label>
+        <Input
+          type="number"
+          value={formData.duration_days}
+          onChange={(e) => setFormData({...formData, duration_days: parseInt(e.target.value)})}
+          className="text-glass"
+        />
+      </div>
+
+      <Button type="submit" className="w-full btn-neon">
+        Create Strategy
+      </Button>
+    </form>
+  );
+};
+
+export default CreativeStudio;
