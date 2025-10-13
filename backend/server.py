@@ -3546,7 +3546,9 @@ async def facebook_webhook_handler(request: dict):
                                 first_name="Facebook",
                                 last_name="Lead",
                                 primary_phone="",
-                                email=f"fb_{sender_id}@facebook.com"
+                                email=f"fb_{sender_id}@facebook.com",
+                                source="Facebook Messenger",
+                                notes=f"Lead from Facebook Messenger. Initial message: {message_text[:100]}"
                             )
                             
                             lead_dict = lead_data.dict()
