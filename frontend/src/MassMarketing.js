@@ -676,7 +676,12 @@ const CreateSegmentModal = ({ onClose, onSegmentCreated }) => {
   });
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
+    
+    if (!segmentData.name || !segmentData.description) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
     
     try {
       const response = await axios.post(`${API}/marketing/segments`, {
@@ -685,10 +690,11 @@ const CreateSegmentModal = ({ onClose, onSegmentCreated }) => {
       });
       
       toast.success(`Segment "${segmentData.name}" created successfully!`);
-      onSegmentCreated(response.data);
+      onSegmentCreated(response.data.segment || response.data);
+      onClose();
     } catch (error) {
       console.error('Error creating segment:', error);
-      toast.error('Failed to create segment');
+      toast.error(error.response?.data?.detail || 'Failed to create segment');
     }
   };
 
