@@ -308,7 +308,7 @@ const ExclusiveLeadEngine = () => {
     try {
       const response = await fetch(`${API}/exclusive-leads/alerts?tenant_id=default`);
       const data = await response.json();
-      setRealTimeAlerts(data.real_time_alerts);
+      setRealTimeAlerts(data?.alerts || []);
     } catch (error) {
       console.error('Error fetching real-time alerts:', error);
       // Fallback to demo alerts if API fails
