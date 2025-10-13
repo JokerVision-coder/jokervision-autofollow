@@ -283,7 +283,12 @@ const ExclusiveLeadEngine = () => {
     try {
       const response = await fetch(`${API}/exclusive-leads/predictions?tenant_id=default`);
       const data = await response.json();
-      setAiPredictions(data.ai_predictions);
+      setAiPredictions(data?.ai_predictions || {
+        next_hour_leads: 12,
+        next_hour_quality: 'high',
+        conversion_probability: {},
+        market_predictions: {}
+      });
     } catch (error) {
       console.error('Error fetching AI predictions:', error);
       // Fallback to demo AI predictions if API fails
