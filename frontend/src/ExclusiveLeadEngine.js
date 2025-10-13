@@ -315,7 +315,7 @@ const ExclusiveLeadEngine = () => {
               <Diamond className="w-8 h-8 text-purple-400" />
               <Badge className="bg-purple-500">EXCLUSIVE</Badge>
             </div>
-            <h3 className="text-3xl font-bold text-white">{leadIntelligence.total_exclusive_leads}</h3>
+            <h3 className="text-3xl font-bold text-white">{leadIntelligence?.total_exclusive_leads || 0}</h3>
             <p className="text-purple-300 text-sm">Exclusive Leads Available</p>
             <p className="text-gray-400 text-xs mt-1">340% higher close rate</p>
           </CardContent>
