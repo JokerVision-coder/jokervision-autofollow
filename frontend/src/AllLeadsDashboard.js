@@ -37,6 +37,8 @@ const AllLeadsDashboard = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statistics, setStatistics] = useState({});
   const [availableSources, setAvailableSources] = useState([]);
+  const [selectedLead, setSelectedLead] = useState(null);
+  const [enablingAI, setEnablingAI] = useState(false);
 
   useEffect(() => {
     fetchAllLeads();
