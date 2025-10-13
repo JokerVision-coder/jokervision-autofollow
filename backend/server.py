@@ -6876,9 +6876,14 @@ async def create_marketing_segment(request: dict):
         
         # Save to database
         segments_collection = db.audience_segments
-        await segments_collection.insert_one(segment)
+        result = await segments_collection.insert_one(segment.copy())
         
-        return {"success": True, "segment": segment}
+        # Remove any MongoDB-specific fields for response
+        response_segment = segment.copy()
+        if "_id" in response_segment:
+            del response_segment["_id"]
+        
+        return {"success": True, "segment": response_segment}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
