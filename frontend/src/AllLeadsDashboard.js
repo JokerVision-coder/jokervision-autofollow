@@ -113,6 +113,30 @@ const AllLeadsDashboard = () => {
     setAvailableSources(['Mass Marketing Import', 'Exclusive Lead Engine', 'Website', 'Walk-In']);
   };
 
+  const handleBulkEnableAI = async (aiType = 'both') => {
+    if (!sourceFilter || sourceFilter === 'all') {
+      toast.error('Please select a specific source to enable AI for all its leads');
+      return;
+    }
+
+    setEnablingAI(true);
+    try {
+      const response = await axios.post(`${API}/leads/bulk-enable-ai`, {
+        source_filter: sourceFilter,
+        ai_type: aiType,
+        tenant_id: 'default_dealership'
+      });
+
+      toast.success(`AI enabled for ${response.data.leads_updated} leads!`);
+      fetchAllLeads(); // Refresh leads
+    } catch (error) {
+      console.error('Error enabling AI:', error);
+      toast.error('Failed to enable AI for leads');
+    } finally {
+      setEnablingAI(false);
+    }
+  };
+
   const getSourceBadgeColor = (source) => {
     const colors = {
       'Mass Marketing Import': 'bg-purple-500/20 text-purple-400 border-purple-500/30',
