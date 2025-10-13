@@ -351,7 +351,7 @@ const ExclusiveLeadEngine = () => {
               <Shield className="w-8 h-8 text-cyan-400" />
               <Badge className="bg-cyan-500">PROTECTION</Badge>
             </div>
-            <h3 className="text-3xl font-bold text-white">{leadIntelligence.exclusivity_protection_success}%</h3>
+            <h3 className="text-3xl font-bold text-white">{leadIntelligence?.exclusivity_protection_success || 0}%</h3>
             <p className="text-cyan-300 text-sm">Protection Success Rate</p>
             <p className="text-gray-400 text-xs mt-1">Competitor blocking active</p>
           </CardContent>
