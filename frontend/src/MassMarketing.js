@@ -662,4 +662,151 @@ const CreateCampaignModal = ({ onClose, segments, onCampaignCreated }) => {
   );
 };
 
+// Create Segment Modal Component
+const CreateSegmentModal = ({ onClose, onSegmentCreated }) => {
+  const [segmentData, setSegmentData] = useState({
+    name: '',
+    description: '',
+    criteria: {
+      vehicle_type: '',
+      budget_min: '',
+      budget_max: '',
+      interests: ''
+    }
+  });
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    try {
+      const response = await axios.post(`${API}/marketing/segments`, {
+        tenant_id: 'default_dealership',
+        ...segmentData
+      });
+      
+      toast.success(`Segment "${segmentData.name}" created successfully!`);
+      onSegmentCreated(response.data);
+    } catch (error) {
+      console.error('Error creating segment:', error);
+      toast.error('Failed to create segment');
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>
+      <Card className="bg-gray-800 border-gray-600 w-full max-w-2xl" onClick={(e) => e.stopPropagation()}>
+        <CardContent className="p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-2xl font-bold text-glass-bright">Create Audience Segment</h3>
+            <button onClick={onClose} className="text-glass-muted hover:text-glass-bright">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-glass-bright mb-1">Segment Name</label>
+              <Input
+                value={segmentData.name}
+                onChange={(e) => setSegmentData({...segmentData, name: e.target.value})}
+                placeholder="e.g., SUV Buyers, First-Time Buyers, Trade-In Prospects"
+                className="text-glass w-full"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-glass-bright mb-1">Description</label>
+              <Textarea
+                value={segmentData.description}
+                onChange={(e) => setSegmentData({...segmentData, description: e.target.value})}
+                placeholder="Describe this audience segment..."
+                className="text-glass w-full"
+                rows={3}
+                required
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-glass-bright mb-1">Vehicle Type Interest</label>
+                <select
+                  value={segmentData.criteria.vehicle_type}
+                  onChange={(e) => setSegmentData({
+                    ...segmentData,
+                    criteria: {...segmentData.criteria, vehicle_type: e.target.value}
+                  })}
+                  className="px-3 py-2 border rounded w-full text-glass bg-gray-700"
+                >
+                  <option value="">Any</option>
+                  <option value="sedan">Sedan</option>
+                  <option value="SUV">SUV</option>
+                  <option value="truck">Truck</option>
+                  <option value="hybrid">Hybrid/Electric</option>
+                  <option value="luxury">Luxury</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-glass-bright mb-1">Interest Tags</label>
+                <Input
+                  value={segmentData.criteria.interests}
+                  onChange={(e) => setSegmentData({
+                    ...segmentData,
+                    criteria: {...segmentData.criteria, interests: e.target.value}
+                  })}
+                  placeholder="e.g., family, performance, eco"
+                  className="text-glass w-full"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-glass-bright mb-1">Min Budget ($)</label>
+                <Input
+                  type="number"
+                  value={segmentData.criteria.budget_min}
+                  onChange={(e) => setSegmentData({
+                    ...segmentData,
+                    criteria: {...segmentData.criteria, budget_min: e.target.value}
+                  })}
+                  placeholder="25000"
+                  className="text-glass w-full"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-glass-bright mb-1">Max Budget ($)</label>
+                <Input
+                  type="number"
+                  value={segmentData.criteria.budget_max}
+                  onChange={(e) => setSegmentData({
+                    ...segmentData,
+                    criteria: {...segmentData.criteria, budget_max: e.target.value}
+                  })}
+                  placeholder="50000"
+                  className="text-glass w-full"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <Button type="submit" className="btn-neon flex-1">
+                <Plus className="w-4 h-4 mr-2" />
+                Create Segment
+              </Button>
+              <Button type="button" onClick={onClose} variant="outline" className="text-glass-bright">
+                Cancel
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
 export default MassMarketing;
