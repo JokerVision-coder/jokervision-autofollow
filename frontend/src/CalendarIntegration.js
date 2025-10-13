@@ -806,4 +806,209 @@ const CreateEventModal = ({ onClose, onEventCreated }) => {
   );
 };
 
+// Settings Modal Component
+const SettingsModal = ({ onClose, connectedCalendars, setConnectedCalendars }) => {
+  const handleConnectCalendar = (provider) => {
+    toast.success(`🔗 Connecting to ${provider}...`);
+    
+    // Simulate OAuth connection
+    setTimeout(() => {
+      if (!connectedCalendars.includes(provider)) {
+        setConnectedCalendars([...connectedCalendars, provider]);
+        toast.success(`✅ ${provider} connected successfully!`);
+      }
+    }, 1500);
+  };
+
+  const handleDisconnectCalendar = (provider) => {
+    setConnectedCalendars(connectedCalendars.filter(cal => cal !== provider));
+    toast.success(`🔌 ${provider} disconnected`);
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <Card className="bg-gradient-to-br from-gray-900/95 to-gray-800/95 backdrop-blur-lg border border-gray-500/30 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <CardContent className="p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-3xl font-bold text-glass-bright">Calendar Settings</h2>
+            <button onClick={onClose} className="text-glass-muted hover:text-glass-bright">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          {/* Calendar Connections Section */}
+          <div className="mb-8">
+            <h3 className="text-xl font-semibold text-glass-bright mb-4">Connected Calendars</h3>
+            <p className="text-glass-muted mb-6">Sync your appointments with external calendar services</p>
+            
+            <div className="space-y-4">
+              {/* Google Calendar */}
+              <div className="flex items-center justify-between p-4 glass-card rounded-xl">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-red-500 rounded-lg flex items-center justify-center">
+                    <Calendar className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-glass-bright">Google Calendar</h4>
+                    <p className="text-sm text-glass-muted">
+                      {connectedCalendars.includes('Google Calendar') 
+                        ? '✅ Connected - Syncing appointments' 
+                        : 'Not connected'}
+                    </p>
+                  </div>
+                </div>
+                {connectedCalendars.includes('Google Calendar') ? (
+                  <Button 
+                    onClick={() => handleDisconnectCalendar('Google Calendar')}
+                    variant="outline" 
+                    className="text-red-400 border-red-400 hover:bg-red-500/10"
+                  >
+                    Disconnect
+                  </Button>
+                ) : (
+                  <Button 
+                    onClick={() => handleConnectCalendar('Google Calendar')}
+                    className="bg-gradient-to-r from-blue-600 to-blue-500 text-white hover:opacity-90"
+                  >
+                    <ExternalLink className="w-4 h-4 mr-2" />
+                    Connect
+                  </Button>
+                )}
+              </div>
+
+              {/* Microsoft Outlook */}
+              <div className="flex items-center justify-between p-4 glass-card rounded-xl">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg flex items-center justify-center">
+                    <Mail className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-glass-bright">Microsoft Outlook</h4>
+                    <p className="text-sm text-glass-muted">
+                      {connectedCalendars.includes('Microsoft Outlook') 
+                        ? '✅ Connected - Syncing appointments' 
+                        : 'Not connected'}
+                    </p>
+                  </div>
+                </div>
+                {connectedCalendars.includes('Microsoft Outlook') ? (
+                  <Button 
+                    onClick={() => handleDisconnectCalendar('Microsoft Outlook')}
+                    variant="outline" 
+                    className="text-red-400 border-red-400 hover:bg-red-500/10"
+                  >
+                    Disconnect
+                  </Button>
+                ) : (
+                  <Button 
+                    onClick={() => handleConnectCalendar('Microsoft Outlook')}
+                    className="bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:opacity-90"
+                  >
+                    <ExternalLink className="w-4 h-4 mr-2" />
+                    Connect
+                  </Button>
+                )}
+              </div>
+
+              {/* Apple Calendar */}
+              <div className="flex items-center justify-between p-4 glass-card rounded-xl">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-gradient-to-r from-gray-800 to-gray-900 rounded-lg flex items-center justify-center">
+                    <Calendar className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-glass-bright">Apple Calendar (iCloud)</h4>
+                    <p className="text-sm text-glass-muted">
+                      {connectedCalendars.includes('Apple Calendar') 
+                        ? '✅ Connected - Syncing appointments' 
+                        : 'Not connected'}
+                    </p>
+                  </div>
+                </div>
+                {connectedCalendars.includes('Apple Calendar') ? (
+                  <Button 
+                    onClick={() => handleDisconnectCalendar('Apple Calendar')}
+                    variant="outline" 
+                    className="text-red-400 border-red-400 hover:bg-red-500/10"
+                  >
+                    Disconnect
+                  </Button>
+                ) : (
+                  <Button 
+                    onClick={() => handleConnectCalendar('Apple Calendar')}
+                    className="bg-gradient-to-r from-gray-700 to-gray-800 text-white hover:opacity-90"
+                  >
+                    <ExternalLink className="w-4 h-4 mr-2" />
+                    Connect
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Sync Settings */}
+          <div className="mb-8">
+            <h3 className="text-xl font-semibold text-glass-bright mb-4">Sync Settings</h3>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-4 glass-card rounded-xl">
+                <div>
+                  <h4 className="font-semibold text-glass-bright">Two-Way Sync</h4>
+                  <p className="text-sm text-glass-muted">Sync changes in both directions</p>
+                </div>
+                <input type="checkbox" defaultChecked className="w-5 h-5" />
+              </div>
+              <div className="flex items-center justify-between p-4 glass-card rounded-xl">
+                <div>
+                  <h4 className="font-semibold text-glass-bright">Auto Sync</h4>
+                  <p className="text-sm text-glass-muted">Automatically sync every 15 minutes</p>
+                </div>
+                <input type="checkbox" defaultChecked className="w-5 h-5" />
+              </div>
+              <div className="flex items-center justify-between p-4 glass-card rounded-xl">
+                <div>
+                  <h4 className="font-semibold text-glass-bright">Sync Reminders</h4>
+                  <p className="text-sm text-glass-muted">Include appointment reminders</p>
+                </div>
+                <input type="checkbox" defaultChecked className="w-5 h-5" />
+              </div>
+            </div>
+          </div>
+
+          {/* Notification Settings */}
+          <div className="mb-6">
+            <h3 className="text-xl font-semibold text-glass-bright mb-4">Notifications</h3>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-4 glass-card rounded-xl">
+                <div>
+                  <h4 className="font-semibold text-glass-bright">Email Notifications</h4>
+                  <p className="text-sm text-glass-muted">Receive appointment reminders via email</p>
+                </div>
+                <input type="checkbox" defaultChecked className="w-5 h-5" />
+              </div>
+              <div className="flex items-center justify-between p-4 glass-card rounded-xl">
+                <div>
+                  <h4 className="font-semibold text-glass-bright">SMS Notifications</h4>
+                  <p className="text-sm text-glass-muted">Receive text message reminders</p>
+                </div>
+                <input type="checkbox" defaultChecked className="w-5 h-5" />
+              </div>
+            </div>
+          </div>
+
+          <div className="flex gap-3">
+            <Button onClick={onClose} className="btn-neon flex-1">
+              Save Settings
+            </Button>
+            <Button onClick={onClose} variant="outline" className="text-glass-bright">
+              Cancel
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
 export default CalendarIntegration;
