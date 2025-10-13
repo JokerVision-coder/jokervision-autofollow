@@ -1898,6 +1898,7 @@ const Navigation = () => {
     { to: "/", icon: BarChart3, label: "Dashboard" },
     { to: "/exclusive-leads", icon: Crown, label: "👑 Exclusive Leads" },
     { to: "/lead-generation", icon: Target, label: "Leads" },
+    { to: "/all-leads", icon: Users, label: "All Leads" },
     { to: "/inventory", icon: Car, label: "Inventory" },
     { to: "/pipeline", icon: TrendingUp, label: "Pipeline" },
     { to: "/calendar", icon: Calendar, label: "Calendar" },
