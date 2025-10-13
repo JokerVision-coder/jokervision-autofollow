@@ -1557,6 +1557,73 @@ async def update_lead(lead_id: str, update_data: LeadUpdate):
         updated_lead['created_at'] = datetime.fromisoformat(updated_lead['created_at'])
     if isinstance(updated_lead.get('last_contacted'), str) and updated_lead.get('last_contacted'):
         updated_lead['last_contacted'] = datetime.fromisoformat(updated_lead['last_contacted'])
+
+# ====================================================
+# UNIFIED LEADS DASHBOARD API ENDPOINT
+# ====================================================
+@api_router.get("/leads/dashboard/all-sources")
+async def get_all_leads_with_sources(
+    tenant_id: str = Query("default_dealership"),
+    source_filter: Optional[str] = None,
+    status_filter: Optional[str] = None,
+    limit: int = Query(100, le=500)
+):
+    """
+    Get unified leads dashboard showing leads from all sources with filtering
+    """
+    try:
+        # Build filter query
+        filter_query = {"tenant_id": tenant_id}
+        if source_filter and source_filter != "all":
+            filter_query["source"] = source_filter
+        if status_filter and status_filter != "all":
+            filter_query["status"] = status_filter
+        
+        # Get leads from database
+        leads = await db.leads.find(filter_query).sort("created_at", -1).limit(limit).to_list(None)
+        
+        # Process leads for response
+        processed_leads = []
+        for lead in leads:
+            if isinstance(lead.get('created_at'), str):
+                lead['created_at'] = datetime.fromisoformat(lead['created_at'])
+            if isinstance(lead.get('last_contacted'), str) and lead.get('last_contacted'):
+                lead['last_contacted'] = datetime.fromisoformat(lead['last_contacted'])
+            
+            # Ensure source field exists (for backwards compatibility with old data)
+            if 'source' not in lead:
+                lead['source'] = 'manual'
+            
+            processed_leads.append(Lead(**lead))
+        
+        # Get source statistics
+        all_leads = await db.leads.find({"tenant_id": tenant_id}).to_list(None)
+        source_stats = {}
+        status_stats = {}
+        
+        for lead in all_leads:
+            # Count by source
+            source = lead.get('source', 'manual')
+            source_stats[source] = source_stats.get(source, 0) + 1
+            
+            # Count by status
+            status = lead.get('status', 'new')
+            status_stats[status] = status_stats.get(status, 0) + 1
+        
+        return {
+            "success": True,
+            "leads": processed_leads,
+            "total_count": len(all_leads),
+            "filtered_count": len(processed_leads),
+            "source_statistics": source_stats,
+            "status_statistics": status_stats,
+            "available_sources": list(source_stats.keys())
+        }
+        
+    except Exception as e:
+        logger.error(f"Error fetching unified leads dashboard: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch leads dashboard")
+
     
     return Lead(**updated_lead)
 
