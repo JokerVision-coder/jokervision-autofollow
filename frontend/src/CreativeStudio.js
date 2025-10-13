@@ -253,7 +253,7 @@ const CreativeStudioNew = () => {
     if (file && canvas) {
       const reader = new FileReader();
       reader.onload = (event) => {
-        fabric.Image.fromURL(event.target.result, (img) => {
+        FabricImage.fromURL(event.target.result).then((img) => {
           img.scaleToWidth(300);
           canvas.add(img);
           canvas.setActiveObject(img);
