@@ -874,4 +874,212 @@ const CreateSegmentModal = ({ onClose, onSegmentCreated }) => {
   );
 };
 
+// Bulk Upload Section Component
+const BulkUploadSection = ({ uploadFile, setUploadFile, uploading, uploadResult, onUpload }) => {
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.name.endsWith('.csv')) {
+        setUploadFile(file);
+      } else {
+        toast.error('Please select a CSV file');
+      }
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Instructions Card */}
+      <Card className="glass-card">
+        <CardContent className="p-6">
+          <div className="flex items-start gap-4">
+            <div className="p-3 bg-blue-500/20 rounded-lg">
+              <Upload className="w-6 h-6 text-blue-400" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-xl font-semibold text-glass-bright mb-2">Bulk Lead Upload</h3>
+              <p className="text-glass-muted mb-4">
+                Upload multiple leads at once using a CSV file. This feature allows you to import leads from external sources
+                and integrate them into your JokerVision system.
+              </p>
+              
+              <div className="bg-glass/20 border border-neon-purple/30 rounded-lg p-4 mb-4">
+                <h4 className="text-md font-semibold text-glass-bright mb-2 flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-green-400" />
+                  CSV File Requirements
+                </h4>
+                <ul className="list-disc list-inside space-y-1 text-sm text-glass-muted">
+                  <li><strong>Required columns:</strong> first_name, last_name, phone OR mobile OR email</li>
+                  <li><strong>Optional columns:</strong> mobile (alternate phone), email</li>
+                  <li><strong>File format:</strong> CSV (Comma-Separated Values)</li>
+                  <li><strong>Column names:</strong> Can use variations like "First Name", "firstname", "FIRST_NAME"</li>
+                  <li><strong>Duplicates:</strong> System automatically skips duplicate leads based on email or phone</li>
+                </ul>
+              </div>
+
+              <div className="bg-purple-500/10 border border-purple-500/30 rounded-lg p-4">
+                <h4 className="text-md font-semibold text-purple-400 mb-2">Example CSV Format</h4>
+                <pre className="text-xs text-gray-300 bg-black/30 p-3 rounded overflow-x-auto">
+{`first_name,last_name,phone,mobile,email
+John,Doe,555-123-4567,555-987-6543,john.doe@example.com
+Jane,Smith,555-234-5678,,jane.smith@example.com
+Robert,Johnson,,555-345-6789,robert.j@example.com`}
+                </pre>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Upload Area */}
+      <Card className="glass-card">
+        <CardContent className="p-6">
+          <h3 className="text-lg font-semibold text-glass-bright mb-4">Select CSV File</h3>
+          
+          <div className="space-y-4">
+            {/* File Input */}
+            <div className="border-2 border-dashed border-neon-purple/30 rounded-lg p-8 text-center hover:border-neon-purple/60 transition-colors">
+              <input
+                type="file"
+                accept=".csv"
+                onChange={handleFileChange}
+                className="hidden"
+                id="csv-upload"
+                disabled={uploading}
+              />
+              <label htmlFor="csv-upload" className="cursor-pointer">
+                <Upload className="w-12 h-12 text-purple-400 mx-auto mb-3" />
+                <p className="text-glass-bright mb-1">
+                  {uploadFile ? uploadFile.name : 'Click to select CSV file'}
+                </p>
+                <p className="text-sm text-glass-muted">
+                  or drag and drop your CSV file here
+                </p>
+              </label>
+            </div>
+
+            {/* Selected File Info */}
+            {uploadFile && !uploading && (
+              <div className="flex items-center gap-3 bg-green-500/10 border border-green-500/30 rounded-lg p-4">
+                <CheckCircle2 className="w-5 h-5 text-green-400" />
+                <div className="flex-1">
+                  <p className="text-glass-bright">{uploadFile.name}</p>
+                  <p className="text-sm text-glass-muted">
+                    {(uploadFile.size / 1024).toFixed(2)} KB
+                  </p>
+                </div>
+                <Button
+                  onClick={() => setUploadFile(null)}
+                  className="bg-red-500/20 hover:bg-red-500/30 text-red-400"
+                  size="sm"
+                >
+                  Remove
+                </Button>
+              </div>
+            )}
+
+            {/* Upload Button */}
+            <Button
+              onClick={onUpload}
+              disabled={!uploadFile || uploading}
+              className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
+            >
+              {uploading ? (
+                <>
+                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                  Uploading...
+                </>
+              ) : (
+                <>
+                  <Upload className="w-4 h-4 mr-2" />
+                  Upload Leads
+                </>
+              )}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Upload Results */}
+      {uploadResult && (
+        <Card className="glass-card">
+          <CardContent className="p-6">
+            <h3 className="text-lg font-semibold text-glass-bright mb-4 flex items-center gap-2">
+              <CheckCircle2 className="w-5 h-5 text-green-400" />
+              Upload Results
+            </h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+              <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
+                <div className="text-2xl font-bold text-blue-400">
+                  {uploadResult.summary.total_processed}
+                </div>
+                <div className="text-sm text-glass-muted">Total Processed</div>
+              </div>
+              <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4">
+                <div className="text-2xl font-bold text-green-400">
+                  {uploadResult.summary.leads_created}
+                </div>
+                <div className="text-sm text-glass-muted">Leads Created</div>
+              </div>
+              <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4">
+                <div className="text-2xl font-bold text-yellow-400">
+                  {uploadResult.summary.duplicates_skipped}
+                </div>
+                <div className="text-sm text-glass-muted">Duplicates Skipped</div>
+              </div>
+              <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4">
+                <div className="text-2xl font-bold text-red-400">
+                  {uploadResult.summary.leads_failed}
+                </div>
+                <div className="text-sm text-glass-muted">Failed</div>
+              </div>
+            </div>
+
+            {/* Created Leads Preview */}
+            {uploadResult.created_leads && uploadResult.created_leads.length > 0 && (
+              <div className="mb-4">
+                <h4 className="text-md font-semibold text-glass-bright mb-2">Successfully Created Leads (Preview)</h4>
+                <div className="space-y-2">
+                  {uploadResult.created_leads.map((lead, index) => (
+                    <div key={index} className="bg-glass/20 rounded-lg p-3 flex items-center gap-3">
+                      <CheckCircle2 className="w-4 h-4 text-green-400" />
+                      <div className="flex-1">
+                        <div className="text-glass-bright">{lead.name}</div>
+                        <div className="text-sm text-glass-muted">
+                          {lead.email} • {lead.phone}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Failed Leads */}
+            {uploadResult.failed_leads && uploadResult.failed_leads.length > 0 && (
+              <div>
+                <h4 className="text-md font-semibold text-red-400 mb-2">Failed Leads</h4>
+                <div className="space-y-2">
+                  {uploadResult.failed_leads.map((lead, index) => (
+                    <div key={index} className="bg-red-500/10 border border-red-500/30 rounded-lg p-3">
+                      <div className="flex items-start gap-3">
+                        <AlertCircle className="w-4 h-4 text-red-400 mt-1" />
+                        <div className="flex-1">
+                          <div className="text-glass-bright">Row {lead.row}</div>
+                          <div className="text-sm text-red-400">{lead.reason}</div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+};
+
 export default MassMarketing;
