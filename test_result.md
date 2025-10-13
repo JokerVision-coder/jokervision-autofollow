@@ -771,6 +771,21 @@ frontend:
         - agent: "main"
         - comment: "✅ AUTOMATION TOGGLE FIX COMPLETE: Fixed non-functional automation rule toggles in Lead Generation Hub. ISSUE: Switch components had no onCheckedChange handler, making them display-only without actual toggle functionality. SOLUTION: Added toggleAutomationRule function that updates state by toggling rule.status between 'active' and 'inactive', shows toast notifications for feedback, and connected function to Switch via onCheckedChange prop. TESTING RESULTS: ✅ All 3 switches can be toggled OFF (state changes to 'unchecked', badges change to gray 'inactive'), ✅ All 3 switches can be toggled back ON (state changes to 'checked', badges change to green 'active'), ✅ Toast notifications appear for each action ('✅ Rule activated' or '⏸️ Rule disabled'), ✅ State changes are immediate with clear visual feedback. Automation rules can now be enabled/disabled as expected."
 
+  - task: "Calendar Integration Settings Modal Implementation"
+    implemented: true
+    working: true
+    file: "CalendarIntegration.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: false
+        - agent: "user"
+        - comment: "USER REPORTED: Under Calendar Integration tool, settings are not displaying. No section to link calendars like Google Calendar & Outlook."
+        - working: true
+        - agent: "main"
+        - comment: "✅ CALENDAR SETTINGS MODAL IMPLEMENTED: Created comprehensive settings modal for calendar integrations. ISSUE: Settings button existed but had no onClick handler and no modal component was implemented. SOLUTION: Added showSettings state, created complete SettingsModal component with calendar connection management, sync settings, and notification preferences. Connected Settings button to open modal. FEATURES IMPLEMENTED: Calendar Connections (Google Calendar, Microsoft Outlook, Apple Calendar/iCloud with Connect/Disconnect functionality), Sync Settings (Two-Way Sync, Auto Sync every 15 minutes, Sync Reminders with checkboxes), Notifications (Email and SMS notification preferences), Professional UI (glass-effect cards, gradient backgrounds, proper modal overlay). TESTING RESULTS: ✅ Settings button opens modal correctly, ✅ All 3 calendar providers visible with Connect buttons, ✅ Connection toggles work (Connect changes to Disconnect with status update '✅ Connected - Syncing appointments'), ✅ All sync settings visible with checkboxes, ✅ Email and SMS notification toggles present, ✅ Save Settings and Cancel buttons functional, ✅ Modal scrollable to show all content. Users can now properly connect external calendars and configure sync preferences."
+
   - task: "Inventory System Backend API Testing"
     implemented: true
     working: false
