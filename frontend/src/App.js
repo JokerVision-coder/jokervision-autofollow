@@ -2233,6 +2233,7 @@ function App() {
           <Route path="/communications" element={<Communications />} />
           <Route path="/pipeline" element={<SalesPipeline />} />
           <Route path="/marketing" element={<MassMarketing />} />
+          <Route path="/all-leads" element={<AllLeadsDashboard />} />
           <Route path="/social" element={<SocialMediaHub />} />
           <Route path="/reviews" element={<ReviewsManager />} />
           <Route path="/calendar" element={<CalendarIntegration />} />
