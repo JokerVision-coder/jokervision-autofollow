@@ -36,8 +36,10 @@ const CalendarIntegration = () => {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showEventModal, setShowEventModal] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [viewMode, setViewMode] = useState('week'); // day, week, month
+  const [connectedCalendars, setConnectedCalendars] = useState([]);
 
   useEffect(() => {
     fetchEvents();
