@@ -4,8 +4,9 @@ import { toast } from 'react-hot-toast';
 import { 
   Users, Filter, Search, Download, RefreshCw, Mail, Phone,
   MessageSquare, Calendar, TrendingUp, Tag, Eye, Edit2,
-  CheckCircle2, AlertCircle, Clock, ExternalLink
+  CheckCircle2, AlertCircle, Clock, ExternalLink, Bot, Zap
 } from 'lucide-react';
+import LeadDetailsModal from './LeadDetailsModal';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
