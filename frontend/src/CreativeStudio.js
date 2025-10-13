@@ -156,7 +156,7 @@ const CreativeStudioNew = () => {
   // Initialize canvas
   useEffect(() => {
     if (canvasRef.current && !canvas) {
-      const fabricCanvas = new fabric.Canvas(canvasRef.current, {
+      const fabricCanvas = new Canvas(canvasRef.current, {
         width: canvasSize.width,
         height: canvasSize.height,
         backgroundColor: '#ffffff'
