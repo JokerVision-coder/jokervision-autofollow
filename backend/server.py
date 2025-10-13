@@ -20,6 +20,9 @@ import json
 import requests
 import asyncio
 import random
+import csv
+import io
+import codecs
 from fastapi import BackgroundTasks
 from inventory_scraper import ShottenkilkInventoryScraper
 from enhanced_inventory_generator import EnhancedInventoryGenerator
