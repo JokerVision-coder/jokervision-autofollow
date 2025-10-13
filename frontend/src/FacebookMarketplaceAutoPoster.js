@@ -605,6 +605,33 @@ const FacebookMarketplaceAutoPoster = () => {
             {renderInventoryManager()}
           </TabsContent>
 
+          <TabsContent value="groups">
+            <Card className="bg-gradient-to-br from-gray-900/60 to-gray-800/60 backdrop-blur-lg border border-gray-500/30">
+              <CardHeader>
+                <CardTitle className="text-2xl text-white flex items-center">
+                  <Users className="w-6 h-6 mr-3 text-blue-400" />
+                  Facebook Groups Management
+                </CardTitle>
+                <CardDescription className="text-gray-300">
+                  Manage Facebook groups for posting vehicles
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-8">
+                  <Users className="w-16 h-16 mx-auto text-gray-400 mb-4" />
+                  <h3 className="text-xl font-semibold text-white mb-2">Facebook Groups Coming Soon</h3>
+                  <p className="text-gray-400 mb-4">
+                    Advanced Facebook group management and posting features will be available in the next update.
+                  </p>
+                  <Button className="bg-blue-600 hover:bg-blue-700">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Facebook Group
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
           <TabsContent value="queue">
             <Card className="bg-gradient-to-br from-gray-900/60 to-gray-800/60 backdrop-blur-lg border border-gray-500/30">
               <CardHeader>
