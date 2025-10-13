@@ -289,10 +289,18 @@ const MassMarketing = () => {
             campaigns={campaigns}
             onRefresh={fetchCampaigns}
           />
-        ) : (
+        ) : activeTab === 'segments' ? (
           <AudienceSegmentsSection 
             segments={audienceSegments}
             onRefresh={fetchAudienceSegments}
+          />
+        ) : (
+          <BulkUploadSection
+            uploadFile={uploadFile}
+            setUploadFile={setUploadFile}
+            uploading={uploading}
+            uploadResult={uploadResult}
+            onUpload={handleBulkUpload}
           />
         )}
 
