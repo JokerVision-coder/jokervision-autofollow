@@ -214,7 +214,7 @@ const CreativeStudioNew = () => {
     
     switch (shape) {
       case 'rectangle':
-        obj = new fabric.Rect({
+        obj = new Rect({
           left: 100,
           top: 100,
           width: 200,
@@ -225,7 +225,7 @@ const CreativeStudioNew = () => {
         });
         break;
       case 'circle':
-        obj = new fabric.Circle({
+        obj = new Circle({
           left: 100,
           top: 100,
           radius: 75,
@@ -235,7 +235,7 @@ const CreativeStudioNew = () => {
         });
         break;
       case 'line':
-        obj = new fabric.Line([50, 100, 250, 100], {
+        obj = new Line([50, 100, 250, 100], {
           stroke: currentColor,
           strokeWidth: 3
         });
