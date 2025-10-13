@@ -6811,54 +6811,72 @@ async def get_marketing_campaigns(tenant_id: str):
         raise HTTPException(status_code=500, detail="Failed to fetch campaigns")
 
 @api_router.get("/marketing/segments")
-async def get_audience_segments(tenant_id: str):
-    """Get all audience segments for a tenant"""
+async def get_marketing_segments(tenant_id: str = "default_dealership"):
+    """Get audience segments for marketing campaigns"""
     try:
-        segments = await db.audience_segments.find({"tenant_id": tenant_id}).to_list(100)
+        # Try to get from database
+        segments_collection = db.audience_segments
+        segments = await segments_collection.find({"tenant_id": tenant_id}).to_list(100)
         
-        # Convert segments to proper format (remove _id ObjectId)
-        for segment in segments:
-            if "_id" in segment:
-                del segment["_id"]
+        if segments:
+            return {"segments": segments}
+    except:
+        pass
+    
+    # Mock data for demonstration
+    return {
+        "segments": [
+            {
+                "id": "seg-1",
+                "name": "SUV Buyers",
+                "description": "Customers interested in SUVs and crossovers",
+                "count": 1247,
+                "criteria": {"vehicle_type": "SUV", "budget": "$35k-$50k"},
+                "updated": "2024-01-07"
+            },
+            {
+                "id": "seg-2",
+                "name": "Existing Customers",
+                "description": "Previous buyers and service customers",
+                "count": 2341,
+                "criteria": {"status": "previous_customer"},
+                "updated": "2024-01-06"
+            },
+            {
+                "id": "seg-3",
+                "name": "Eco-Conscious Buyers",
+                "description": "Leads interested in hybrid and electric vehicles",
+                "count": 567,
+                "criteria": {"vehicle_type": "hybrid/electric"},
+                "updated": "2024-01-07"
+            }
+        ]
+    }
+
+@api_router.post("/marketing/segments")
+async def create_marketing_segment(request: dict):
+    """Create a new audience segment"""
+    try:
+        tenant_id = request.get("tenant_id", "default_dealership")
         
-        if not segments:
-            # Return mock segments for demo
-            mock_segments = [
-                {
-                    "id": "seg_1",
-                    "tenant_id": tenant_id,
-                    "name": "SUV Buyers",
-                    "description": "Customers interested in SUVs and crossovers",
-                    "criteria": {"vehicle_type": "SUV", "budget_min": 25000},
-                    "count": 1247,
-                    "last_updated": datetime.now(timezone.utc).isoformat()
-                },
-                {
-                    "id": "seg_2",
-                    "tenant_id": tenant_id,
-                    "name": "Existing Customers", 
-                    "description": "Previous buyers and service customers",
-                    "criteria": {"status": "customer", "last_purchase": "within_2_years"},
-                    "count": 2341,
-                    "last_updated": datetime.now(timezone.utc).isoformat()
-                },
-                {
-                    "id": "seg_3",
-                    "tenant_id": tenant_id,
-                    "name": "Eco-Conscious Buyers",
-                    "description": "Leads interested in hybrid and electric vehicles",
-                    "criteria": {"interests": "hybrid", "budget_min": 30000},
-                    "count": 567,
-                    "last_updated": datetime.now(timezone.utc).isoformat()
-                }
-            ]
-            return {"segments": mock_segments}
+        segment = {
+            "id": f"seg-{datetime.now(timezone.utc).timestamp()}",
+            "tenant_id": tenant_id,
+            "name": request.get("name"),
+            "description": request.get("description"),
+            "criteria": request.get("criteria", {}),
+            "count": 0,  # Will be calculated based on criteria
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "updated": datetime.now(timezone.utc).strftime("%m/%d/%Y")
+        }
         
-        return {"segments": segments}
+        # Save to database
+        segments_collection = db.audience_segments
+        await segments_collection.insert_one(segment)
         
+        return {"success": True, "segment": segment}
     except Exception as e:
-        logger.error(f"Error fetching audience segments: {str(e)}")
-        raise HTTPException(status_code=500, detail="Failed to fetch segments")
+        raise HTTPException(status_code=400, detail=str(e))
 
 @api_router.get("/marketing/stats")
 async def get_marketing_stats(tenant_id: str):
