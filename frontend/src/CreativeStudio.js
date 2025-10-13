@@ -338,7 +338,7 @@ const CreativeStudioNew = () => {
       // Simulate AI generation (replace with actual API call)
       setTimeout(() => {
         if (canvas) {
-          const aiText = new fabric.IText(`AI Generated: ${aiPrompt}`, {
+          const aiText = new IText(`AI Generated: ${aiPrompt}`, {
             left: 100,
             top: 100,
             fontSize: 36,
