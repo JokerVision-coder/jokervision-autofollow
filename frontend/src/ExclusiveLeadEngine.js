@@ -327,7 +327,7 @@ const ExclusiveLeadEngine = () => {
               <Target className="w-8 h-8 text-green-400" />
               <Badge className="bg-green-500">CONVERSION</Badge>
             </div>
-            <h3 className="text-3xl font-bold text-white">{leadIntelligence.conversion_rate_exclusive}%</h3>
+            <h3 className="text-3xl font-bold text-white">{leadIntelligence?.conversion_rate_exclusive || 0}%</h3>
             <p className="text-green-300 text-sm">Exclusive Lead Close Rate</p>
             <p className="text-gray-400 text-xs mt-1">vs 23.1% industry average</p>
           </CardContent>
