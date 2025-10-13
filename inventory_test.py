@@ -6,7 +6,7 @@ import json
 def test_inventory_system():
     """Test inventory system backend to analyze current vehicle data structure"""
     
-    base_url = 'https://autoleads-engine.preview.emergentagent.com/api'
+    base_url = 'https://carsync-1.preview.emergentagent.com/api'
     
     print('🚗 INVENTORY SYSTEM BACKEND TESTING')
     print('='*60)

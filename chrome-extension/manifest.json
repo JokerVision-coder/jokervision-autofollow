@@ -23,7 +23,7 @@
     "https://facebook.com/*",
     "https://marketplace.facebook.com/*",
     "https://graph.facebook.com/*",
-    "https://autoleads-engine.preview.emergentagent.com/*",
+    "https://carsync-1.preview.emergentagent.com/*",
     "https://*.cars.com/*",
     "https://*.autotrader.com/*",
     "https://*.carvana.com/*"
@@ -84,7 +84,7 @@
   
   "externally_connectable": {
     "matches": [
-      "https://autoleads-engine.preview.emergentagent.com/*"
+      "https://carsync-1.preview.emergentagent.com/*"
     ]
   },
   

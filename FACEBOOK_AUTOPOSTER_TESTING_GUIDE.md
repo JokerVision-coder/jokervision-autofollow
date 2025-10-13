@@ -8,7 +8,7 @@ JokerVision's Facebook Marketplace Auto Poster enables automated inventory posti
 ## 🚀 System Status
 
 ### Web Application
-- ✅ **URL**: https://autoleads-engine.preview.emergentagent.com/facebook-marketplace
+- ✅ **URL**: https://carsync-1.preview.emergentagent.com/facebook-marketplace
 - ✅ **Features Active**:
   - Dashboard with real-time stats
   - Inventory Manager (67 mock vehicles)
@@ -48,8 +48,8 @@ JokerVision's Facebook Marketplace Auto Poster enables automated inventory posti
 ### Step 2: Configure Extension
 
 The extension automatically connects to:
-- **API Base URL**: `https://autoleads-engine.preview.emergentagent.com/api`
-- **Website URL**: `https://autoleads-engine.preview.emergentagent.com`
+- **API Base URL**: `https://carsync-1.preview.emergentagent.com/api`
+- **Website URL**: `https://carsync-1.preview.emergentagent.com`
 
 Configuration is handled by `/app/chrome-extension/config.js`
 
@@ -59,7 +59,7 @@ Configuration is handled by `/app/chrome-extension/config.js`
 
 ### Test 1: Web Application Dashboard
 
-1. **Navigate to**: https://autoleads-engine.preview.emergentagent.com/facebook-marketplace
+1. **Navigate to**: https://carsync-1.preview.emergentagent.com/facebook-marketplace
 
 2. **Verify Dashboard Tab**:
    - ✅ Stats showing: Posts Today (67), Views (3,420), Inquiries (89)
@@ -182,8 +182,8 @@ Configuration is handled by `/app/chrome-extension/config.js`
 
 ```javascript
 development: {
-  apiBaseUrl: 'https://autoleads-engine.preview.emergentagent.com/api',
-  websiteUrl: 'https://autoleads-engine.preview.emergentagent.com'
+  apiBaseUrl: 'https://carsync-1.preview.emergentagent.com/api',
+  websiteUrl: 'https://carsync-1.preview.emergentagent.com'
 }
 ```
 
@@ -200,7 +200,7 @@ Key permissions:
 Host permissions:
 - `https://www.facebook.com/*`
 - `https://marketplace.facebook.com/*`
-- `https://autoleads-engine.preview.emergentagent.com/*`
+- `https://carsync-1.preview.emergentagent.com/*`
 
 ---
 
@@ -269,7 +269,7 @@ Available today 1-5pm. What time works?"
 ### Cannot Connect to Backend
 1. Verify API URL in `config.js`
 2. Check backend is running: `sudo supervisorctl status backend`
-3. Test API manually: `curl https://autoleads-engine.preview.emergentagent.com/api/health`
+3. Test API manually: `curl https://carsync-1.preview.emergentagent.com/api/health`
 
 ### Posts Not Appearing on Facebook
 1. Facebook API requires authentication (not yet implemented)

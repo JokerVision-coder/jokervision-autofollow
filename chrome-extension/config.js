@@ -6,12 +6,12 @@
 // Configuration for different environments
 const ENVIRONMENTS = {
   development: {
-    apiBaseUrl: 'https://autoleads-engine.preview.emergentagent.com/api',
-    websiteUrl: 'https://autoleads-engine.preview.emergentagent.com'
+    apiBaseUrl: 'https://carsync-1.preview.emergentagent.com/api',
+    websiteUrl: 'https://carsync-1.preview.emergentagent.com'
   },
   staging: {
-    apiBaseUrl: 'https://autoleads-engine.preview.emergentagent.com/api',
-    websiteUrl: 'https://autoleads-engine.preview.emergentagent.com'
+    apiBaseUrl: 'https://carsync-1.preview.emergentagent.com/api',
+    websiteUrl: 'https://carsync-1.preview.emergentagent.com'
   },
   production: {
     apiBaseUrl: 'https://jokervision.emergent.host/api',

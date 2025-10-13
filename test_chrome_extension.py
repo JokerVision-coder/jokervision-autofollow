@@ -6,7 +6,7 @@ import sys
 
 def test_chrome_extension_endpoints():
     """Test Chrome extension endpoints specifically"""
-    base_url = "https://autoleads-engine.preview.emergentagent.com/api"
+    base_url = "https://carsync-1.preview.emergentagent.com/api"
     
     print("🔧 Testing Chrome Extension API Endpoints")
     print("=" * 50)
