@@ -274,6 +274,13 @@ const MassMarketing = () => {
             <Target className="w-4 h-4 mr-2" />
             Audience Segments
           </Button>
+          <Button
+            onClick={() => setActiveTab('bulk-upload')}
+            className={`${activeTab === 'bulk-upload' ? 'bg-purple-600 text-white' : 'text-glass-bright hover:bg-glass'}`}
+          >
+            <Upload className="w-4 h-4 mr-2" />
+            Bulk Upload
+          </Button>
         </div>
 
         {/* Content Area */}
