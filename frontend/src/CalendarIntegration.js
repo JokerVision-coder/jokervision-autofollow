@@ -257,6 +257,15 @@ const CalendarIntegration = () => {
             }}
           />
         )}
+
+        {/* Settings Modal */}
+        {showSettings && (
+          <SettingsModal 
+            onClose={() => setShowSettings(false)}
+            connectedCalendars={connectedCalendars}
+            setConnectedCalendars={setConnectedCalendars}
+          />
+        )}
       </div>
     </div>
   );
