@@ -309,7 +309,7 @@ const CreativeStudioNew = () => {
     
     template.elements.forEach(element => {
       if (element.type === 'text') {
-        const text = new fabric.IText(element.text, {
+        const text = new IText(element.text, {
           left: element.left,
           top: element.top,
           fontSize: element.fontSize,
