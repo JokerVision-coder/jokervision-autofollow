@@ -574,7 +574,7 @@ const FacebookMarketplaceAutoPoster = () => {
 
         {/* Navigation */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4 glass-card mb-8">
+          <TabsList className="grid w-full grid-cols-5 glass-card mb-8">
             <TabsTrigger value="dashboard" className="flex items-center gap-2">
               <BarChart3 className="w-4 h-4" />
               Dashboard
@@ -582,6 +582,10 @@ const FacebookMarketplaceAutoPoster = () => {
             <TabsTrigger value="inventory" className="flex items-center gap-2">
               <Globe className="w-4 h-4" />
               Inventory Manager  
+            </TabsTrigger>
+            <TabsTrigger value="groups" className="flex items-center gap-2">
+              <Users className="w-4 h-4" />
+              Facebook Groups
             </TabsTrigger>
             <TabsTrigger value="queue" className="flex items-center gap-2">
               <Clock className="w-4 h-4" />
