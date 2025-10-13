@@ -432,6 +432,15 @@ const AllLeadsDashboard = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Lead Details Modal */}
+      {selectedLead && (
+        <LeadDetailsModal
+          lead={selectedLead}
+          onClose={() => setSelectedLead(null)}
+          onUpdate={fetchAllLeads}
+        />
+      )}
     </div>
   );
 };
