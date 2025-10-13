@@ -1,7 +1,7 @@
 // JokerVision AutoDealer Pro - Background Service Worker
 class JokerVisionBackground {
     constructor() {
-        this.apiBaseUrl = window.JokerVisionConfig?.apiBaseUrl || 'https://dealergenius.preview.emergentagent.com/api';
+        this.apiBaseUrl = window.JokerVisionConfig?.apiBaseUrl || 'https://autoleads-engine.preview.emergentagent.com/api';
         this.syncInterval = null;
         this.init();
     }
