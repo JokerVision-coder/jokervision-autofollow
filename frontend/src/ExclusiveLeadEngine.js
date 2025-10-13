@@ -339,7 +339,7 @@ const ExclusiveLeadEngine = () => {
               <DollarSign className="w-8 h-8 text-orange-400" />
               <Badge className="bg-orange-500">VALUE</Badge>
             </div>
-            <h3 className="text-3xl font-bold text-white">${leadIntelligence.avg_deal_size_exclusive?.toLocaleString()}</h3>
+            <h3 className="text-3xl font-bold text-white">${leadIntelligence?.avg_deal_size_exclusive?.toLocaleString() || '0'}</h3>
             <p className="text-orange-300 text-sm">Avg Exclusive Deal Size</p>
             <p className="text-gray-400 text-xs mt-1">87% higher than shared leads</p>
           </CardContent>
