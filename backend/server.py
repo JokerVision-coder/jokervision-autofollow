@@ -6961,29 +6961,7 @@ async def create_marketing_campaign(campaign_data: MarketingCampaignCreate):
         logger.error(f"Error creating marketing campaign: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to create campaign")
 
-@api_router.post("/marketing/segments")
-async def create_audience_segment(segment_data: AudienceSegmentCreate):
-    """Create a new audience segment"""
-    try:
-        # Calculate segment count based on criteria
-        # For now, use mock count - in production, query leads collection
-        mock_count = random.randint(50, 500)
-        
-        segment = AudienceSegment(
-            **segment_data.dict(),
-            count=mock_count
-        )
-        
-        # Store in database
-        segment_doc = segment.dict()
-        await db.audience_segments.insert_one(segment_doc)
-        
-        logger.info(f"Audience segment created: {segment.name}")
-        return segment
-        
-    except Exception as e:
-        logger.error(f"Error creating audience segment: {str(e)}")
-        raise HTTPException(status_code=500, detail="Failed to create segment")
+# Removed duplicate POST /marketing/segments endpoint - replaced with new implementation above
 
 async def send_campaign_messages(campaign: MarketingCampaign):
     """Background task to send campaign messages"""
