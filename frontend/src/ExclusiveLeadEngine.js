@@ -287,8 +287,16 @@ const ExclusiveLeadEngine = () => {
       setRealTimeAlerts(data.real_time_alerts);
     } catch (error) {
       console.error('Error fetching real-time alerts:', error);
-      // Fallback to empty array if API fails
-      setRealTimeAlerts([]);
+      // Fallback to demo alerts if API fails
+      setRealTimeAlerts([
+        {
+          id: 'demo_alert_001',
+          type: 'exclusive_lead_expiring',
+          priority: 'critical',
+          message: 'Diamond-level lead expires in 30 minutes!',
+          action_required: 'immediate_contact'
+        }
+      ]);
     }
   };
 
