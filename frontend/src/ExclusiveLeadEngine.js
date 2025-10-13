@@ -271,7 +271,7 @@ const ExclusiveLeadEngine = () => {
     try {
       const response = await fetch(`${API}/exclusive-leads/protection?tenant_id=default`);
       const data = await response.json();
-      setLeadProtection(data.lead_protection);
+      setLeadProtection(data?.lead_protection || []);
     } catch (error) {
       console.error('Error fetching lead protection:', error);
       // Fallback to empty array if API fails
