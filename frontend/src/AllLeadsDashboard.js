@@ -339,10 +339,23 @@ const AllLeadsDashboard = () => {
               <h3 className="text-lg font-semibold text-glass-bright">
                 Leads ({filteredLeads.length})
               </h3>
-              <Button className="bg-blue-600 hover:bg-blue-700 text-white" size="sm">
-                <Download className="w-4 h-4 mr-2" />
-                Export
-              </Button>
+              <div className="flex gap-2">
+                {sourceFilter !== 'all' && (
+                  <Button 
+                    onClick={() => handleBulkEnableAI('both')}
+                    disabled={enablingAI}
+                    className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
+                    size="sm"
+                  >
+                    <Bot className="w-4 h-4 mr-2" />
+                    {enablingAI ? 'Enabling...' : `Enable AI for ${sourceFilter}`}
+                  </Button>
+                )}
+                <Button className="bg-blue-600 hover:bg-blue-700 text-white" size="sm">
+                  <Download className="w-4 h-4 mr-2" />
+                  Export
+                </Button>
+              </div>
             </div>
 
             <div className="space-y-3">
