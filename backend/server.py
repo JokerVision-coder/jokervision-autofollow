@@ -9017,6 +9017,16 @@ async def get_walk_in_customers(
 async def create_walk_in_customer(customer_data: dict):
     """Add a new walk-in customer and automatically create lead"""
     try:
+        # Ensure all required fields have defaults
+        if 'reason_not_bought' not in customer_data:
+            customer_data['reason_not_bought'] = 'Still shopping'
+        if 'salesperson' not in customer_data:
+            customer_data['salesperson'] = 'Unassigned'
+        if 'budget' not in customer_data:
+            customer_data['budget'] = 0.0
+        if 'interested_vehicle' not in customer_data:
+            customer_data['interested_vehicle'] = 'Various'
+        
         customer_obj = WalkInCustomer(**customer_data)
         customer_doc = customer_obj.dict()
         
