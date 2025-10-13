@@ -6975,6 +6975,143 @@ async def create_marketing_campaign(campaign_data: MarketingCampaignCreate):
         logger.error(f"Error creating marketing campaign: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to create campaign")
 
+
+# ====================================================
+# BULK LEAD UPLOAD API ENDPOINT (Mass Marketing CSV/Excel Import)
+# ====================================================
+@api_router.post("/marketing/leads/bulk-upload")
+async def bulk_upload_leads(
+    file: UploadFile = File(...),
+    tenant_id: str = Query("default_dealership"),
+    source: str = Query("Mass Marketing Import")
+):
+    """
+    Upload leads in bulk via CSV or Excel file.
+    Expected CSV columns: first_name, last_name, phone, mobile, email
+    """
+    try:
+        # Validate file type
+        if not file.filename.endswith(('.csv', '.xlsx', '.xls')):
+            raise HTTPException(status_code=400, detail="Only CSV and Excel files are supported")
+        
+        # Read file content
+        contents = await file.read()
+        
+        # Process CSV file
+        if file.filename.endswith('.csv'):
+            # Decode CSV content
+            csv_content = contents.decode('utf-8-sig')  # utf-8-sig handles BOM
+            csv_reader = csv.DictReader(io.StringIO(csv_content))
+            
+            leads_created = []
+            leads_failed = []
+            duplicate_count = 0
+            
+            for row_num, row in enumerate(csv_reader, start=1):
+                try:
+                    # Normalize column names (handle variations)
+                    row_normalized = {k.strip().lower().replace(' ', '_'): v.strip() for k, v in row.items() if v and v.strip()}
+                    
+                    # Extract required fields
+                    first_name = row_normalized.get('first_name', row_normalized.get('firstname', ''))
+                    last_name = row_normalized.get('last_name', row_normalized.get('lastname', ''))
+                    phone = row_normalized.get('phone', row_normalized.get('primary_phone', ''))
+                    mobile = row_normalized.get('mobile', row_normalized.get('alternate_phone', ''))
+                    email = row_normalized.get('email', '')
+                    
+                    # Validate required fields
+                    if not first_name or not last_name:
+                        leads_failed.append({
+                            "row": row_num,
+                            "reason": "Missing first_name or last_name",
+                            "data": row
+                        })
+                        continue
+                    
+                    if not phone and not mobile and not email:
+                        leads_failed.append({
+                            "row": row_num,
+                            "reason": "Missing contact information (phone, mobile, or email)",
+                            "data": row
+                        })
+                        continue
+                    
+                    # Check for duplicates (by email or phone)
+                    existing_lead = None
+                    if email:
+                        existing_lead = await db.leads.find_one({"email": email, "tenant_id": tenant_id})
+                    if not existing_lead and phone:
+                        existing_lead = await db.leads.find_one({"primary_phone": phone, "tenant_id": tenant_id})
+                    
+                    if existing_lead:
+                        duplicate_count += 1
+                        continue
+                    
+                    # Create lead
+                    lead_data = LeadCreate(
+                        tenant_id=tenant_id,
+                        first_name=first_name,
+                        last_name=last_name,
+                        primary_phone=phone or mobile or "N/A",
+                        alternate_phone=mobile if phone else None,
+                        email=email or f"{first_name.lower()}.{last_name.lower()}@example.com",
+                        source=source
+                    )
+                    
+                    lead = Lead(**lead_data.dict())
+                    lead_doc = lead.dict()
+                    lead_doc['created_at'] = lead_doc['created_at'].isoformat()
+                    if lead_doc.get('last_contacted'):
+                        lead_doc['last_contacted'] = lead_doc['last_contacted'].isoformat()
+                    
+                    await db.leads.insert_one(lead_doc)
+                    leads_created.append({
+                        "row": row_num,
+                        "name": f"{first_name} {last_name}",
+                        "email": email,
+                        "phone": phone or mobile
+                    })
+                    
+                    logger.info(f"Lead created from bulk upload: {first_name} {last_name}")
+                    
+                except Exception as row_error:
+                    logger.error(f"Error processing row {row_num}: {str(row_error)}")
+                    leads_failed.append({
+                        "row": row_num,
+                        "reason": str(row_error),
+                        "data": row
+                    })
+            
+            # Invalidate leads cache after bulk upload
+            await invalidate_cache("lead_list")
+            
+            return {
+                "success": True,
+                "message": f"Bulk upload completed",
+                "summary": {
+                    "total_processed": row_num,
+                    "leads_created": len(leads_created),
+                    "leads_failed": len(leads_failed),
+                    "duplicates_skipped": duplicate_count
+                },
+                "created_leads": leads_created[:10],  # Return first 10 for preview
+                "failed_leads": leads_failed[:10] if leads_failed else []
+            }
+        
+        else:
+            # For Excel files, you would need openpyxl or xlrd library
+            # For now, return informative error
+            raise HTTPException(
+                status_code=400, 
+                detail="Excel file support requires additional setup. Please convert to CSV format."
+            )
+            
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        logger.error(f"Error in bulk lead upload: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to process bulk upload: {str(e)}")
+
 # Removed duplicate POST /marketing/segments endpoint - replaced with new implementation above
 
 async def send_campaign_messages(campaign: MarketingCampaign):
