@@ -8931,6 +8931,72 @@ async def create_walk_in_customer(customer_data: dict):
         logger.error(f"Error creating walk-in customer: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to create walk-in customer")
 
+@api_router.post("/walk-in-tracker/convert-to-lead/{customer_id}")
+async def convert_walkin_to_lead(customer_id: str):
+    """Convert walk-in customer to lead in central database"""
+    try:
+        customer = await db.walk_in_customers.find_one({"id": customer_id})
+        if not customer:
+            raise HTTPException(status_code=404, detail="Customer not found")
+        
+        # Check if lead already exists for this walk-in
+        existing_lead = await db.leads.find_one({
+            "tenant_id": customer["tenant_id"],
+            "$or": [
+                {"email": customer.get("email")},
+                {"primary_phone": customer.get("phone")}
+            ]
+        })
+        
+        if existing_lead:
+            return {
+                "message": "Lead already exists",
+                "lead_id": existing_lead["id"],
+                "status": "existing"
+            }
+        
+        # Create lead from walk-in customer
+        name_parts = customer["customer_name"].split(" ", 1)
+        lead_create_data = LeadCreate(
+            tenant_id=customer["tenant_id"],
+            first_name=name_parts[0] if len(name_parts) > 0 else "Walk-In",
+            last_name=name_parts[1] if len(name_parts) > 1 else "Customer",
+            primary_phone=customer["phone"],
+            email=customer.get("email", f"walkin_{customer_id}@dealership.com"),
+            budget=str(customer.get("budget", "")),
+            vehicle_type=customer.get("interested_vehicle", ""),
+            source="Walk-In",
+            notes=f"Walk-in customer: {customer.get('notes', '')}. Reason not bought: {customer.get('reason_not_bought', 'N/A')}"
+        )
+        
+        lead = Lead(**lead_create_data.dict())
+        lead_doc = lead.dict()
+        lead_doc['created_at'] = lead_doc['created_at'].isoformat()
+        if lead_doc.get('last_contacted'):
+            lead_doc['last_contacted'] = lead_doc['last_contacted'].isoformat()
+        
+        await db.leads.insert_one(lead_doc)
+        
+        # Update walk-in customer with lead_id reference
+        await db.walk_in_customers.update_one(
+            {"id": customer_id},
+            {"$set": {"lead_id": lead.id}}
+        )
+        
+        logger.info(f"Walk-in customer {customer_id} converted to lead {lead.id}")
+        return {
+            "message": "Walk-in customer converted to lead successfully",
+            "lead_id": lead.id,
+            "customer_id": customer_id,
+            "status": "created"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error converting walk-in to lead: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to convert walk-in to lead")
+
 @api_router.post("/walk-in-tracker/follow-up/{customer_id}")
 async def send_follow_up(customer_id: str, method: str = Query(...)):
     """Send follow-up to walk-in customer"""
