@@ -197,7 +197,7 @@ const CreativeStudioNew = () => {
   // Tool handlers
   const addText = () => {
     if (!canvas) return;
-    const text = new fabric.IText('Double click to edit', {
+    const text = new IText('Double click to edit', {
       left: 100,
       top: 100,
       fontSize: 32,
