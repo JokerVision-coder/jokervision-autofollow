@@ -299,6 +299,18 @@ backend:
         - agent: "testing"
         - comment: "❌ SALES TRACKING PARTIALLY FAILING: GET /api/sales returns 500 Internal Server Error. GET /api/sales/dashboard works correctly showing commission tiers (12%, 15%, 20%) and structure. Sales creation likely works but retrieval fails due to data model issues. Dashboard shows 0 sales currently."
 
+  - task: "Lead Management & AI Communication Endpoints"
+    implemented: true
+    working: false
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: false
+        - agent: "testing"
+        - comment: "🔍 LEAD MANAGEMENT & AI COMMUNICATION TESTING RESULTS (4/6 PASSED - 66.7%): ✅ CSV Bulk Upload (POST /api/marketing/leads/bulk-upload) - Working correctly, processed 3 leads with 1 created, 2 duplicates skipped. ✅ Unified Leads Dashboard (GET /api/leads/dashboard/all-sources) - Working with proper source filtering, statistics, and response structure. ✅ AI Communication Enablement (POST /api/leads/{id}/enable-ai, POST /api/leads/bulk-enable-ai) - Both single and bulk AI enablement working correctly. ✅ Lead Source Tracking - All 6 source types (website, facebook_ad, google_ad, referral, walk-in, phone_call) tracked correctly in lead creation. ❌ Walk-In Lead Integration (POST /api/walk-in-tracker/customers) - FAILING with 500 error due to missing required fields in WalkInCustomer model (customer_name, interested_vehicle, budget, reason_not_bought, salesperson). ❌ SMS Sending for AI Leads (POST /api/sms/send) - FAILING with 422 validation error, expects lead_id as query parameter but receiving in request body. CRITICAL ISSUES: Walk-in tracker model validation needs fixing, SMS endpoint parameter structure mismatch."
+
   - task: "Data Model Consistency Issue"
     implemented: true
     working: false
