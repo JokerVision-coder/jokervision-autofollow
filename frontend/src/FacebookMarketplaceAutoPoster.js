@@ -173,12 +173,18 @@ const FacebookMarketplaceAutoPoster = () => {
 
   const fetchAiSettings = async () => {
     setAiSettings({
-      autoOptimization: true,
+      autoPost: true,
+      aiDescriptions: true,
+      seoOptimization: true,
+      priceAnalysis: true,
+      photoEnhancement: true,
+      competitorMonitoring: true,
+      leadResponse: true,
+      performanceAnalytics: true,
+      simultaneousGroupPosting: true,
+      aiVariation: true,
       smartScheduling: true,
-      competitorAnalysis: true,
-      priceOptimization: true,
-      descriptionEnhancement: true,
-      photoEnhancement: true
+      banPrevention: true
     });
   };
 
