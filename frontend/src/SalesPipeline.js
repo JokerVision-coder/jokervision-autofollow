@@ -307,6 +307,131 @@ const SalesPipeline = () => {
           </div>
         </div>
       </div>
+      
+      {/* Add Lead Modal */}
+      {showAddLeadModal && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-gradient-to-br from-slate-900 to-purple-900 rounded-2xl shadow-2xl max-w-md w-full border border-purple-500/20">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-purple-600/20 to-blue-600/20 p-6 border-b border-purple-500/20">
+              <h2 className="text-2xl font-bold text-white">Add New Lead</h2>
+              <p className="text-gray-400 text-sm mt-1">Create a manual lead entry</p>
+            </div>
+
+            {/* Form */}
+            <div className="p-6 space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    First Name *
+                  </label>
+                  <Input
+                    type="text"
+                    value={newLead.first_name}
+                    onChange={(e) => setNewLead({...newLead, first_name: e.target.value})}
+                    className="w-full bg-white/10 border-purple-500/30 text-white"
+                    placeholder="John"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Last Name *
+                  </label>
+                  <Input
+                    type="text"
+                    value={newLead.last_name}
+                    onChange={(e) => setNewLead({...newLead, last_name: e.target.value})}
+                    className="w-full bg-white/10 border-purple-500/30 text-white"
+                    placeholder="Doe"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Phone Number *
+                </label>
+                <Input
+                  type="tel"
+                  value={newLead.primary_phone}
+                  onChange={(e) => setNewLead({...newLead, primary_phone: e.target.value})}
+                  className="w-full bg-white/10 border-purple-500/30 text-white"
+                  placeholder="+15551234567"
+                />
+                <p className="text-xs text-gray-500 mt-1">Format: +1234567890</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Email
+                </label>
+                <Input
+                  type="email"
+                  value={newLead.email}
+                  onChange={(e) => setNewLead({...newLead, email: e.target.value})}
+                  className="w-full bg-white/10 border-purple-500/30 text-white"
+                  placeholder="john@example.com"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Vehicle Interest
+                </label>
+                <Input
+                  type="text"
+                  value={newLead.vehicle_type}
+                  onChange={(e) => setNewLead({...newLead, vehicle_type: e.target.value})}
+                  className="w-full bg-white/10 border-purple-500/30 text-white"
+                  placeholder="SUV, Truck, Sedan..."
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Budget
+                </label>
+                <Input
+                  type="text"
+                  value={newLead.budget}
+                  onChange={(e) => setNewLead({...newLead, budget: e.target.value})}
+                  className="w-full bg-white/10 border-purple-500/30 text-white"
+                  placeholder="$30,000"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Notes
+                </label>
+                <textarea
+                  value={newLead.notes}
+                  onChange={(e) => setNewLead({...newLead, notes: e.target.value})}
+                  className="w-full bg-white/10 border border-purple-500/30 rounded px-3 py-2 text-white placeholder-gray-400 min-h-[80px]"
+                  placeholder="Additional notes about this lead..."
+                />
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="p-6 border-t border-purple-500/20 flex gap-3">
+              <Button
+                onClick={() => setShowAddLeadModal(false)}
+                className="flex-1 bg-gray-600 hover:bg-gray-700 text-white"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleAddLead}
+                className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Add Lead
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
