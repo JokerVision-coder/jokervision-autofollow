@@ -276,7 +276,7 @@ const SalesPipeline = () => {
           </div>
           
           <div className="flex gap-3">
-            <Button className="btn-neon">
+            <Button onClick={() => setShowAddLeadModal(true)} className="btn-neon">
               <Plus className="w-4 h-4 mr-2" />
               Add Lead
             </Button>
