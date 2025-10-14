@@ -49,6 +49,39 @@ const SalesPipeline = () => {
     fetchPipelineData();
   }, []);
 
+  const handleAddLead = async () => {
+    if (!newLead.first_name || !newLead.last_name || !newLead.primary_phone) {
+      toast.error('Please fill in all required fields (Name and Phone)');
+      return;
+    }
+
+    try {
+      const leadData = {
+        ...newLead,
+        tenant_id: 'default_dealership',
+        status: 'new',
+        source: 'Manual Entry'
+      };
+
+      await axios.post(`${API}/leads`, leadData);
+      toast.success('Lead added successfully!');
+      setShowAddLeadModal(false);
+      setNewLead({
+        first_name: '',
+        last_name: '',
+        primary_phone: '',
+        email: '',
+        vehicle_type: '',
+        budget: '',
+        notes: ''
+      });
+      fetchPipelineData();
+    } catch (error) {
+      console.error('Error adding lead:', error);
+      toast.error('Failed to add lead');
+    }
+  };
+
   const fetchPipelineData = async () => {
     try {
       setLoading(true);
