@@ -34,6 +34,16 @@ const SalesPipeline = () => {
   const [draggedLead, setDraggedLead] = useState(null);
   const [loading, setLoading] = useState(true);
   const [pipelineStats, setPipelineStats] = useState({});
+  const [showAddLeadModal, setShowAddLeadModal] = useState(false);
+  const [newLead, setNewLead] = useState({
+    first_name: '',
+    last_name: '',
+    primary_phone: '',
+    email: '',
+    vehicle_type: '',
+    budget: '',
+    notes: ''
+  });
 
   useEffect(() => {
     fetchPipelineData();
