@@ -98,10 +98,16 @@ async function scrapeInventory() {
                 })
             });
             
+            console.log('Upload response status:', uploadResponse.status);
+            
             if (uploadResponse.ok) {
+                const uploadData = await uploadResponse.json();
+                console.log('Upload success:', uploadData);
                 if (resultDiv) resultDiv.textContent = `✅ ${count} vehicles uploaded and queued for Facebook!`;
             } else {
-                if (resultDiv) resultDiv.textContent = '❌ Upload failed';
+                const errorText = await uploadResponse.text();
+                console.error('Upload failed:', uploadResponse.status, errorText);
+                if (resultDiv) resultDiv.textContent = `❌ Upload failed: ${uploadResponse.status}`;
             }
         } else {
             if (resultDiv) resultDiv.textContent = '❌ No inventory found on this page';
