@@ -248,6 +248,9 @@ async function scrapeInventory() {
 // Upload inventory to backend (which will handle Facebook Marketplace posting)
 async function uploadInventoryToBackend(scrapedData) {
     try {
+        console.log('Uploading to backend:', `${CONFIG.apiBaseUrl}/inventory/upload-scraped`);
+        console.log('Data:', scrapedData);
+        
         const response = await fetch(`${CONFIG.apiBaseUrl}/inventory/upload-scraped`, {
             method: 'POST',
             headers: {
@@ -262,12 +265,17 @@ async function uploadInventoryToBackend(scrapedData) {
             })
         });
         
+        console.log('Response status:', response.status);
+        
         if (!response.ok) {
-            throw new Error('Failed to upload inventory');
+            const errorText = await response.text();
+            console.error('Upload failed:', errorText);
+            throw new Error(`Upload failed: ${response.status} - ${errorText}`);
         }
         
         const result = await response.json();
-        console.log('Inventory uploaded successfully:', result);
+        console.log('Upload successful:', result);
+        return result;
     } catch (error) {
         console.error('Error uploading inventory:', error);
         throw error;
