@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JokerVision AutoDealer Pro</title>
+    <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="brand">
+                <img src="icons/icon32.png" alt="JokerVision" class="logo">
+                <h1 class="brand-title">JokerVision AutoDealer Pro</h1>
+            </div>
+            <div class="status-indicator" id="connectionStatus">
+                <div class="status-dot offline"></div>
+                <span>Connecting...</span>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="nav-tabs">
+            <button class="tab-btn active" data-tab="inventory">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M19 7h-3V6a4 4 0 0 0-8 0v1H5a1 1 0 0 0-1 1v11a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V8a1 1 0 0 0-1-1zM10 6a2 2 0 0 1 4 0v1h-4V6zm8 13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V9h2v1a1 1 0 0 0 2 0V9h4v1a1 1 0 0 0 2 0V9h2v10z"/>
+                </svg>
+                Inventory
+            </button>
+            <button class="tab-btn" data-tab="seo">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/>
+                </svg>
+                AI SEO
+            </button>
+            <button class="tab-btn" data-tab="automation">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                </svg>
+                Automation
+            </button>
+            <button class="tab-btn" data-tab="analytics">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M3 3h18v18H3V3zm16 16V5H5v14h14zm-8-2h2v-4h-2v4zm-4 0h2V9H7v8zm8 0h2v-6h-2v6z"/>
+                </svg>
+                Analytics
+            </button>
+        </div>
+
+        <!-- Tab Content -->
+        <div class="tab-content">
+            <!-- Inventory Management Tab -->
+            <div class="tab-pane active" id="inventory">
+                <div class="section">
+                    <h3>Inventory Sync</h3>
+                    <div class="sync-status">
+                        <div class="sync-info">
+                            <span class="label">Last Sync:</span>
+                            <span class="value" id="lastSync">Never</span>
+                        </div>
+                        <div class="sync-info">
+                            <span class="label">Vehicles:</span>
+                            <span class="value" id="vehicleCount">0</span>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" id="syncInventory">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M17.65 6.35A7.958 7.958 0 0 0 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0 1 12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+                        </svg>
+                        Sync Now
+                    </button>
+                </div>
+
+                <div class="section">
+                    <h3>Quick Actions</h3>
+                    <div class="action-grid">
+                        <button class="action-btn" id="bulkUpload">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M14,12L10,8V11H2V13H10V16M20,4H4A2,2 0 0,0 2,6V10H4V6H20V18H4V14H2V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V6A2,2 0 0,0 20,4Z"/>
+                            </svg>
+                            <span>Bulk Upload</span>
+                        </button>
+                        <button class="action-btn" id="priceOptimizer">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M7,15H9C9,16.08 10.37,17 12,17C13.63,17 15,16.08 15,15C15,13.9 13.96,13.5 11.76,12.97C9.64,12.44 7,11.78 7,9C7,7.21 8.47,5.69 10.5,5.18V3H13.5V5.18C15.53,5.69 17,7.21 17,9H15C15,7.92 13.63,7 12,7C10.37,7 9,7.92 9,9C9,10.1 10.04,10.5 12.24,11.03C14.36,11.56 17,12.22 17,15C17,16.79 15.53,18.31 13.5,18.82V21H10.5V18.82C8.47,18.31 7,16.79 7,15Z"/>
+                            </svg>
+                            <span>AI Pricing</span>
+                        </button>
+                        <button class="action-btn" id="photoEnhance">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M9,3V4H4V6H5V19A2,2 0 0,0 7,21H17A2,2 0 0,0 19,19V6H20V4H15V3H9M7,6H17V19H7V6M9,8V17H11V8H9M13,8V17H15V8H13Z"/>
+                            </svg>
+                            <span>Photo AI</span>
+                        </button>
+                        <button class="action-btn" id="competitors">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M12,6A6,6 0 0,0 6,12A6,6 0 0,0 12,18A6,6 0 0,0 18,12A6,6 0 0,0 12,6M12,8A4,4 0 0,1 16,12A4,4 0 0,1 12,16A4,4 0 0,1 8,12A4,4 0 0,1 12,8Z"/>
+                            </svg>
+                            <span>Spy Mode</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3>Vehicle Queue</h3>
+                    <div class="queue-list" id="vehicleQueue">
+                        <div class="queue-item">
+                            <div class="vehicle-info">
+                                <span class="vehicle-name">2023 Toyota Camry</span>
+                                <span class="vehicle-price">$28,999</span>
+                            </div>
+                            <div class="queue-status pending">Pending</div>
+                        </div>
+                        <div class="queue-item">
+                            <div class="vehicle-info">
+                                <span class="vehicle-name">2022 Honda Accord</span>
+                                <span class="vehicle-price">$31,500</span>
+                            </div>
+                            <div class="queue-status processing">Processing</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI SEO Tab -->
+            <div class="tab-pane" id="seo">
+                <div class="section">
+                    <h3>AI SEO Optimizer</h3>
+                    <div class="seo-stats">
+                        <div class="stat-item">
+                            <div class="stat-value">94%</div>
+                            <div class="stat-label">SEO Score</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">2.3x</div>
+                            <div class="stat-label">Visibility</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">68%</div>
+                            <div class="stat-label">Click Rate</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3>Optimization Tools</h3>
+                    <div class="tool-list">
+                        <div class="tool-item">
+                            <div class="tool-info">
+                                <span class="tool-name">Smart Descriptions</span>
+                                <span class="tool-desc">AI-generated vehicle descriptions</span>
+                            </div>
+                            <button class="btn btn-sm" id="generateDescriptions">Generate</button>
+                        </div>
+                        <div class="tool-item">
+                            <div class="tool-info">
+                                <span class="tool-name">Keyword Optimization</span>
+                                <span class="tool-desc">Target high-converting keywords</span>
+                            </div>
+                            <button class="btn btn-sm" id="optimizeKeywords">Optimize</button>
+                        </div>
+                        <div class="tool-item">
+                            <div class="tool-info">
+                                <span class="tool-name">A/B Testing</span>
+                                <span class="tool-desc">Test different listing variations</span>
+                            </div>
+                            <button class="btn btn-sm" id="startABTest">Start Test</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3>Performance Keywords</h3>
+                    <div class="keyword-tags">
+                        <span class="keyword-tag high">reliable car</span>
+                        <span class="keyword-tag high">low mileage</span>
+                        <span class="keyword-tag medium">fuel efficient</span>
+                        <span class="keyword-tag medium">clean title</span>
+                        <span class="keyword-tag low">one owner</span>
+                        <span class="keyword-tag high">toyota certified</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Automation Tab -->
+            <div class="tab-pane" id="automation">
+                <div class="section">
+                    <h3>Auto-Posting</h3>
+                    <div class="automation-toggle">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="autoPosting">
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <div class="toggle-info">
+                            <span class="toggle-label">Automatic Posting</span>
+                            <span class="toggle-desc">Post new inventory automatically</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3>Smart Scheduling</h3>
+                    <div class="schedule-config">
+                        <div class="config-item">
+                            <label>Posting Frequency</label>
+                            <select id="postingFrequency">
+                                <option value="immediate">Immediate</option>
+                                <option value="hourly">Every Hour</option>
+                                <option value="daily">Daily</option>
+                                <option value="optimal">AI Optimal Times</option>
+                            </select>
+                        </div>
+                        <div class="config-item">
+                            <label>Daily Limit</label>
+                            <input type="number" id="dailyLimit" value="10" min="1" max="50">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3>Response Templates</h3>
+                    <div class="template-list">
+                        <div class="template-item">
+                            <span class="template-name">Initial Inquiry</span>
+                            <button class="btn btn-sm" id="editTemplate1">Edit</button>
+                        </div>
+                        <div class="template-item">
+                            <span class="template-name">Price Question</span>
+                            <button class="btn btn-sm" id="editTemplate2">Edit</button>
+                        </div>
+                        <div class="template-item">
+                            <span class="template-name">Appointment Request</span>
+                            <button class="btn btn-sm" id="editTemplate3">Edit</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analytics Tab -->
+            <div class="tab-pane" id="analytics">
+                <div class="section">
+                    <h3>Performance Overview</h3>
+                    <div class="analytics-grid">
+                        <div class="analytics-card">
+                            <div class="card-header">
+                                <span class="card-title">Listings</span>
+                                <span class="card-trend up">+12%</span>
+                            </div>
+                            <div class="card-value">247</div>
+                            <div class="card-subtitle">Active listings</div>
+                        </div>
+                        <div class="analytics-card">
+                            <div class="card-header">
+                                <span class="card-title">Views</span>
+                                <span class="card-trend up">+28%</span>
+                            </div>
+                            <div class="card-value">15.2K</div>
+                            <div class="card-subtitle">This month</div>
+                        </div>
+                        <div class="analytics-card">
+                            <div class="card-header">
+                                <span class="card-title">Inquiries</span>
+                                <span class="card-trend up">+45%</span>
+                            </div>
+                            <div class="card-value">89</div>
+                            <div class="card-subtitle">This week</div>
+                        </div>
+                        <div class="analytics-card">
+                            <div class="card-header">
+                                <span class="card-title">Conversion</span>
+                                <span class="card-trend up">+8%</span>
+                            </div>
+                            <div class="card-value">5.8%</div>
+                            <div class="card-subtitle">View to inquiry</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3>Top Performers</h3>
+                    <div class="performer-list">
+                        <div class="performer-item">
+                            <div class="performer-info">
+                                <span class="performer-name">2023 Toyota Camry LE</span>
+                                <span class="performer-stats">156 views, 12 inquiries</span>
+                            </div>
+                            <div class="performer-score">8.7</div>
+                        </div>
+                        <div class="performer-item">
+                            <div class="performer-info">
+                                <span class="performer-name">2022 Honda Accord Sport</span>
+                                <span class="performer-stats">203 views, 18 inquiries</span>
+                            </div>
+                            <div class="performer-score">9.2</div>
+                        </div>
+                        <div class="performer-item">
+                            <div class="performer-info">
+                                <span class="performer-name">2021 Subaru Outback</span>
+                                <span class="performer-stats">87 views, 8 inquiries</span>
+                            </div>
+                            <div class="performer-score">7.4</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3>Competitive Analysis</h3>
+                    <div class="competitive-stats">
+                        <div class="competitive-item">
+                            <span class="competitive-label">Market Position</span>
+                            <div class="competitive-bar">
+                                <div class="bar-fill" style="width: 78%"></div>
+                            </div>
+                            <span class="competitive-value">#3 in area</span>
+                        </div>
+                        <div class="competitive-item">
+                            <span class="competitive-label">Price Competitiveness</span>
+                            <div class="competitive-bar">
+                                <div class="bar-fill" style="width: 85%"></div>
+                            </div>
+                            <span class="competitive-value">Very Good</span>
+                        </div>
+                        <div class="competitive-item">
+                            <span class="competitive-label">Response Time</span>
+                            <div class="competitive-bar">
+                                <div class="bar-fill" style="width: 92%"></div>
+                            </div>
+                            <span class="competitive-value">Excellent</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <div class="footer-links">
+                <button class="footer-btn" id="openDashboard">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/>
+                    </svg>
+                    Dashboard
+                </button>
+                <button class="footer-btn" id="openSettings">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.82,11.69,4.82,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/>
+                    </svg>
+                    Settings
+                </button>
+            </div>
+            <div class="footer-info">
+                <span class="version">v2.0.0</span>
+                <span class="separator">•</span>
+                <span class="powered-by">Powered by JokerVision AI</span>
+            </div>
+        </div>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+</html>
