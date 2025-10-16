@@ -180,22 +180,44 @@
         }
         
         async function syncInventory() {
+            console.log('Sync button clicked!');
             try {
-                document.getElementById('statusText').textContent = 'Syncing...';
+                const statusEl = document.getElementById('statusText');
+                if (statusEl) statusEl.textContent = 'Syncing...';
+                
+                console.log('Sending request to:', `${API_URL}/inventory/sync`);
+                
                 const response = await fetch(`${API_URL}/inventory/sync`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ tenant_id: 'default', source: 'extension' })
                 });
+                
+                console.log('Response status:', response.status);
+                
                 if (response.ok) {
                     const data = await response.json();
-                    document.getElementById('vehicleCount').textContent = data.vehicles_processed || 0;
-                    document.getElementById('lastSync').textContent = new Date().toLocaleTimeString();
-                    document.getElementById('statusText').textContent = 'Sync Complete!';
+                    console.log('Response data:', data);
+                    
+                    const countEl = document.getElementById('vehicleCount');
+                    const syncEl = document.getElementById('lastSync');
+                    
+                    if (countEl) countEl.textContent = data.vehicles_processed || 0;
+                    if (syncEl) syncEl.textContent = new Date().toLocaleTimeString();
+                    if (statusEl) statusEl.textContent = 'Sync Complete!';
+                    
+                    setTimeout(() => {
+                        if (statusEl) statusEl.textContent = 'Extension Active';
+                    }, 3000);
+                } else {
+                    const errorText = await response.text();
+                    console.error('Sync failed:', errorText);
+                    if (statusEl) statusEl.textContent = 'Sync Failed: ' + response.status;
                 }
             } catch (error) {
-                document.getElementById('statusText').textContent = 'Sync Failed';
-                console.error(error);
+                console.error('Sync error:', error);
+                const statusEl = document.getElementById('statusText');
+                if (statusEl) statusEl.textContent = 'Sync Error: ' + error.message;
             }
         }
         
