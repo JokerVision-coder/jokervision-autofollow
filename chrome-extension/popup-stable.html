@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JokerVision</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            width: 400px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 500px;
+        }
+        .container { background: white; padding: 20px; }
+        .header {
+            text-align: center;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+            margin-bottom: 20px;
+        }
+        h1 { font-size: 20px; color: #333; margin-bottom: 5px; }
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 13px;
+        }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #28a745;
+        }
+        .tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        .tab {
+            flex: 1;
+            padding: 10px 5px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 12px;
+            color: #666;
+            border-bottom: 2px solid transparent;
+        }
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+            font-weight: 600;
+        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .section { margin-bottom: 15px; }
+        .section h3 { font-size: 14px; margin-bottom: 10px; color: #333; }
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+        .btn:hover { opacity: 0.9; }
+        .btn-secondary {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+        .info {
+            font-size: 12px;
+            color: #666;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            margin-top: 10px;
+        }
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+        .metric-label { color: #666; }
+        .metric-value { font-weight: 600; color: #333; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 JokerVision AutoDealer Pro</h1>
+            <div class="status">
+                <div class="status-dot"></div>
+                <span id="statusText">Extension Active</span>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('inventory')">📦 Inventory</button>
+            <button class="tab" onclick="switchTab('scrape')">🔍 Scrape</button>
+            <button class="tab" onclick="switchTab('analytics')">📊 Analytics</button>
+        </div>
+
+        <div id="inventory" class="tab-content active">
+            <div class="section">
+                <h3>Inventory Management</h3>
+                <button class="btn" onclick="syncInventory()">🔄 Sync Inventory</button>
+                <div class="metric">
+                    <span class="metric-label">Last Sync:</span>
+                    <span class="metric-value" id="lastSync">Never</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Total Vehicles:</span>
+                    <span class="metric-value" id="vehicleCount">0</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="scrape" class="tab-content">
+            <div class="section">
+                <h3>Scrape & Upload</h3>
+                <button class="btn btn-secondary" onclick="scrapeInventory()">⬆️ Scrape from Current Page</button>
+                <div id="scrapeResult" class="info" style="display:none;"></div>
+                <p class="info">
+                    Go to Cars.com, AutoTrader, or CarGurus inventory page and click above to scrape vehicles.
+                </p>
+            </div>
+        </div>
+
+        <div id="analytics" class="tab-content">
+            <div class="section">
+                <h3>Quick Stats</h3>
+                <div class="metric">
+                    <span class="metric-label">Active Listings:</span>
+                    <span class="metric-value">247</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Views (Month):</span>
+                    <span class="metric-value">15.2K</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Inquiries:</span>
+                    <span class="metric-value">89</span>
+                </div>
+                <button class="btn" onclick="openDashboard()">📊 Open Full Dashboard</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://autofollowpro.preview.emergentagent.com/api';
+        
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+        
+        async function syncInventory() {
+            try {
+                document.getElementById('statusText').textContent = 'Syncing...';
+                const response = await fetch(`${API_URL}/inventory/sync`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ tenant_id: 'default', source: 'extension' })
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('vehicleCount').textContent = data.vehicles_processed || 0;
+                    document.getElementById('lastSync').textContent = new Date().toLocaleTimeString();
+                    document.getElementById('statusText').textContent = 'Sync Complete!';
+                }
+            } catch (error) {
+                document.getElementById('statusText').textContent = 'Sync Failed';
+                console.error(error);
+            }
+        }
+        
+        async function scrapeInventory() {
+            try {
+                const resultDiv = document.getElementById('scrapeResult');
+                resultDiv.style.display = 'block';
+                resultDiv.textContent = 'Scraping...';
+                
+                const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+                const response = await chrome.tabs.sendMessage(tab.id, { action: 'scrapeInventory' });
+                
+                if (response && response.success) {
+                    const count = response.vehicles ? response.vehicles.length : 0;
+                    resultDiv.textContent = `✅ Found ${count} vehicles! Uploading...`;
+                    
+                    const uploadResponse = await fetch(`${API_URL}/inventory/upload-scraped`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            vehicles: response.vehicles,
+                            source: response.siteType,
+                            sourceUrl: response.url,
+                            autoPostToFacebook: true
+                        })
+                    });
+                    
+                    if (uploadResponse.ok) {
+                        resultDiv.textContent = `✅ ${count} vehicles uploaded and queued for Facebook!`;
+                    } else {
+                        resultDiv.textContent = '❌ Upload failed';
+                    }
+                } else {
+                    resultDiv.textContent = '❌ No inventory found on this page';
+                }
+            } catch (error) {
+                document.getElementById('scrapeResult').textContent = '❌ Error: ' + error.message;
+                console.error(error);
+            }
+        }
+        
+        function openDashboard() {
+            chrome.tabs.create({ url: 'https://autofollowpro.preview.emergentagent.com' });
+        }
+        
+        console.log('JokerVision loaded successfully');
+    </script>
+</body>
+</html>
