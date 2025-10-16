@@ -1,0 +1,89 @@
+╔══════════════════════════════════════════════════════════════╗
+║                                                              ║
+║         🚀 JOKERVISION CHROME EXTENSION 🚀                  ║
+║              Installation Instructions                       ║
+║                                                              ║
+╚══════════════════════════════════════════════════════════════╝
+
+📖 FULL INSTALLATION GUIDE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+For complete step-by-step instructions with screenshots, visit:
+👉 http://your-jokervision-url.com/chrome-extension-guide.html
+
+Or access it from your JokerVision app:
+📚 Documentation Hub → Chrome Extension Guide
+
+
+⚡ QUICK INSTALLATION STEPS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1️⃣  EXTRACT THIS ZIP FILE
+    📁 Unzip to a permanent location (don't delete this folder!)
+
+2️⃣  OPEN CHROME EXTENSIONS
+    🌐 Navigate to: chrome://extensions/
+
+3️⃣  ENABLE DEVELOPER MODE
+    ⚙️  Toggle "Developer mode" switch (top-right corner)
+
+4️⃣  LOAD UNPACKED EXTENSION
+    📂 Click "Load unpacked"
+    📁 Select the "chrome-extension" folder
+    ✅ Done!
+
+5️⃣  PIN THE EXTENSION (OPTIONAL)
+    🧩 Click puzzle icon in Chrome toolbar
+    📌 Pin JokerVision extension
+
+
+🎯 HOW TO USE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Go to Facebook Marketplace
+2. Open any vehicle listing
+3. Click the JokerVision extension icon
+4. Click "Import Lead" button
+5. Lead automatically appears in your JokerVision dashboard!
+
+
+🔧 TROUBLESHOOTING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+❌ Extension not showing?
+   → Make sure Developer mode is ON
+   → Select the folder, not files inside it
+   → Refresh the extensions page
+
+❌ Errors appearing?
+   → Check browser console (F12)
+   → Verify you're on a vehicle listing page
+   → Make sure JokerVision app is running
+
+❌ Leads not importing?
+   → Check your backend connection
+   → Verify the extension is enabled (toggle is blue)
+
+
+💡 FEATURES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✓ Auto-capture lead info from Facebook Marketplace
+✓ Extract vehicle details, pricing, seller info
+✓ One-click import to JokerVision
+✓ Schedule appointments directly
+✓ Seamless dashboard integration
+
+
+📞 NEED HELP?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Visit the Documentation Hub in your JokerVision app for:
+• Complete Features Guide
+• Training & Operations Manual
+• Setup Guides & Checklists
+
+
+═══════════════════════════════════════════════════════════════
+© 2025 JokerVision AutoFollow - AI-Powered Lead Management
+═══════════════════════════════════════════════════════════════
