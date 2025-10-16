@@ -4038,6 +4038,67 @@ async def scrape_and_cache_inventory(tenant_id: str):
         
         logger.info("Basic fallback inventory data cached")
 
+# Chrome Extension: Upload Scraped Inventory
+@api_router.post("/inventory/upload-scraped")
+async def upload_scraped_inventory(request: dict):
+    """Upload scraped inventory from Chrome Extension and queue for Facebook Marketplace posting"""
+    try:
+        vehicles = request.get('vehicles', [])
+        source = request.get('source', 'unknown')
+        source_url = request.get('sourceUrl', '')
+        auto_post = request.get('autoPostToFacebook', False)
+        
+        logger.info(f"Received {len(vehicles)} vehicles from {source}")
+        
+        if not vehicles:
+            raise HTTPException(status_code=400, detail="No vehicles provided")
+        
+        # Store scraped vehicles in database
+        scraped_doc = {
+            "id": str(uuid.uuid4()),
+            "source": source,
+            "source_url": source_url,
+            "vehicle_count": len(vehicles),
+            "vehicles": vehicles,
+            "auto_post_to_facebook": auto_post,
+            "status": "pending",
+            "scraped_at": datetime.now(timezone.utc).isoformat(),
+            "uploaded_at": datetime.now(timezone.utc).isoformat()
+        }
+        
+        await db.scraped_inventory.insert_one(scraped_doc)
+        
+        # Queue for Facebook Marketplace posting if auto_post is enabled
+        if auto_post:
+            # Add to posting queue
+            for idx, vehicle in enumerate(vehicles):
+                fb_queue_doc = {
+                    "id": str(uuid.uuid4()),
+                    "scraped_batch_id": scraped_doc["id"],
+                    "vehicle_data": vehicle,
+                    "status": "queued",
+                    "priority": idx,
+                    "queued_at": datetime.now(timezone.utc).isoformat(),
+                    "attempts": 0,
+                    "max_attempts": 3
+                }
+                await db.facebook_posting_queue.insert_one(fb_queue_doc)
+            
+            logger.info(f"Queued {len(vehicles)} vehicles for Facebook Marketplace posting")
+        
+        return {
+            "status": "success",
+            "message": f"Successfully uploaded {len(vehicles)} vehicles from {source}",
+            "batch_id": scraped_doc["id"],
+            "vehicle_count": len(vehicles),
+            "auto_post_enabled": auto_post,
+            "queued_for_facebook": auto_post
+        }
+        
+    except Exception as e:
+        logger.error(f"Error uploading scraped inventory: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to upload inventory: {str(e)}")
+
 # =============================================================================
 # GOOGLE ADS & CRAIGSLIST API ENDPOINTS  
 # =============================================================================
