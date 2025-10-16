@@ -256,7 +256,7 @@ We'll do **Option A** for now.
 
 2. **Enter Backend URL**
    ```
-   Backend URL: https://carsync-1.preview.emergentagent.com/api
+   Backend URL: https://autofollowpro.preview.emergentagent.com/api
    ```
    - Click "Save Settings"
 
@@ -356,14 +356,14 @@ Only do this if Chrome Extension doesn't work for you.
 
 2. **Choose Platform**
    - Select "Web"
-   - Site URL: `https://carsync-1.preview.emergentagent.com`
+   - Site URL: `https://autofollowpro.preview.emergentagent.com`
    - Click "Save"
 
 3. **Configure Settings**
    - Go to: Facebook Login → Settings
    - Valid OAuth Redirect URIs:
      ```
-     https://carsync-1.preview.emergentagent.com/auth/facebook/callback
+     https://autofollowpro.preview.emergentagent.com/auth/facebook/callback
      ```
    - Click "Save Changes"
 
@@ -458,7 +458,7 @@ Files should include:
 1. **Click Extension Icon**
 2. **Enter Settings:**
    ```
-   Backend URL: https://carsync-1.preview.emergentagent.com/api
+   Backend URL: https://autofollowpro.preview.emergentagent.com/api
    Tenant ID: default_dealership
    ```
 3. **Click "Save"**
@@ -698,7 +698,7 @@ After completing all setups, your `/app/backend/.env` should look like:
 MONGO_URL=mongodb://localhost:27017/joker_vision_db
 
 # Backend URL
-REACT_APP_BACKEND_URL=https://carsync-1.preview.emergentagent.com
+REACT_APP_BACKEND_URL=https://autofollowpro.preview.emergentagent.com
 
 # AI Configuration (Emergent LLM - Already configured)
 EMERGENT_LLM_KEY=your_emergent_key_here

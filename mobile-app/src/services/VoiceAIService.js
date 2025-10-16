@@ -6,7 +6,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Alert } from 'react-native';
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'https://carsync-1.preview.emergentagent.com';
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'https://autofollowpro.preview.emergentagent.com';
 const VOICE_API_ENDPOINT = `${BACKEND_URL}/api/voice`;
 
 class VoiceAIService {

@@ -10,7 +10,7 @@ Let me show you the **EASIEST way** to access all your setup guides.
 
 ### Just copy and paste this into your browser:
 ```
-https://carsync-1.preview.emergentagent.com/setup-guides.html
+https://autofollowpro.preview.emergentagent.com/setup-guides.html
 ```
 
 **OR**
@@ -18,7 +18,7 @@ https://carsync-1.preview.emergentagent.com/setup-guides.html
 Type it manually:
 1. Open any web browser (Chrome, Firefox, Safari, Edge)
 2. Click in the address bar at the top
-3. Type: `https://carsync-1.preview.emergentagent.com/setup-guides.html`
+3. Type: `https://autofollowpro.preview.emergentagent.com/setup-guides.html`
 4. Press Enter
 
 **You'll see a beautiful page with ALL your guides!** ✨
@@ -39,27 +39,27 @@ Click the "Download" button on any guide to save it
 
 **Main Setup Guide (START WITH THIS ONE!):**
 ```
-https://carsync-1.preview.emergentagent.com/EXTERNAL_SETUP_COMPLETE_GUIDE.md
+https://autofollowpro.preview.emergentagent.com/EXTERNAL_SETUP_COMPLETE_GUIDE.md
 ```
 
 **Quick Reference (Keep This Open While Setting Up):**
 ```
-https://carsync-1.preview.emergentagent.com/QUICK_SETUP_REFERENCE.md
+https://autofollowpro.preview.emergentagent.com/QUICK_SETUP_REFERENCE.md
 ```
 
 **Checklist (Print This!):**
 ```
-https://carsync-1.preview.emergentagent.com/SETUP_CHECKLIST.md
+https://autofollowpro.preview.emergentagent.com/SETUP_CHECKLIST.md
 ```
 
 **Testing Guide (Use After Setup):**
 ```
-https://carsync-1.preview.emergentagent.com/PRODUCTION_READY_GUIDE.md
+https://autofollowpro.preview.emergentagent.com/PRODUCTION_READY_GUIDE.md
 ```
 
 **API Keys Guide (Reference):**
 ```
-https://carsync-1.preview.emergentagent.com/API_CREDENTIALS_SETUP.md
+https://autofollowpro.preview.emergentagent.com/API_CREDENTIALS_SETUP.md
 ```
 
 ---
@@ -95,7 +95,7 @@ These are "Markdown" files - they're just text files with nice formatting.
 
 1. **Open this link in your browser:**
    ```
-   https://carsync-1.preview.emergentagent.com/EXTERNAL_SETUP_COMPLETE_GUIDE.md
+   https://autofollowpro.preview.emergentagent.com/EXTERNAL_SETUP_COMPLETE_GUIDE.md
    ```
 
 2. **Scroll down to "Section 1: Twilio SMS Setup"**
@@ -108,7 +108,7 @@ These are "Markdown" files - they're just text files with nice formatting.
 
 5. **Open this link:**
    ```
-   https://carsync-1.preview.emergentagent.com/QUICK_SETUP_REFERENCE.md
+   https://autofollowpro.preview.emergentagent.com/QUICK_SETUP_REFERENCE.md
    ```
 
 6. **Follow "Chrome Extension" section** (5 minutes)
@@ -126,14 +126,14 @@ If the links above don't work, here's a backup method:
 ### Backup Method:
 1. Go to your main JokerVision app:
    ```
-   https://carsync-1.preview.emergentagent.com
+   https://autofollowpro.preview.emergentagent.com
    ```
 
 2. In the address bar, add `/setup-guides.html` at the end
 
 3. Full address should be:
    ```
-   https://carsync-1.preview.emergentagent.com/setup-guides.html
+   https://autofollowpro.preview.emergentagent.com/setup-guides.html
    ```
 
 4. Press Enter - you'll see all your guides!
@@ -230,7 +230,7 @@ You're building something really powerful for your first time. Take it one step 
 
 And all your detailed guides are available at:
 ```
-https://carsync-1.preview.emergentagent.com/setup-guides.html
+https://autofollowpro.preview.emergentagent.com/setup-guides.html
 ```
 
 Bookmark that page and you'll always have access to everything!
@@ -241,5 +241,5 @@ Bookmark that page and you'll always have access to everything!
 
 **Ready to start?** Open this link now:
 ```
-https://carsync-1.preview.emergentagent.com/setup-guides.html
+https://autofollowpro.preview.emergentagent.com/setup-guides.html
 ```

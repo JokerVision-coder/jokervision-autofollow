@@ -30,7 +30,7 @@
 
 **Step 1: Access the System**
 ```
-URL: https://carsync-1.preview.emergentagent.com
+URL: https://autofollowpro.preview.emergentagent.com
 ```
 
 **Step 2: Dashboard Overview**

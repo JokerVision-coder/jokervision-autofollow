@@ -6,12 +6,12 @@
 // Configuration for different environments
 const ENVIRONMENTS = {
   development: {
-    apiBaseUrl: 'https://carsync-1.preview.emergentagent.com/api',
-    websiteUrl: 'https://carsync-1.preview.emergentagent.com'
+    apiBaseUrl: 'https://autofollowpro.preview.emergentagent.com/api',
+    websiteUrl: 'https://autofollowpro.preview.emergentagent.com'
   },
   staging: {
-    apiBaseUrl: 'https://carsync-1.preview.emergentagent.com/api',
-    websiteUrl: 'https://carsync-1.preview.emergentagent.com'
+    apiBaseUrl: 'https://autofollowpro.preview.emergentagent.com/api',
+    websiteUrl: 'https://autofollowpro.preview.emergentagent.com'
   },
   production: {
     apiBaseUrl: 'https://jokervision.emergent.host/api',

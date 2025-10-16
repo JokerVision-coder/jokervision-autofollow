@@ -66,7 +66,7 @@
 
 ### Configure Extension
 - [ ] Clicked extension icon in toolbar
-- [ ] Entered Backend URL: `https://carsync-1.preview.emergentagent.com/api`
+- [ ] Entered Backend URL: `https://autofollowpro.preview.emergentagent.com/api`
 - [ ] Entered Tenant ID: `default_dealership`
 - [ ] Clicked "Save Settings"
 - [ ] Clicked "Test Connection"

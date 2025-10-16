@@ -55,7 +55,7 @@ Add your phone number for testing
 ### Configure:
 ```
 1. Click extension icon in toolbar
-2. Backend URL: https://carsync-1.preview.emergentagent.com/api
+2. Backend URL: https://autofollowpro.preview.emergentagent.com/api
 3. Tenant ID: default_dealership
 4. Click "Save"
 ```
@@ -163,7 +163,7 @@ OPENAI (Optional):
 - Status: [ ] Active / [ ] Using Emergent LLM
 
 BACKEND:
-- URL: https://carsync-1.preview.emergentagent.com
+- URL: https://autofollowpro.preview.emergentagent.com
 - Status: [ ] Running / [ ] Needs restart
 - Last Updated: ___/___/___
 
@@ -201,7 +201,7 @@ nano /app/backend/.env
 
 ### Test Backend Endpoint:
 ```bash
-curl https://carsync-1.preview.emergentagent.com/api/health
+curl https://autofollowpro.preview.emergentagent.com/api/health
 ```
 
 ---

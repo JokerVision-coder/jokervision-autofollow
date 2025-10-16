@@ -9,7 +9,7 @@ Don't worry! I'll show you EXACTLY how to find and open these files. 🙂
 
 ### Just click this link:
 ```
-https://carsync-1.preview.emergentagent.com/setup-guides.html
+https://autofollowpro.preview.emergentagent.com/setup-guides.html
 ```
 
 **What you'll see:**
@@ -43,9 +43,9 @@ These files are already on your system. Here's where:
 
 #### **Option A: In Your Browser (Click & Read)**
 
-1. Go to your JokerVision app: `https://carsync-1.preview.emergentagent.com`
+1. Go to your JokerVision app: `https://autofollowpro.preview.emergentagent.com`
 2. Add `/setup-guides.html` to the URL
-3. Full URL: `https://carsync-1.preview.emergentagent.com/setup-guides.html`
+3. Full URL: `https://autofollowpro.preview.emergentagent.com/setup-guides.html`
 4. Press Enter
 5. You'll see all guides with download buttons!
 
