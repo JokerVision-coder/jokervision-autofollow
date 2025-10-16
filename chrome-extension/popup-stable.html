@@ -118,15 +118,15 @@
         </div>
 
         <div class="tabs">
-            <button class="tab active" onclick="switchTab('inventory')">📦 Inventory</button>
-            <button class="tab" onclick="switchTab('scrape')">🔍 Scrape</button>
-            <button class="tab" onclick="switchTab('analytics')">📊 Analytics</button>
+            <button class="tab active" id="tabInventory">📦 Inventory</button>
+            <button class="tab" id="tabScrape">🔍 Scrape</button>
+            <button class="tab" id="tabAnalytics">📊 Analytics</button>
         </div>
 
         <div id="inventory" class="tab-content active">
             <div class="section">
                 <h3>Inventory Management</h3>
-                <button class="btn" onclick="syncInventory()">🔄 Sync Inventory</button>
+                <button class="btn" id="btnSyncInventory">🔄 Sync Inventory</button>
                 <div class="metric">
                     <span class="metric-label">Last Sync:</span>
                     <span class="metric-value" id="lastSync">Never</span>
