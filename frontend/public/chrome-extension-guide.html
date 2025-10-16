@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JokerVision Chrome Extension - Installation Guide</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .download-section {
+            background: #f8f9fa;
+            border: 2px dashed #667eea;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .download-btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 40px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-size: 1.2em;
+            font-weight: bold;
+            transition: transform 0.3s, box-shadow 0.3s;
+            margin: 10px;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .step-section {
+            margin-bottom: 40px;
+        }
+
+        .step-section h2 {
+            color: #667eea;
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .step {
+            background: #f8f9fa;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            border-left: 5px solid #667eea;
+        }
+
+        .step h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.3em;
+        }
+
+        .step-number {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            width: 35px;
+            height: 35px;
+            line-height: 35px;
+            border-radius: 50%;
+            text-align: center;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .step p {
+            margin: 10px 0;
+            padding-left: 45px;
+        }
+
+        .code-block {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+
+        .note {
+            background: #fff3cd;
+            border-left: 5px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+
+        .note strong {
+            color: #856404;
+        }
+
+        .success {
+            background: #d4edda;
+            border-left: 5px solid #28a745;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+
+        .success strong {
+            color: #155724;
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .feature-list li {
+            padding: 10px 0;
+            padding-left: 30px;
+            position: relative;
+        }
+
+        .feature-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #28a745;
+            font-weight: bold;
+            font-size: 1.5em;
+        }
+
+        .screenshot-placeholder {
+            background: #e9ecef;
+            border: 2px dashed #adb5bd;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            margin: 20px 0;
+            color: #6c757d;
+        }
+
+        .footer {
+            background: #f8f9fa;
+            padding: 30px;
+            text-align: center;
+            border-top: 1px solid #dee2e6;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            .step p {
+                padding-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 JokerVision Chrome Extension</h1>
+            <p>Capture Leads from Facebook Marketplace Instantly</p>
+        </div>
+
+        <div class="content">
+            <!-- Download Section -->
+            <div class="download-section">
+                <h2 style="color: #667eea; margin-bottom: 20px;">📦 Download Extension</h2>
+                <p style="margin-bottom: 20px; font-size: 1.1em;">Click the button below to download the extension ZIP file</p>
+                <a href="./JokerVision-Chrome-Extension.zip" class="download-btn" download>
+                    ⬇️ Download JokerVision Extension
+                </a>
+            </div>
+
+            <!-- What You'll Get -->
+            <div class="step-section">
+                <h2>✨ What You'll Get</h2>
+                <ul class="feature-list">
+                    <li>Automatically capture lead information from Facebook Marketplace</li>
+                    <li>One-click lead import into JokerVision</li>
+                    <li>Extract vehicle details, pricing, and seller information</li>
+                    <li>Seamless integration with your JokerVision dashboard</li>
+                    <li>Schedule appointments directly from Facebook</li>
+                </ul>
+            </div>
+
+            <!-- Installation Steps -->
+            <div class="step-section">
+                <h2>📋 Installation Steps</h2>
+
+                <div class="step">
+                    <h3><span class="step-number">1</span>Download & Extract</h3>
+                    <p>After downloading the ZIP file, locate it in your Downloads folder and extract it:</p>
+                    <p><strong>On Mac:</strong> Double-click the ZIP file to extract</p>
+                    <p><strong>On Windows:</strong> Right-click → "Extract All"</p>
+                    <p>You should now have a folder called <code style="background: #e9ecef; padding: 2px 6px; border-radius: 3px;">chrome-extension</code></p>
+                </div>
+
+                <div class="step">
+                    <h3><span class="step-number">2</span>Open Chrome Extensions Page</h3>
+                    <p>Open Google Chrome and navigate to the extensions page using any of these methods:</p>
+                    <p><strong>Method 1:</strong> Type in the address bar:</p>
+                    <div class="code-block">chrome://extensions/</div>
+                    <p><strong>Method 2:</strong> Chrome Menu → More Tools → Extensions</p>
+                    <p><strong>Method 3:</strong> Press <code style="background: #e9ecef; padding: 2px 6px; border-radius: 3px;">⌘+Shift+E</code> (Mac) or <code style="background: #e9ecef; padding: 2px 6px; border-radius: 3px;">Ctrl+Shift+E</code> (Windows)</p>
+                </div>
+
+                <div class="step">
+                    <h3><span class="step-number">3</span>Enable Developer Mode</h3>
+                    <p>On the Extensions page, look for a toggle switch in the top-right corner that says <strong>"Developer mode"</strong></p>
+                    <p>Click it to turn it ON (it should turn blue)</p>
+                </div>
+
+                <div class="step">
+                    <h3><span class="step-number">4</span>Load the Extension</h3>
+                    <p>After enabling Developer mode, you'll see new buttons appear. Click on <strong>"Load unpacked"</strong></p>
+                    <p>A file browser window will open. Navigate to the <code style="background: #e9ecef; padding: 2px 6px; border-radius: 3px;">chrome-extension</code> folder you extracted in Step 1</p>
+                    <p><strong>Important:</strong> Select the folder itself, not the files inside it</p>
+                </div>
+
+                <div class="step">
+                    <h3><span class="step-number">5</span>Verify Installation</h3>
+                    <p>The JokerVision extension should now appear in your extensions list</p>
+                    <p>You should see:</p>
+                    <ul style="margin-left: 45px; margin-top: 10px;">
+                        <li>JokerVision icon and name</li>
+                        <li>A toggle switch (make sure it's ON/blue)</li>
+                        <li>Version number</li>
+                    </ul>
+                </div>
+
+                <div class="step">
+                    <h3><span class="step-number">6</span>Pin the Extension (Optional but Recommended)</h3>
+                    <p>Click the puzzle piece icon 🧩 in Chrome's toolbar (top-right)</p>
+                    <p>Find "JokerVision" in the list and click the pin icon 📌 next to it</p>
+                    <p>This makes the extension easily accessible from your toolbar</p>
+                </div>
+            </div>
+
+            <!-- Configuration -->
+            <div class="step-section">
+                <h2>⚙️ Configuration</h2>
+                <div class="note">
+                    <strong>📌 Important:</strong> The extension is already configured to connect to your JokerVision backend. However, if you need to update the backend URL, you can edit the <code>config.js</code> file in the extension folder before loading it.
+                </div>
+            </div>
+
+            <!-- How to Use -->
+            <div class="step-section">
+                <h2>🎯 How to Use</h2>
+                
+                <div class="step">
+                    <h3><span class="step-number">1</span>Navigate to Facebook Marketplace</h3>
+                    <p>Open Facebook Marketplace in Chrome and browse vehicle listings</p>
+                </div>
+
+                <div class="step">
+                    <h3><span class="step-number">2</span>Click on a Vehicle Listing</h3>
+                    <p>When you open a vehicle listing page, the extension will automatically detect it</p>
+                </div>
+
+                <div class="step">
+                    <h3><span class="step-number">3</span>Capture Lead</h3>
+                    <p>Click the JokerVision extension icon in your toolbar</p>
+                    <p>The extension will automatically extract:</p>
+                    <ul style="margin-left: 45px; margin-top: 10px;">
+                        <li>Vehicle details (make, model, year, price)</li>
+                        <li>Seller information</li>
+                        <li>Listing description and images</li>
+                    </ul>
+                </div>
+
+                <div class="step">
+                    <h3><span class="step-number">4</span>Import to JokerVision</h3>
+                    <p>Click "Import Lead" button in the extension popup</p>
+                    <p>The lead will be automatically added to your JokerVision dashboard</p>
+                    <p>You can immediately start AI-powered follow-ups!</p>
+                </div>
+            </div>
+
+            <!-- Troubleshooting -->
+            <div class="step-section">
+                <h2>🔧 Troubleshooting</h2>
+                
+                <div class="note">
+                    <strong>Problem:</strong> Extension doesn't appear after loading<br>
+                    <strong>Solution:</strong> Make sure you selected the <code>chrome-extension</code> folder, not a file inside it. Try refreshing the extensions page.
+                </div>
+
+                <div class="note">
+                    <strong>Problem:</strong> Extension shows errors<br>
+                    <strong>Solution:</strong> Check that Developer mode is enabled. Click "Errors" button to see details, or contact support.
+                </div>
+
+                <div class="note">
+                    <strong>Problem:</strong> Can't capture leads from Facebook<br>
+                    <strong>Solution:</strong> Make sure you're on a Facebook Marketplace vehicle listing page. Refresh the page and try again. Check that the extension is enabled (toggle is blue).
+                </div>
+
+                <div class="note">
+                    <strong>Problem:</strong> Leads not appearing in JokerVision<br>
+                    <strong>Solution:</strong> Verify your backend connection. Check the browser console (F12) for error messages. Ensure your JokerVision app is running.
+                </div>
+            </div>
+
+            <!-- Success Message -->
+            <div class="success">
+                <strong>🎉 Congratulations!</strong> You've successfully installed the JokerVision Chrome Extension. Start capturing high-quality leads from Facebook Marketplace now!
+            </div>
+
+            <!-- Support -->
+            <div class="step-section">
+                <h2>💬 Need Help?</h2>
+                <p>If you encounter any issues or have questions:</p>
+                <ul style="margin-left: 20px; margin-top: 10px;">
+                    <li>Check the <a href="./documentation.html" style="color: #667eea; text-decoration: none; font-weight: bold;">Documentation Hub</a></li>
+                    <li>Review the <a href="./features-guide.html" style="color: #667eea; text-decoration: none; font-weight: bold;">Features Guide</a></li>
+                    <li>Contact your system administrator</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p style="color: #6c757d; font-size: 0.9em;">
+                <strong>JokerVision AutoFollow</strong> - AI-Powered Lead Management<br>
+                © 2025 JokerVision. All rights reserved.
+            </p>
+        </div>
+    </div>
+</body>
+</html>
