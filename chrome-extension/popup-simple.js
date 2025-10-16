@@ -51,6 +51,17 @@ function isFacebookMarketplace(url) {
     );
 }
 
+// Check if on inventory website
+function isInventoryWebsite(url) {
+    return url && (
+        url.includes('cars.com') ||
+        url.includes('autotrader.com') ||
+        url.includes('cargurus.com') ||
+        url.includes('carfax.com') ||
+        url.includes('carvana.com')
+    );
+}
+
 // Update page info
 async function updatePageInfo() {
     const pageInfo = getElement('pageInfo');
