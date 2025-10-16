@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JokerVision</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            width: 350px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .container {
+            background: white;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+            margin-bottom: 20px;
+        }
+        .logo {
+            width: 32px;
+            height: 32px;
+            margin-bottom: 10px;
+        }
+        h1 {
+            font-size: 18px;
+            color: #333;
+        }
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #28a745;
+        }
+        .status-text {
+            font-size: 13px;
+            color: #666;
+        }
+        .card {
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        .card h3 {
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .card p {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.4;
+        }
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+        .btn:active {
+            transform: translateY(0);
+        }
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .info {
+            font-size: 12px;
+            color: #999;
+            text-align: center;
+            margin-top: 15px;
+        }
+        .lead-info {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        .lead-info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            font-size: 13px;
+        }
+        .lead-info-label {
+            color: #666;
+        }
+        .lead-info-value {
+            color: #333;
+            font-weight: 500;
+        }
+        .success-msg {
+            background: #d4edda;
+            color: #155724;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 13px;
+            margin-bottom: 15px;
+        }
+        .error-msg {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 13px;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="icons/icon32.png" alt="JokerVision" class="logo">
+            <h1>JokerVision AutoDealer</h1>
+        </div>
+
+        <div class="status">
+            <div class="status-dot"></div>
+            <span class="status-text">Extension Active</span>
+        </div>
+
+        <div id="messageArea"></div>
+
+        <div class="card">
+            <h3>📍 Current Page</h3>
+            <p id="pageInfo">Loading...</p>
+        </div>
+
+        <div id="leadData"></div>
+
+        <button class="btn" id="captureBtn" disabled>
+            Import Lead to JokerVision
+        </button>
+
+        <div class="info">
+            Go to Facebook Marketplace vehicle listing to capture leads
+        </div>
+    </div>
+
+    <script src="popup-simple.js"></script>
+</body>
+</html>
