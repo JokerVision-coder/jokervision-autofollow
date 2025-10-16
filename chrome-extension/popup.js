@@ -1,4 +1,10 @@
 // JokerVision - Minimal Safe Popup
+// Config defined here (no inline scripts allowed by CSP)
+window.JokerVisionConfig = {
+    apiBaseUrl: 'https://autofollowpro.preview.emergentagent.com/api',
+    websiteUrl: 'https://autofollowpro.preview.emergentagent.com'
+};
+
 console.log('JokerVision popup loaded');
 
 // Wait for DOM to be fully loaded
