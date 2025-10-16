@@ -1,0 +1,29 @@
+{
+  "manifest_version": 3,
+  "name": "JokerVision Debug",
+  "version": "2.0.0",
+  "description": "Debug version - testing permissions",
+  
+  "permissions": [
+    "activeTab",
+    "storage",
+    "scripting",
+    "tabs"
+  ],
+  
+  "host_permissions": [
+    "https://www.facebook.com/*",
+    "https://autofollowpro.preview.emergentagent.com/*"
+  ],
+  
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "JokerVision Debug"
+  },
+  
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  }
+}
