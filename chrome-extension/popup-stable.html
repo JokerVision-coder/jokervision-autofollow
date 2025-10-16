@@ -262,10 +262,28 @@
         }
         
         function openDashboard() {
+            console.log('Opening dashboard');
             chrome.tabs.create({ url: 'https://autofollowpro.preview.emergentagent.com' });
         }
         
-        console.log('JokerVision loaded successfully');
+        // Setup event listeners when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, setting up event listeners...');
+            
+            // Tab buttons
+            document.getElementById('tabInventory')?.addEventListener('click', () => switchTab('inventory'));
+            document.getElementById('tabScrape')?.addEventListener('click', () => switchTab('scrape'));
+            document.getElementById('tabAnalytics')?.addEventListener('click', () => switchTab('analytics'));
+            
+            // Action buttons
+            document.getElementById('btnSyncInventory')?.addEventListener('click', syncInventory);
+            document.getElementById('btnScrapeInventory')?.addEventListener('click', scrapeInventory);
+            document.getElementById('btnOpenDashboard')?.addEventListener('click', openDashboard);
+            
+            console.log('Event listeners attached!');
+        });
+        
+        console.log('Script fully loaded');
     </script>
 </body>
 </html>
