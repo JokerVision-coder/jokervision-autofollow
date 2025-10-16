@@ -295,6 +295,26 @@ const DocumentationHub = () => {
             </button>
 
             <button
+              onClick={() => openInNewTab('/chrome-extension-guide.html')}
+              style={{
+                padding: '15px 20px',
+                background: '#f8f9fa',
+                borderRadius: '10px',
+                border: 'none',
+                color: '#333',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                cursor: 'pointer',
+                borderLeft: '4px solid #667eea',
+                textAlign: 'left'
+              }}
+            >
+              <span>🧩</span>
+              <span>Chrome Extension Guide</span>
+            </button>
+
+            <button
               onClick={() => downloadFile('PRODUCTION_READY_GUIDE.md')}
               style={{
                 padding: '15px 20px',
