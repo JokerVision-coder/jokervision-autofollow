@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Test</title>
+    <style>
+        body { width: 400px; padding: 20px; font-family: Arial; }
+        button { width: 100%; padding: 15px; margin: 10px 0; font-size: 16px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h2>Button Test</h2>
+    <button id="testBtn">Click Me - Test Button</button>
+    <p id="output">Waiting for click...</p>
+
+    <script>
+        console.log('1. Script started');
+        
+        function testClick() {
+            console.log('2. Button clicked!');
+            document.getElementById('output').textContent = 'Button works! Time: ' + new Date().toLocaleTimeString();
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('3. DOM loaded');
+            const btn = document.getElementById('testBtn');
+            console.log('4. Button element:', btn);
+            
+            if (btn) {
+                btn.addEventListener('click', testClick);
+                console.log('5. Event listener attached');
+            } else {
+                console.error('Button not found!');
+            }
+        });
+        
+        console.log('6. Script end');
+    </script>
+</body>
+</html>
