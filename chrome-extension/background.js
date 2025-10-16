@@ -1,7 +1,10 @@
 // JokerVision AutoDealer Pro - Background Service Worker
+// NOTE: Service workers cannot access window object in Manifest V3
 class JokerVisionBackground {
     constructor() {
-        this.apiBaseUrl = window.JokerVisionConfig?.apiBaseUrl || 'https://autofollowpro.preview.emergentagent.com/api';
+        // Hardcoded config for service worker context (no window access)
+        this.apiBaseUrl = 'https://autofollowpro.preview.emergentagent.com/api';
+        this.websiteUrl = 'https://autofollowpro.preview.emergentagent.com';
         this.syncInterval = null;
         this.init();
     }
