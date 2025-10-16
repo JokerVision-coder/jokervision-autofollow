@@ -185,6 +185,95 @@ async function sendToBackend(leadData) {
     }
 }
 
+// Scrape inventory from current page
+async function scrapeInventory() {
+    const scrapeBtn = getElement('scrapeBtn');
+    const leadData = getElement('leadData');
+    
+    if (!scrapeBtn) return;
+    
+    try {
+        scrapeBtn.disabled = true;
+        scrapeBtn.textContent = 'Scraping Inventory...';
+        
+        const tab = await getCurrentTab();
+        if (!tab) {
+            showMessage('Unable to access current tab', 'error');
+            return;
+        }
+        
+        // Send message to content script to scrape inventory
+        const response = await chrome.tabs.sendMessage(tab.id, { action: 'scrapeInventory' });
+        
+        if (response && response.success) {
+            const vehicleCount = response.vehicles ? response.vehicles.length : 0;
+            
+            // Display scraped count
+            if (leadData) {
+                leadData.innerHTML = `
+                    <div class="lead-info">
+                        <div class="lead-info-item">
+                            <span class="lead-info-label">Vehicles Found:</span>
+                            <span class="lead-info-value">${vehicleCount}</span>
+                        </div>
+                        <div class="lead-info-item">
+                            <span class="lead-info-label">Source:</span>
+                            <span class="lead-info-value">${response.siteType}</span>
+                        </div>
+                        <div class="lead-info-item">
+                            <span class="lead-info-label">Status:</span>
+                            <span class="lead-info-value">Ready to Upload</span>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // Send to backend for processing and Facebook upload
+            await uploadInventoryToBackend(response);
+            showMessage(`✅ ${vehicleCount} vehicles scraped and queued for upload!`);
+        } else {
+            showMessage('No inventory found on this page', 'error');
+        }
+    } catch (error) {
+        console.error('Error scraping inventory:', error);
+        showMessage('Error scraping inventory. Make sure you\'re on an inventory page.', 'error');
+    } finally {
+        if (scrapeBtn) {
+            scrapeBtn.disabled = false;
+            scrapeBtn.textContent = 'Scrape & Upload Inventory';
+        }
+    }
+}
+
+// Upload inventory to backend (which will handle Facebook Marketplace posting)
+async function uploadInventoryToBackend(scrapedData) {
+    try {
+        const response = await fetch(`${CONFIG.apiBaseUrl}/inventory/upload-scraped`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                vehicles: scrapedData.vehicles,
+                source: scrapedData.siteType,
+                sourceUrl: scrapedData.url,
+                scrapedAt: scrapedData.scrapedAt,
+                autoPostToFacebook: true // Flag to auto-post to Facebook Marketplace
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to upload inventory');
+        }
+        
+        const result = await response.json();
+        console.log('Inventory uploaded successfully:', result);
+    } catch (error) {
+        console.error('Error uploading inventory:', error);
+        throw error;
+    }
+}
+
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM ready, initializing...');
