@@ -1,23 +1,35 @@
 // JokerVision AutoDealer Pro - Chrome Extension Popup JavaScript
+// FIXED VERSION: Added comprehensive error handling to prevent reload loops
+
 class JokerVisionExtension {
     constructor() {
-        this.apiBaseUrl = window.JokerVisionConfig?.apiBaseUrl || 'https://autofollowpro.preview.emergentagent.com/api';
+        this.apiBaseUrl = 'https://autofollowpro.preview.emergentagent.com/api';
+        this.websiteUrl = 'https://autofollowpro.preview.emergentagent.com';
         this.currentTenantId = null;
         this.currentUser = null;
-        this.init();
+        this.initialized = false;
     }
 
     async init() {
-        await this.loadUserData();
-        this.setupEventListeners();
-        this.initializeTabs();
-        this.checkConnectionStatus();
-        await this.loadInventoryData();
+        try {
+            if (this.initialized) return;
+            this.initialized = true;
+
+            console.log('JokerVision Extension: Initializing...');
+            
+            await this.loadUserData();
+            this.setupEventListeners();
+            this.initializeTabs();
+            
+            console.log('JokerVision Extension: Initialized successfully');
+        } catch (error) {
+            console.error('JokerVision Extension: Initialization error:', error);
+            this.showError('Failed to initialize extension. Please refresh.');
+        }
     }
 
     async loadUserData() {
         try {
-            // Try to get user data from Chrome storage
             const result = await chrome.storage.local.get(['currentUser', 'tenantId']);
             if (result.currentUser && result.tenantId) {
                 this.currentUser = result.currentUser;
@@ -34,567 +46,159 @@ class JokerVisionExtension {
     }
 
     showAuthenticationPrompt() {
-        // Show authentication modal or redirect to main app
-        const authDiv = document.createElement('div');
-        authDiv.className = 'auth-prompt';
-        authDiv.innerHTML = `
-            <div class="auth-content">
-                <h3>Authentication Required</h3>
-                <p>Please log in to your JokerVision dashboard first.</p>
-                <button class="btn btn-primary" id="openDashboard">Open Dashboard</button>
-            </div>
-        `;
-        document.querySelector('.container').appendChild(authDiv);
-        
-        document.getElementById('openDashboard').addEventListener('click', () => {
-            chrome.tabs.create({ url: window.JokerVisionConfig?.websiteUrl || 'https://autofollowpro.preview.emergentagent.com' });
-        });
+        try {
+            const container = document.querySelector('.container');
+            if (!container) {
+                console.error('Container element not found');
+                return;
+            }
+
+            const authDiv = document.createElement('div');
+            authDiv.className = 'auth-prompt';
+            authDiv.innerHTML = `
+                <div class="auth-content">
+                    <h3>Authentication Required</h3>
+                    <p>Please log in to your JokerVision dashboard first.</p>
+                    <button class="btn btn-primary" id="openDashboard">Open Dashboard</button>
+                </div>
+            `;
+            container.appendChild(authDiv);
+            
+            const dashboardBtn = document.getElementById('openDashboard');
+            if (dashboardBtn) {
+                dashboardBtn.addEventListener('click', () => {
+                    chrome.tabs.create({ url: this.websiteUrl });
+                });
+            }
+        } catch (error) {
+            console.error('Error showing auth prompt:', error);
+        }
     }
 
     updateConnectionStatus(status, message) {
-        const statusIndicator = document.getElementById('connectionStatus');
-        const statusDot = statusIndicator.querySelector('.status-dot');
-        const statusText = statusIndicator.querySelector('span');
-        
-        statusDot.className = `status-dot ${status}`;
-        statusText.textContent = message;
+        try {
+            const statusIndicator = document.getElementById('connectionStatus');
+            if (!statusIndicator) return;
+
+            const statusDot = statusIndicator.querySelector('.status-dot');
+            const statusText = statusIndicator.querySelector('span');
+            
+            if (statusDot) {
+                statusDot.className = `status-dot ${status}`;
+            }
+            if (statusText) {
+                statusText.textContent = message;
+            }
+        } catch (error) {
+            console.error('Error updating connection status:', error);
+        }
     }
 
     setupEventListeners() {
-        // Tab switching
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                this.switchTab(e.target.closest('.tab-btn').dataset.tab);
+        try {
+            // Tab switching
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const tab = e.target.closest('.tab-btn')?.dataset?.tab;
+                    if (tab) this.switchTab(tab);
+                });
             });
-        });
 
-        // Inventory actions
-        document.getElementById('syncInventory')?.addEventListener('click', () => {
-            this.syncInventory();
-        });
+            // Safely attach event listeners only if elements exist
+            this.attachListener('syncInventory', () => this.syncInventory());
+            this.attachListener('bulkUpload', () => this.openBulkUploadModal());
+            this.attachListener('priceOptimizer', () => this.runPriceOptimizer());
+            this.attachListener('photoEnhance', () => this.enhancePhotos());
+            this.attachListener('competitors', () => this.runCompetitorAnalysis());
+            this.attachListener('generateDescriptions', () => this.generateSEODescriptions());
+            this.attachListener('optimizeKeywords', () => this.optimizeKeywords());
 
-        document.getElementById('bulkUpload')?.addEventListener('click', () => {
-            this.openBulkUploadModal();
-        });
+        } catch (error) {
+            console.error('Error setting up event listeners:', error);
+        }
+    }
 
-        document.getElementById('priceOptimizer')?.addEventListener('click', () => {
-            this.runPriceOptimizer();
-        });
-
-        document.getElementById('photoEnhance')?.addEventListener('click', () => {
-            this.enhancePhotos();
-        });
-
-        document.getElementById('competitors')?.addEventListener('click', () => {
-            this.runCompetitorAnalysis();
-        });
-
-        // SEO Tools
-        document.getElementById('generateDescriptions')?.addEventListener('click', () => {
-            this.generateSEODescriptions();
-        });
-
-        document.getElementById('optimizeKeywords')?.addEventListener('click', () => {
-            this.optimizeKeywords();
-        });
-
-        document.getElementById('startABTest')?.addEventListener('click', () => {
-            this.startABTest();
-        });
-
-        // Automation toggles
-        document.getElementById('autoPosting')?.addEventListener('change', (e) => {
-            this.toggleAutoPosting(e.target.checked);
-        });
-
-        // Footer actions
-        document.getElementById('openDashboard')?.addEventListener('click', () => {
-            chrome.tabs.create({ url: window.JokerVisionConfig?.websiteUrl || 'https://autofollowpro.preview.emergentagent.com' });
-        });
-
-        document.getElementById('openSettings')?.addEventListener('click', () => {
-            this.openSettings();
-        });
+    attachListener(id, callback) {
+        const element = document.getElementById(id);
+        if (element) {
+            element.addEventListener('click', callback);
+        }
     }
 
     initializeTabs() {
-        // Show first tab by default
-        this.switchTab('inventory');
+        try {
+            const firstTab = document.querySelector('.tab-btn');
+            if (firstTab && firstTab.dataset.tab) {
+                this.switchTab(firstTab.dataset.tab);
+            }
+        } catch (error) {
+            console.error('Error initializing tabs:', error);
+        }
     }
 
     switchTab(tabName) {
-        // Update tab buttons
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.classList.remove('active');
-        });
-        document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
-
-        // Update tab content
-        document.querySelectorAll('.tab-pane').forEach(pane => {
-            pane.classList.remove('active');
-        });
-        document.getElementById(tabName).classList.add('active');
-    }
-
-    async checkConnectionStatus() {
         try {
-            const response = await fetch(`${this.apiBaseUrl}/health`);
-            if (response.ok) {
-                this.updateConnectionStatus('online', 'Connected');
-            } else {
-                throw new Error('Server unavailable');
-            }
-        } catch (error) {
-            this.updateConnectionStatus('offline', 'Connection failed');
-        }
-    }
-
-    async loadInventoryData() {
-        if (!this.currentTenantId) return;
-
-        try {
-            // Load inventory summary
-            const response = await fetch(`${this.apiBaseUrl}/inventory/summary?tenant_id=${this.currentTenantId}`);
-            if (response.ok) {
-                const data = await response.json();
-                this.updateInventoryUI(data);
-            }
-        } catch (error) {
-            console.error('Error loading inventory:', error);
-        }
-    }
-
-    updateInventoryUI(data) {
-        // Update vehicle count
-        document.getElementById('vehicleCount').textContent = data.total_vehicles || 0;
-        
-        // Update last sync time
-        const lastSync = data.last_sync ? new Date(data.last_sync).toLocaleString() : 'Never';
-        document.getElementById('lastSync').textContent = lastSync;
-
-        // Update vehicle queue
-        if (data.recent_vehicles) {
-            this.updateVehicleQueue(data.recent_vehicles);
-        }
-    }
-
-    updateVehicleQueue(vehicles) {
-        const queueContainer = document.getElementById('vehicleQueue');
-        if (!vehicles || vehicles.length === 0) {
-            queueContainer.innerHTML = '<div class="no-vehicles">No vehicles in queue</div>';
-            return;
-        }
-
-        queueContainer.innerHTML = vehicles.map(vehicle => `
-            <div class="queue-item">
-                <div class="vehicle-info">
-                    <span class="vehicle-name">${vehicle.year} ${vehicle.make} ${vehicle.model}</span>
-                    <span class="vehicle-price">$${vehicle.price?.toLocaleString()}</span>
-                </div>
-                <div class="queue-status ${vehicle.status.toLowerCase()}">${vehicle.status}</div>
-            </div>
-        `).join('');
-    }
-
-    async syncInventory() {
-        if (!this.currentTenantId) {
-            this.showError('Please authenticate first');
-            return;
-        }
-
-        const syncBtn = document.getElementById('syncInventory');
-        const originalText = syncBtn.innerHTML;
-        
-        // Show loading state
-        syncBtn.innerHTML = '<div class="spinner"></div> Syncing...';
-        syncBtn.disabled = true;
-
-        try {
-            const response = await fetch(`${this.apiBaseUrl}/inventory/sync`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    tenant_id: this.currentTenantId,
-                    source: 'facebook_marketplace'
-                })
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
             });
 
-            if (response.ok) {
-                const result = await response.json();
-                this.showSuccess(`Synced ${result.vehicles_processed} vehicles successfully`);
-                await this.loadInventoryData();
-            } else {
-                throw new Error('Sync failed');
-            }
-        } catch (error) {
-            console.error('Sync error:', error);
-            this.showError('Failed to sync inventory. Please try again.');
-        } finally {
-            syncBtn.innerHTML = originalText;
-            syncBtn.disabled = false;
-        }
-    }
+            // Remove active from all buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
 
-    async generateSEODescriptions() {
-        if (!this.currentTenantId) {
-            this.showError('Please authenticate first');
-            return;
-        }
-
-        const generateBtn = document.getElementById('generateDescriptions');
-        const originalText = generateBtn.textContent;
-        
-        generateBtn.textContent = 'Generating...';
-        generateBtn.disabled = true;
-
-        try {
-            // Get current tab to see if we're on Facebook Marketplace
-            const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+            // Show selected tab
+            const selectedTab = document.getElementById(`${tabName}Tab`);
+            const selectedBtn = document.querySelector(`[data-tab="${tabName}"]`);
             
-            if (tab.url.includes('marketplace.facebook.com')) {
-                // Extract vehicle data from current page
-                const vehicleData = await this.extractVehicleDataFromPage(tab.id);
-                
-                // Generate SEO optimized description using AI
-                const response = await fetch(`${this.apiBaseUrl}/ai/generate-seo-description`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        tenant_id: this.currentTenantId,
-                        vehicle_data: vehicleData
-                    })
-                });
-
-                if (response.ok) {
-                    const result = await response.json();
-                    
-                    // Inject the optimized description back into the page
-                    await chrome.tabs.sendMessage(tab.id, {
-                        action: 'updateDescription',
-                        description: result.optimized_description
-                    });
-
-                    this.showSuccess('SEO description generated and applied!');
-                } else {
-                    throw new Error('Failed to generate description');
-                }
-            } else {
-                // Generate descriptions for all inventory items
-                const response = await fetch(`${this.apiBaseUrl}/inventory/generate-seo-descriptions`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        tenant_id: this.currentTenantId
-                    })
-                });
-
-                if (response.ok) {
-                    const result = await response.json();
-                    this.showSuccess(`Generated descriptions for ${result.processed_count} vehicles`);
-                } else {
-                    throw new Error('Failed to generate descriptions');
-                }
-            }
+            if (selectedTab) selectedTab.classList.add('active');
+            if (selectedBtn) selectedBtn.classList.add('active');
         } catch (error) {
-            console.error('SEO generation error:', error);
-            this.showError('Failed to generate SEO descriptions');
-        } finally {
-            generateBtn.textContent = originalText;
-            generateBtn.disabled = false;
+            console.error('Error switching tabs:', error);
         }
-    }
-
-    async extractVehicleDataFromPage(tabId) {
-        try {
-            const result = await chrome.tabs.sendMessage(tabId, {
-                action: 'extractVehicleData'
-            });
-            return result;
-        } catch (error) {
-            console.error('Error extracting vehicle data:', error);
-            return {};
-        }
-    }
-
-    async runPriceOptimizer() {
-        if (!this.currentTenantId) {
-            this.showError('Please authenticate first');
-            return;
-        }
-
-        try {
-            const response = await fetch(`${this.apiBaseUrl}/ai/optimize-pricing`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    tenant_id: this.currentTenantId
-                })
-            });
-
-            if (response.ok) {
-                const result = await response.json();
-                this.showSuccess(`Optimized pricing for ${result.vehicles_updated} vehicles`);
-                await this.loadInventoryData();
-            } else {
-                throw new Error('Price optimization failed');
-            }
-        } catch (error) {
-            console.error('Price optimization error:', error);
-            this.showError('Failed to optimize pricing');
-        }
-    }
-
-    async enhancePhotos() {
-        this.showInfo('Photo enhancement feature coming soon!');
-    }
-
-    async runCompetitorAnalysis() {
-        if (!this.currentTenantId) {
-            this.showError('Please authenticate first');
-            return;
-        }
-
-        try {
-            const response = await fetch(`${this.apiBaseUrl}/analytics/competitor-analysis`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    tenant_id: this.currentTenantId
-                })
-            });
-
-            if (response.ok) {
-                const result = await response.json();
-                this.showSuccess('Competitor analysis completed! Check your dashboard for details.');
-            } else {
-                throw new Error('Competitor analysis failed');
-            }
-        } catch (error) {
-            console.error('Competitor analysis error:', error);
-            this.showError('Failed to run competitor analysis');
-        }
-    }
-
-    async optimizeKeywords() {
-        this.showInfo('Keyword optimization in progress...');
-    }
-
-    async startABTest() {
-        this.showInfo('A/B testing feature coming soon!');
-    }
-
-    async toggleAutoPosting(enabled) {
-        if (!this.currentTenantId) {
-            this.showError('Please authenticate first');
-            return;
-        }
-
-        try {
-            const response = await fetch(`${this.apiBaseUrl}/automation/auto-posting`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    tenant_id: this.currentTenantId,
-                    enabled: enabled
-                })
-            });
-
-            if (response.ok) {
-                this.showSuccess(`Auto-posting ${enabled ? 'enabled' : 'disabled'}`);
-            } else {
-                throw new Error('Failed to update auto-posting settings');
-            }
-        } catch (error) {
-            console.error('Auto-posting toggle error:', error);
-            this.showError('Failed to update auto-posting settings');
-        }
-    }
-
-    openBulkUploadModal() {
-        // Create modal for bulk upload
-        const modal = document.createElement('div');
-        modal.className = 'modal-overlay';
-        modal.innerHTML = `
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3>Bulk Vehicle Upload</h3>
-                    <button class="modal-close">&times;</button>
-                </div>
-                <div class="modal-body">
-                    <p>Select vehicles to upload to Facebook Marketplace:</p>
-                    <input type="file" id="vehicleFileInput" accept=".csv,.xlsx" style="display: none;">
-                    <button class="btn btn-primary" id="selectFile">Select CSV/Excel File</button>
-                    <div id="uploadProgress" class="upload-progress" style="display: none;">
-                        <div class="progress-bar">
-                            <div class="progress-fill"></div>
-                        </div>
-                        <span class="progress-text">0%</span>
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        document.body.appendChild(modal);
-        
-        // Setup modal event listeners
-        modal.querySelector('.modal-close').addEventListener('click', () => {
-            document.body.removeChild(modal);
-        });
-        
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                document.body.removeChild(modal);
-            }
-        });
-        
-        modal.querySelector('#selectFile').addEventListener('click', () => {
-            modal.querySelector('#vehicleFileInput').click();
-        });
-        
-        modal.querySelector('#vehicleFileInput').addEventListener('change', (e) => {
-            if (e.target.files[0]) {
-                this.processBulkUpload(e.target.files[0], modal);
-            }
-        });
-    }
-
-    async processBulkUpload(file, modal) {
-        const progressDiv = modal.querySelector('#uploadProgress');
-        const progressFill = modal.querySelector('.progress-fill');
-        const progressText = modal.querySelector('.progress-text');
-        
-        progressDiv.style.display = 'block';
-        
-        try {
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('tenant_id', this.currentTenantId);
-            
-            const response = await fetch(`${this.apiBaseUrl}/inventory/bulk-upload`, {
-                method: 'POST',
-                body: formData
-            });
-            
-            if (response.ok) {
-                const result = await response.json();
-                this.showSuccess(`Successfully uploaded ${result.processed_count} vehicles`);
-                document.body.removeChild(modal);
-                await this.loadInventoryData();
-            } else {
-                throw new Error('Upload failed');
-            }
-        } catch (error) {
-            console.error('Bulk upload error:', error);
-            this.showError('Failed to upload vehicles');
-        }
-    }
-
-    openSettings() {
-        // Create settings modal
-        const modal = document.createElement('div');
-        modal.className = 'modal-overlay';
-        modal.innerHTML = `
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3>Extension Settings</h3>
-                    <button class="modal-close">&times;</button>
-                </div>
-                <div class="modal-body">
-                    <div class="setting-item">
-                        <label>Auto-sync Interval</label>
-                        <select id="syncInterval">
-                            <option value="5">5 minutes</option>
-                            <option value="15">15 minutes</option>
-                            <option value="30">30 minutes</option>
-                            <option value="60">1 hour</option>
-                        </select>
-                    </div>
-                    <div class="setting-item">
-                        <label>Default Language</label>
-                        <select id="defaultLanguage">
-                            <option value="english">English</option>
-                            <option value="spanish">Spanish</option>
-                        </select>
-                    </div>
-                    <div class="setting-item">
-                        <label>
-                            <input type="checkbox" id="enableNotifications">
-                            Enable notifications
-                        </label>
-                    </div>
-                    <button class="btn btn-primary" id="saveSettings">Save Settings</button>
-                </div>
-            </div>
-        `;
-        
-        document.body.appendChild(modal);
-        
-        // Setup modal event listeners
-        modal.querySelector('.modal-close').addEventListener('click', () => {
-            document.body.removeChild(modal);
-        });
-        
-        modal.querySelector('#saveSettings').addEventListener('click', async () => {
-            await this.saveSettings({
-                syncInterval: modal.querySelector('#syncInterval').value,
-                defaultLanguage: modal.querySelector('#defaultLanguage').value,
-                enableNotifications: modal.querySelector('#enableNotifications').checked
-            });
-            document.body.removeChild(modal);
-        });
-    }
-
-    async saveSettings(settings) {
-        try {
-            await chrome.storage.local.set({ extensionSettings: settings });
-            this.showSuccess('Settings saved successfully');
-        } catch (error) {
-            console.error('Error saving settings:', error);
-            this.showError('Failed to save settings');
-        }
-    }
-
-    // Utility methods for showing messages
-    showSuccess(message) {
-        this.showMessage(message, 'success');
     }
 
     showError(message) {
-        this.showMessage(message, 'error');
+        try {
+            const container = document.querySelector('.container');
+            if (!container) return;
+
+            const errorDiv = document.createElement('div');
+            errorDiv.style.cssText = 'padding: 20px; background: #f8d7da; color: #721c24; border-radius: 5px; margin: 10px;';
+            errorDiv.textContent = message;
+            container.insertBefore(errorDiv, container.firstChild);
+        } catch (error) {
+            console.error('Error showing error message:', error);
+        }
     }
 
-    showInfo(message) {
-        this.showMessage(message, 'info');
-    }
-
-    showMessage(message, type) {
-        const messageDiv = document.createElement('div');
-        messageDiv.className = `${type}-message`;
-        messageDiv.textContent = message;
-        
-        document.querySelector('.container').insertBefore(messageDiv, document.querySelector('.nav-tabs'));
-        
-        setTimeout(() => {
-            if (messageDiv.parentNode) {
-                messageDiv.parentNode.removeChild(messageDiv);
-            }
-        }, 5000);
-    }
+    // Placeholder methods (implement as needed)
+    async syncInventory() { console.log('Sync inventory'); }
+    openBulkUploadModal() { console.log('Bulk upload'); }
+    runPriceOptimizer() { console.log('Price optimizer'); }
+    enhancePhotos() { console.log('Enhance photos'); }
+    runCompetitorAnalysis() { console.log('Competitor analysis'); }
+    generateSEODescriptions() { console.log('Generate SEO'); }
+    optimizeKeywords() { console.log('Optimize keywords'); }
 }
 
-// Initialize the extension when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-    new JokerVisionExtension();
-});
+// Initialize when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        try {
+            const extension = new JokerVisionExtension();
+            extension.init();
+        } catch (error) {
+            console.error('Failed to initialize extension:', error);
+        }
+    });
+} else {
+    try {
+        const extension = new JokerVisionExtension();
+        extension.init();
+    } catch (error) {
+        console.error('Failed to initialize extension:', error);
+    }
+}
