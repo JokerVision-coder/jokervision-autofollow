@@ -66,8 +66,6 @@
       "resources": [
         "config.js",
         "injection.js",
-        "ai-optimizer.js",
-        "marketplace-injector.js",
         "appointment-popup.html",
         "icons/*"
       ],
