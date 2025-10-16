@@ -40,6 +40,17 @@
       "js": ["content.js"],
       "css": ["styles.css"],
       "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://*.cars.com/*",
+        "https://*.autotrader.com/*",
+        "https://*.carvana.com/*",
+        "https://*.cargurus.com/*",
+        "https://*.carfax.com/*"
+      ],
+      "js": ["inventory-scraper.js"],
+      "run_at": "document_idle"
     }
   ],
   
