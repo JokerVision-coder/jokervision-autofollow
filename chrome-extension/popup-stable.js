@@ -66,6 +66,21 @@ async function scrapeInventory() {
         }
         
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        
+        // Try to inject the content script if it's not already loaded
+        try {
+            await chrome.scripting.executeScript({
+                target: { tabId: tab.id },
+                files: ['inventory-scraper.js']
+            });
+            console.log('Content script injected');
+        } catch (injectError) {
+            console.log('Script already loaded or injection failed:', injectError.message);
+        }
+        
+        // Wait a moment for script to load
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
         const response = await chrome.tabs.sendMessage(tab.id, { action: 'scrapeInventory' });
         
         if (response && response.success) {
@@ -94,7 +109,13 @@ async function scrapeInventory() {
     } catch (error) {
         console.error('Scrape error:', error);
         const resultDiv = document.getElementById('scrapeResult');
-        if (resultDiv) resultDiv.textContent = '❌ Error: ' + error.message;
+        if (resultDiv) {
+            if (error.message.includes('Receiving end does not exist')) {
+                resultDiv.textContent = '❌ Please reload the page and try again';
+            } else {
+                resultDiv.textContent = '❌ Error: ' + error.message;
+            }
+        }
     }
 }
 
