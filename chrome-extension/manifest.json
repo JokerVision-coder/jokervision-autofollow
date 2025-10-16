@@ -55,7 +55,7 @@
   ],
   
   "action": {
-    "default_popup": "popup-test.html",
+    "default_popup": "popup-stable.html",
     "default_title": "JokerVision AutoDealer Pro",
     "default_icon": {
       "16": "icons/icon16.png",
