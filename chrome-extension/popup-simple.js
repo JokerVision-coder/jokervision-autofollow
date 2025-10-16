@@ -66,8 +66,9 @@ function isInventoryWebsite(url) {
 async function updatePageInfo() {
     const pageInfo = getElement('pageInfo');
     const captureBtn = getElement('captureBtn');
+    const scrapeBtn = getElement('scrapeBtn');
     
-    if (!pageInfo || !captureBtn) return;
+    if (!pageInfo) return;
     
     try {
         const tab = await getCurrentTab();
@@ -78,10 +79,16 @@ async function updatePageInfo() {
         
         if (isFacebookMarketplace(tab.url)) {
             pageInfo.textContent = '✅ Facebook Marketplace detected';
-            captureBtn.disabled = false;
+            if (captureBtn) captureBtn.disabled = false;
+            if (scrapeBtn) scrapeBtn.disabled = true;
+        } else if (isInventoryWebsite(tab.url)) {
+            pageInfo.textContent = '✅ Inventory website detected';
+            if (captureBtn) captureBtn.disabled = true;
+            if (scrapeBtn) scrapeBtn.disabled = false;
         } else {
-            pageInfo.textContent = '❌ Not on Facebook Marketplace';
-            captureBtn.disabled = true;
+            pageInfo.textContent = '❌ Not on supported website';
+            if (captureBtn) captureBtn.disabled = true;
+            if (scrapeBtn) scrapeBtn.disabled = true;
         }
     } catch (error) {
         console.error('Error updating page info:', error);
