@@ -39,11 +39,12 @@ class JokerVisionBackground {
         });
 
         // Handle web requests for API interception
-        chrome.webRequest.onBeforeRequest.addListener(
-            (details) => this.interceptApiRequests(details),
-            { urls: ["https://graph.facebook.com/*", "https://www.facebook.com/api/*"] },
-            ["requestBody"]
-        );
+        // NOTE: webRequest is deprecated in Manifest V3, using declarativeNetRequest instead
+        // chrome.webRequest.onBeforeRequest.addListener(
+        //     (details) => this.interceptApiRequests(details),
+        //     { urls: ["https://graph.facebook.com/*", "https://www.facebook.com/api/*"] },
+        //     ["requestBody"]
+        // );
 
         // Handle tab updates to detect Facebook Marketplace
         chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
