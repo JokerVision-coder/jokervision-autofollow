@@ -288,6 +288,12 @@ document.addEventListener('DOMContentLoaded', function() {
             captureBtn.addEventListener('click', captureLead);
         }
         
+        // Setup scrape button
+        const scrapeBtn = getElement('scrapeBtn');
+        if (scrapeBtn) {
+            scrapeBtn.addEventListener('click', scrapeInventory);
+        }
+        
         console.log('Extension initialized successfully');
     } catch (error) {
         console.error('Initialization error:', error);
