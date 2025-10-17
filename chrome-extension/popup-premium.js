@@ -358,6 +358,13 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('✅ Bulk upload button attached');
         }
         
+        // New: Post to Facebook button
+        const postToFBBtn = document.getElementById('postToFacebook');
+        if (postToFBBtn) {
+            postToFBBtn.addEventListener('click', postToFacebookMarketplace);
+            console.log('✅ Post to Facebook button attached');
+        }
+        
         const priceBtn = document.getElementById('priceOptimizer');
         if (priceBtn) priceBtn.addEventListener('click', runPriceOptimizer);
         
