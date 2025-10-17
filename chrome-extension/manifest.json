@@ -37,7 +37,7 @@
         "https://facebook.com/*",
         "https://marketplace.facebook.com/*"
       ],
-      "js": ["content.js"],
+      "js": ["content.js", "facebook-auto-poster.js"],
       "css": ["styles.css"],
       "run_at": "document_idle"
     },
