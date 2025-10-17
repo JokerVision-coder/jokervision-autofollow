@@ -7,13 +7,17 @@
 }
 
 body {
-    width: 380px;
+    width: 400px;
+    min-width: 400px;
+    max-width: 400px;
+    height: 600px;
     min-height: 600px;
+    max-height: 600px;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     background: linear-gradient(135deg, #0f0f23 0%, #1a1a3e 25%, #2d1b69 50%, #4c1d95 75%, #7c3aed 100%);
     color: rgba(255, 255, 255, 0.9);
     position: relative;
-    overflow-x: hidden;
+    overflow: hidden;
 }
 
 body::before {
