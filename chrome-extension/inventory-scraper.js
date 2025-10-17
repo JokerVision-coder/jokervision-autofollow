@@ -91,33 +91,82 @@ function scrapeAutoTraderInventory() {
 function scrapeCarGurusInventory() {
     const vehicles = [];
     
-    // CarGurus selectors
-    const listings = document.querySelectorAll('[data-testid="listing-card"], .listing-row');
+    console.log('CarGurus: Starting scrape...');
     
-    listings.forEach(listing => {
+    // Try multiple selector patterns for CarGurus
+    const selectorPatterns = [
+        '[data-testid="listing-card"]',
+        '.listing-row',
+        '[data-cg-ft="listing-card"]',
+        '.car-blade',
+        'article[data-listing-id]',
+        '[class*="listing"]',
+        '[class*="vehicle"]'
+    ];
+    
+    let listings = [];
+    for (const selector of selectorPatterns) {
+        const found = document.querySelectorAll(selector);
+        if (found.length > 0) {
+            console.log(`CarGurus: Found ${found.length} listings with selector: ${selector}`);
+            listings = found;
+            break;
+        }
+    }
+    
+    if (listings.length === 0) {
+        console.log('CarGurus: No listings found with any selector, trying generic scrape');
+        return [];
+    }
+    
+    listings.forEach((listing, index) => {
         try {
+            // Try to extract all text content
+            const allText = listing.textContent || '';
+            
+            // Look for vehicle title in multiple places
+            let title = listing.querySelector('.cg-dealFinder-result-model, [class*="title"], [class*="model"], h2, h3, h4')?.textContent?.trim();
+            
+            // Extract price
+            let price = listing.querySelector('.price-section, .price, [class*="price"]')?.textContent?.trim();
+            if (!price) {
+                const priceMatch = allText.match(/\$[\d,]+/);
+                price = priceMatch ? priceMatch[0] : '';
+            }
+            
+            // Extract mileage
+            let mileage = listing.querySelector('.cg-dealFinder-result-stats, [class*="mileage"]')?.textContent?.trim();
+            if (!mileage) {
+                const mileageMatch = allText.match(/([\d,]+)\s*(mi|miles|km)/i);
+                mileage = mileageMatch ? mileageMatch[0] : '';
+            }
+            
             const vehicle = {
-                title: listing.querySelector('.cg-dealFinder-result-model')?.textContent?.trim(),
-                year: listing.querySelector('.year')?.textContent?.trim(),
-                make: listing.querySelector('.make')?.textContent?.trim(),
-                model: listing.querySelector('.model')?.textContent?.trim(),
-                price: listing.querySelector('.price-section, .price')?.textContent?.trim(),
-                mileage: listing.querySelector('.cg-dealFinder-result-stats')?.textContent?.trim(),
-                image: listing.querySelector('img')?.src,
-                url: listing.querySelector('a')?.href,
+                title: title || '',
+                year: extractYear(allText),
+                make: extractMake(allText),
+                model: '',
+                price: price,
+                mileage: mileage,
+                image: listing.querySelector('img')?.src || '',
+                url: listing.querySelector('a')?.href || window.location.href,
                 vin: extractVINFromListing(listing),
-                dealer: listing.querySelector('.dealer-name')?.textContent?.trim(),
+                dealer: listing.querySelector('.dealer-name, [class*="dealer"]')?.textContent?.trim() || '',
+                fullText: allText.substring(0, 500),
                 source: 'cargurus'
             };
             
-            if (vehicle.title || vehicle.make) {
+            console.log(`CarGurus listing ${index + 1}:`, {title: vehicle.title, price: vehicle.price});
+            
+            if (vehicle.title || vehicle.price || vehicle.year) {
                 vehicles.push(vehicle);
             }
         } catch (error) {
-            console.error('Error scraping CarGurus listing:', error);
+            console.error(`Error scraping CarGurus listing ${index}:`, error);
         }
     });
     
+    console.log(`CarGurus: Scraped ${vehicles.length} vehicles`);
     return vehicles;
 }
 
