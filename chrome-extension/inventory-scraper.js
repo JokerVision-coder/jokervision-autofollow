@@ -92,81 +92,173 @@ function scrapeCarGurusInventory() {
     const vehicles = [];
     
     console.log('CarGurus: Starting scrape...');
+    console.log('CarGurus: Current URL:', window.location.href);
     
-    // Try multiple selector patterns for CarGurus
+    // Try multiple selector patterns for CarGurus (including dealership pages)
     const selectorPatterns = [
+        'article[data-cg-ft="srp-listing-blade"]',  // Search results
         '[data-testid="listing-card"]',
-        '.listing-row',
-        '[data-cg-ft="listing-card"]',
         '.car-blade',
-        'article[data-listing-id]',
-        '[class*="listing"]',
-        '[class*="vehicle"]'
+        'div[class*="listing-row"]',
+        'div[class*="inventory"]',
+        '.srp-listing-blade',
+        '[data-listing-id]',
+        'div[data-vehicle-id]',
+        'article',  // Generic article tags
+        'div[class*="vehicle-card"]',
+        'div[class*="car-card"]'
     ];
     
     let listings = [];
+    let usedSelector = '';
+    
     for (const selector of selectorPatterns) {
         const found = document.querySelectorAll(selector);
         if (found.length > 0) {
-            console.log(`CarGurus: Found ${found.length} listings with selector: ${selector}`);
-            listings = found;
-            break;
+            console.log(`CarGurus: Found ${found.length} elements with selector: ${selector}`);
+            // Filter out elements that are too small (likely not vehicle cards)
+            const filtered = Array.from(found).filter(el => {
+                const text = el.textContent || '';
+                return text.length > 50; // Vehicle cards should have substantial text
+            });
+            
+            if (filtered.length > 0) {
+                console.log(`CarGurus: After filtering, ${filtered.length} valid listings`);
+                listings = filtered;
+                usedSelector = selector;
+                break;
+            }
         }
     }
     
     if (listings.length === 0) {
-        console.log('CarGurus: No listings found with any selector, trying generic scrape');
+        console.log('CarGurus: No listings found, trying to find ANY vehicle info on page');
+        
+        // Last resort: look for elements with price indicators
+        const priceElements = document.querySelectorAll('*');
+        Array.from(priceElements).forEach(el => {
+            const text = el.textContent || '';
+            if (text.match(/\$\d{2,3},\d{3}/) && text.length < 5000 && text.length > 100) {
+                listings.push(el);
+            }
+        });
+        console.log(`CarGurus: Found ${listings.length} elements with prices`);
+    }
+    
+    if (listings.length === 0) {
+        console.log('CarGurus: Still no listings, returning empty array');
         return [];
     }
     
+    console.log(`CarGurus: Processing ${listings.length} listings...`);
+    
     listings.forEach((listing, index) => {
         try {
-            // Try to extract all text content
+            // Get all text content
             const allText = listing.textContent || '';
+            console.log(`CarGurus listing ${index + 1} text length:`, allText.length);
             
-            // Look for vehicle title in multiple places
-            let title = listing.querySelector('.cg-dealFinder-result-model, [class*="title"], [class*="model"], h2, h3, h4')?.textContent?.trim();
+            // Try multiple title selectors
+            const titleSelectors = [
+                'h2', 'h3', 'h4',
+                '[class*="title"]',
+                '[class*="model"]',
+                '[class*="name"]',
+                'a[class*="vehicle"]',
+                '.make-model'
+            ];
             
-            // Extract price
-            let price = listing.querySelector('.price-section, .price, [class*="price"]')?.textContent?.trim();
+            let title = '';
+            for (const sel of titleSelectors) {
+                const el = listing.querySelector(sel);
+                if (el && el.textContent.trim()) {
+                    title = el.textContent.trim();
+                    break;
+                }
+            }
+            
+            // If no title found, try to extract from text
+            if (!title) {
+                // Look for year make model pattern
+                const titleMatch = allText.match(/(\d{4})\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\s+([A-Za-z0-9\s]+)/);
+                if (titleMatch) {
+                    title = titleMatch[0];
+                }
+            }
+            
+            // Extract price - try multiple methods
+            let price = '';
+            const priceSelectors = [
+                '[class*="price"]',
+                '[data-price]',
+                'span[class*="amount"]'
+            ];
+            
+            for (const sel of priceSelectors) {
+                const el = listing.querySelector(sel);
+                if (el && el.textContent.includes('$')) {
+                    price = el.textContent.trim();
+                    break;
+                }
+            }
+            
+            // If no price element, search in text
             if (!price) {
                 const priceMatch = allText.match(/\$[\d,]+/);
                 price = priceMatch ? priceMatch[0] : '';
             }
             
             // Extract mileage
-            let mileage = listing.querySelector('.cg-dealFinder-result-stats, [class*="mileage"]')?.textContent?.trim();
-            if (!mileage) {
-                const mileageMatch = allText.match(/([\d,]+)\s*(mi|miles|km)/i);
-                mileage = mileageMatch ? mileageMatch[0] : '';
-            }
+            let mileage = '';
+            const mileageMatch = allText.match(/([\d,]+)\s*(mi|miles|km)/i);
+            mileage = mileageMatch ? mileageMatch[1] + ' ' + mileageMatch[2] : '';
+            
+            // Extract year
+            const year = extractYear(allText);
+            
+            // Get image
+            const img = listing.querySelector('img');
+            const image = img ? img.src : '';
+            
+            // Get link
+            const link = listing.querySelector('a');
+            const url = link ? link.href : window.location.href;
             
             const vehicle = {
-                title: title || '',
-                year: extractYear(allText),
+                title: title,
+                year: year,
                 make: extractMake(allText),
                 model: '',
                 price: price,
                 mileage: mileage,
-                image: listing.querySelector('img')?.src || '',
-                url: listing.querySelector('a')?.href || window.location.href,
+                image: image,
+                url: url,
                 vin: extractVINFromListing(listing),
-                dealer: listing.querySelector('.dealer-name, [class*="dealer"]')?.textContent?.trim() || '',
-                fullText: allText.substring(0, 500),
-                source: 'cargurus'
+                dealer: '',
+                fullText: allText.substring(0, 300),
+                source: 'cargurus',
+                scrapeMethod: usedSelector
             };
             
-            console.log(`CarGurus listing ${index + 1}:`, {title: vehicle.title, price: vehicle.price});
+            console.log(`CarGurus listing ${index + 1}:`, {
+                title: vehicle.title,
+                price: vehicle.price,
+                year: vehicle.year,
+                textLength: allText.length
+            });
             
+            // Only add if we have at least title OR price OR year
             if (vehicle.title || vehicle.price || vehicle.year) {
                 vehicles.push(vehicle);
+            } else {
+                console.log(`CarGurus listing ${index + 1}: SKIPPED (no data extracted)`);
             }
         } catch (error) {
             console.error(`Error scraping CarGurus listing ${index}:`, error);
         }
     });
     
-    console.log(`CarGurus: Scraped ${vehicles.length} vehicles`);
+    console.log(`CarGurus: Successfully scraped ${vehicles.length} vehicles with data`);
     return vehicles;
 }
 
