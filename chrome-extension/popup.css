@@ -42,6 +42,9 @@ body::before {
 .container {
     position: relative;
     z-index: 1;
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 /* Header */
