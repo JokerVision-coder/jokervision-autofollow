@@ -106,6 +106,71 @@ async function bulkUploadInventory() {
     await scrapeInventory();
 }
 
+// New function: Post to Facebook Marketplace
+async function postToFacebookMarketplace() {
+    console.log('📤 Post to Facebook Marketplace clicked');
+    
+    try {
+        updateConnectionStatus('processing', 'Preparing to post...');
+        
+        // Get scraped vehicles from backend
+        const response = await fetch(`${CONFIG.apiBaseUrl}/inventory/scraped-pending`);
+        if (!response.ok) {
+            throw new Error('Failed to fetch pending vehicles');
+        }
+        
+        const data = await response.json();
+        const vehicles = data.vehicles || [];
+        
+        if (vehicles.length === 0) {
+            updateConnectionStatus('offline', 'No vehicles to post');
+            setTimeout(() => updateConnectionStatus('online', 'Connected'), 3000);
+            return;
+        }
+        
+        console.log(`Found ${vehicles.length} vehicles to post`);
+        updateConnectionStatus('processing', `Posting ${vehicles.length} vehicles...`);
+        
+        // Open Facebook Marketplace in new tab
+        const fbTab = await chrome.tabs.create({
+            url: 'https://www.facebook.com/marketplace/create/vehicle',
+            active: true
+        });
+        
+        // Wait for tab to load
+        await new Promise(resolve => setTimeout(resolve, 3000));
+        
+        // Post vehicles one by one
+        let posted = 0;
+        for (const vehicle of vehicles) {
+            try {
+                updateConnectionStatus('processing', `Posting ${posted + 1}/${vehicles.length}...`);
+                
+                // Send message to auto-poster script
+                await chrome.tabs.sendMessage(fbTab.id, {
+                    action: 'autoPostToFacebook',
+                    vehicleData: vehicle
+                });
+                
+                posted++;
+                
+                // Wait between posts to avoid rate limiting
+                await new Promise(resolve => setTimeout(resolve, 5000));
+                
+            } catch (error) {
+                console.error(`Failed to post vehicle ${vehicle.title}:`, error);
+            }
+        }
+        
+        updateConnectionStatus('online', `✅ Posted ${posted} vehicles!`);
+        setTimeout(() => updateConnectionStatus('online', 'Connected'), 5000);
+        
+    } catch (error) {
+        console.error('Post to Facebook error:', error);
+        updateConnectionStatus('offline', 'Posting failed');
+    }
+}
+
 async function scrapeInventory() {
     console.log('🔍 Scrape Inventory clicked');
     
