@@ -568,15 +568,26 @@ function showJokerVisionMenu() {
     btn.style.cssText = `
       padding: 12px 16px;
       background: #f8f9fa;
-      border: none;
+      border: 1px solid #dee2e6;
       border-radius: 8px;
       cursor: pointer;
-      transition: background 0.3s;
+      transition: all 0.3s;
       text-align: left;
+      color: #212529;
+      font-size: 14px;
+      font-weight: 500;
     `;
     
-    btn.addEventListener('mouseenter', () => btn.style.background = '#e9ecef');
-    btn.addEventListener('mouseleave', () => btn.style.background = '#f8f9fa');
+    btn.addEventListener('mouseenter', () => {
+      btn.style.background = '#667eea';
+      btn.style.color = 'white';
+      btn.style.borderColor = '#667eea';
+    });
+    btn.addEventListener('mouseleave', () => {
+      btn.style.background = '#f8f9fa';
+      btn.style.color = '#212529';
+      btn.style.borderColor = '#dee2e6';
+    });
   });
   
   // Add event listeners
