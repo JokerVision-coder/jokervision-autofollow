@@ -4099,6 +4099,33 @@ async def upload_scraped_inventory(request: dict):
         logger.error(f"Error uploading scraped inventory: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to upload inventory: {str(e)}")
 
+# Get pending vehicles for Facebook posting
+@api_router.get("/inventory/scraped-pending")
+async def get_scraped_pending():
+    """Get vehicles that are pending Facebook Marketplace posting"""
+    try:
+        # Get recent scraped batch with pending vehicles
+        recent_batch = await db.scraped_inventory.find_one(
+            {"status": "pending"},
+            sort=[("uploaded_at", -1)]
+        )
+        
+        if not recent_batch:
+            return {"vehicles": [], "message": "No pending vehicles"}
+        
+        vehicles = recent_batch.get("vehicles", [])
+        
+        return {
+            "vehicles": vehicles,
+            "batch_id": recent_batch.get("id"),
+            "count": len(vehicles)
+        }
+        
+    except Exception as e:
+        logger.error(f"Error fetching pending vehicles: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch vehicles: {str(e)}")
+
+
 # =============================================================================
 # GOOGLE ADS & CRAIGSLIST API ENDPOINTS  
 # =============================================================================
