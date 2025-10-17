@@ -4118,6 +4118,113 @@ async def get_scraped_pending():
         return {
             "vehicles": vehicles,
             "batch_id": recent_batch.get("id"),
+
+# Chrome Extension: AI CRISP Response for Facebook Messages
+@api_router.post("/ai/crisp-response")
+async def generate_crisp_response(request: dict):
+    """Generate AI response using CRISP methodology for Facebook messages"""
+    try:
+        conversation = request.get('conversation', {})
+        platform = request.get('platform', 'facebook_marketplace')
+        
+        lead_name = conversation.get('leadName', 'Customer')
+        messages = conversation.get('messages', [])
+        latest_message = conversation.get('latestMessage', '')
+        vehicle_interest = conversation.get('vehicleInterest', 'vehicle')
+        
+        # Determine CRISP stage based on conversation history
+        crisp_stage = determine_crisp_stage(messages)
+        
+        # Build conversation history for context
+        conversation_history = "\n".join([
+            f"{'You' if msg.get('isOutgoing') else lead_name}: {msg.get('text', '')}"
+            for msg in messages[-5:]  # Last 5 messages
+        ])
+        
+        # Generate AI response
+        system_prompt = f"""You are a CRISP-certified car sales professional responding to a Facebook Marketplace inquiry.
+
+CRISP STAGE: {crisp_stage.upper()}
+
+Current conversation with {lead_name} about {vehicle_interest}:
+{conversation_history}
+
+Latest message from {lead_name}: {latest_message}
+
+Generate a response following CRISP methodology:
+- CONNECTING: Build rapport, friendly greeting
+- RESEARCHING: Ask discovery questions
+- INVESTIGATING: Understand needs deeply
+- SOLVING: Address concerns, build value
+- PROPOSING: Suggest appointment time
+
+CRITICAL RULES:
+1. Keep responses under 50 words
+2. Always move towards appointment
+3. Be conversational and friendly
+4. Ask ONE question per response
+5. If they show strong interest, propose appointment time
+
+Response:"""
+        
+        # Call AI (reuse existing AI function or OpenAI)
+        ai_response_text = await generate_ai_text(system_prompt)
+        
+        # Determine next actions
+        suggest_appointment = should_suggest_appointment(ai_response_text, crisp_stage, messages)
+        auto_send = crisp_stage in ['connecting', 'researching']  # Auto-send early stages
+        
+        return {
+            "message": ai_response_text.strip(),
+            "crispStage": crisp_stage,
+            "suggestAppointment": suggest_appointment,
+            "autoSend": auto_send,
+            "appointmentNotes": f"Follow-up from Facebook Marketplace inquiry about {vehicle_interest}"
+        }
+        
+    except Exception as e:
+        logger.error(f"Error generating CRISP response: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+def determine_crisp_stage(messages):
+    """Determine current CRISP stage based on conversation"""
+    if len(messages) <= 2:
+        return "connecting"
+    elif len(messages) <= 4:
+        return "researching"
+    elif len(messages) <= 6:
+        return "investigating"
+    elif len(messages) <= 8:
+        return "solving"
+    else:
+        return "proposing"
+
+def should_suggest_appointment(response_text, stage, messages):
+    """Determine if we should suggest appointment"""
+    appointment_keywords = ['appointment', 'come in', 'visit', 'test drive', 'schedule', 'available']
+    return (stage in ['solving', 'proposing'] or 
+            any(keyword in response_text.lower() for keyword in appointment_keywords))
+
+async def generate_ai_text(prompt):
+    """Simple AI text generation - reuse existing implementation"""
+    try:
+        # Use existing Emergent LLM integration
+        from emergentintegrations import EmergentAI
+        client = EmergentAI()
+        
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=100,
+            temperature=0.7
+        )
+        
+        return response.choices[0].message.content
+    except:
+        # Fallback response
+        return "Thanks for your message! I'd love to help you with this vehicle. When would be a good time for you to come in for a test drive?"
+
+
             "count": len(vehicles)
         }
         
